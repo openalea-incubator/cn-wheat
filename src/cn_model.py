@@ -56,10 +56,19 @@ def func(y, t0, An_linear_interpolation):
     storage_i = y[0]
     sucrose_lamina_i = y[1]
     triosesp_i = y[2]
-    # the model equations (see Barillot et al. 2014)
-    storage = (S_storage(triosesp_i) - D_storage(storage_i)) * (MSTRUCT_LAMINA*ALPHA_LAMINA) # µmol of C
-    sucrose_lamina = (S_sucrose(triosesp_i) + D_storage(storage_i)) * (MSTRUCT_LAMINA*ALPHA_LAMINA) # µmol of C
-    triosesp = photosynthesis(An_linear_interpolation(t0), LAMINA_AREA) - (S_sucrose(triosesp_i) + S_storage(triosesp_i)) * (MSTRUCT_LAMINA*ALPHA_LAMINA) # µmol of C
+    
+    # the equation of each variable
+    photosynthesis_i = photosynthesis(An_linear_interpolation(t0), LAMINA_AREA)
+    
+    # the equation of each flow
+    D_storage_i = D_storage(storage_i)
+    S_storage_i = S_storage(triosesp_i)
+    S_sucrose_i = S_sucrose(triosesp_i)
+    
+    # the equation of each compartment 
+    storage = (S_storage_i - D_storage_i) * (MSTRUCT_LAMINA*ALPHA_LAMINA) # µmol of C
+    sucrose_lamina = (S_sucrose_i + D_storage_i) * (MSTRUCT_LAMINA*ALPHA_LAMINA) # µmol of C
+    triosesp = photosynthesis_i - (S_sucrose_i + S_storage_i) * (MSTRUCT_LAMINA*ALPHA_LAMINA) # µmol of C
     return [storage, sucrose_lamina, triosesp]
     
     
@@ -88,14 +97,29 @@ def run(start_time, stop_time, number_of_output_steps, initial_conditions, An):
     out : pandas.DataFrame
         Dataframe containing the value of Photosynthesis, STORAGE, SUCROSE_lamina and TRIOSESP 
         for each desired time.
+        
+    References
+    ----------
+    .. [HNW93] Barillot et al. 2014.
     
     '''
     An_linear_interpolation = interp1d(An.index, An)
     t = np.linspace(start_time, stop_time, number_of_output_steps)
     soln = odeint(func, initial_conditions, t, (An_linear_interpolation,))
-    return pd.DataFrame.from_items([('t', t), ('Photosynthesis', photosynthesis(An[t],LAMINA_AREA)),
-                                    ('STORAGE', soln[:, 0]), ('SUCROSE_lamina', soln[:, 1]),
-                                    ('TRIOSESP', soln[:, 2])])
+    storage = soln[:, 0]
+    sucrose_lamina = soln[:, 1]
+    triosesp = soln[:, 2]
+    return pd.DataFrame.from_items([('t', t), 
+                                    # variables
+                                    ('Photosynthesis', photosynthesis(An[t],LAMINA_AREA)),
+                                    # flows
+                                    ('D_storage', map(D_storage, storage)),
+                                    ('S_storage', map(S_storage, triosesp)),
+                                    ('S_sucrose', map(S_sucrose, triosesp)),
+                                    # compartments
+                                    ('STORAGE', storage), 
+                                    ('SUCROSE_lamina', sucrose_lamina),
+                                    ('TRIOSESP', triosesp)])
     
     
 
