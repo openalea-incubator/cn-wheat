@@ -10,7 +10,7 @@ from scipy import stats
 import matplotlib.pyplot as plt
 
 def plot_linear_regression(ModelMaker_array, python_array, plot_filepath=None):
-    '''Perform a linear regression of then `ModelMaker_array` vs `python_array` 
+    '''Perform a linear regression of `ModelMaker_array` vs `python_array` 
     and create a plot showing the fit against the original data.
     If `plot_filepath` is not None, save the plot to a PNG file.
     '''
@@ -21,7 +21,7 @@ def plot_linear_regression(ModelMaker_array, python_array, plot_filepath=None):
     ModelMaker_samples_array = np.linspace(min(ModelMaker_array), max(ModelMaker_array), 1000)
     python_predict_array = aCoeff * ModelMaker_samples_array + bCoeff
 
-    # Create a string, showing the form of the equation (with fitted coefficients) and r squared value
+    # Create a string, showing the form of the equation (with fitted coefficients) and r squared value.
     # Coefficients are rounded to two decimal places.
     equation = str(round(aCoeff,2)) + 'x + ' + str(round(bCoeff,2)) + ' (r$^2$ = ' + str(round(rVal**2,2)) + ')'
 
@@ -35,13 +35,4 @@ def plot_linear_regression(ModelMaker_array, python_array, plot_filepath=None):
     # Save plot
     if plot_filepath is not None:
         plt.savefig(plot_filepath, dpi=200, format='PNG')
-
-
-def main():
-    # TODO
-    print 'cnwheat.main() !!!'
-
-
-if __name__ == '__main__':
-    main() 
 

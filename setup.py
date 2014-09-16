@@ -29,13 +29,5 @@ setup(
     license = "", # TODO
     keywords = "", # TODO
     url = "https://sourcesup.renater.fr/projects/cn-wheat/",
-    download_url = "", # TODO
-    
-    entry_points = {
-        'console_scripts': [
-            'cnwheat = cnwheat.cnwheat:main',
-            'cnwheat_plot = cnwheat.post_processings:run',
-        ]
-    },
-    
+    download_url = "", # TODO    
 )
