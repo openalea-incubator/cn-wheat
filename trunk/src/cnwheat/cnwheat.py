@@ -14,7 +14,7 @@ from scipy.interpolate import interp1d
 import organ
 
 
-def calculate_all_derivatives(y, t, organs, phloem):
+def _calculate_all_derivatives(y, t, organs, phloem):
     '''Compute the derivative of `y` at `t`.
     '''
     y_iter = iter(y)
@@ -160,7 +160,7 @@ def run(start_time, stop_time, number_of_output_steps, organs=[], phloem=None):
             
     t = np.linspace(start_time, stop_time, number_of_output_steps)
     
-    soln = odeint(calculate_all_derivatives, initial_conditions, t, (organs, phloem))
+    soln = odeint(_calculate_all_derivatives, initial_conditions, t, (organs, phloem))
     
     soln_iter = iter(soln.T)
     
@@ -250,11 +250,3 @@ def run(start_time, stop_time, number_of_output_steps, organs=[], phloem=None):
             
     return pd.DataFrame.from_items(result_items)
 
-
-def main():
-    # TODO
-    print 'cnwheat.main() !!!'
-
-
-if __name__ == '__main__':
-    main()
