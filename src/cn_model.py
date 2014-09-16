@@ -13,8 +13,6 @@ import pandas as pd
 from scipy.integrate import odeint
 from scipy.interpolate import interp1d
 
-from scipy.integrate import ode
-
 # parameters
 ALPHA_AXIS = 1
 ALPHA_LAMINA = 1
@@ -52,7 +50,7 @@ def S_sucrose(triosesp):
     '''
     return ((max(0,triosesp)/(MSTRUCT_LAMINA*ALPHA_LAMINA)) * VMAX_SUCROSE) / ((max(0, triosesp)/(MSTRUCT_LAMINA*ALPHA_LAMINA)) +K_SUCROSE)
 
-def func(t0, y, An_linear_interpolation):
+def func(y, t0, An_linear_interpolation):
     '''Compute the derivative of y at t0.
     '''
     storage_i = y[0]
@@ -63,7 +61,7 @@ def func(t0, y, An_linear_interpolation):
     sucrose_lamina = (S_sucrose(triosesp_i) + D_storage(storage_i)) * (MSTRUCT_LAMINA*ALPHA_LAMINA) # µmol of C
     triosesp = photosynthesis(An_linear_interpolation(t0), LAMINA_AREA) - (S_sucrose(triosesp_i) + S_storage(triosesp_i)) * (MSTRUCT_LAMINA*ALPHA_LAMINA) # µmol of C
     return [storage, sucrose_lamina, triosesp]
-   
+    
     
 def run(start_time, stop_time, number_of_output_steps, initial_conditions, An):
     '''
@@ -82,31 +80,19 @@ def run(start_time, stop_time, number_of_output_steps, initial_conditions, An):
     initial_conditions: list
         List of initial conditions: STORAGE(t=0), SUCROSE_lamina(t=0), TRIOSESP(t=0). 
     An: pandas.Series
-        The assimilation of the leaf at each hour t (µmol m-2 s-1).
+        The assimilation of the leaf at each hour t (µmol m-2 s-1). Due to odeint 
+        integration solver, `An` must provide assimilation value at t=stop_time+1.   
      
     Returns
     -------
     out : pandas.DataFrame
         Dataframe containing the value of Photosynthesis, STORAGE, SUCROSE_lamina and TRIOSESP 
         for each desired time.
-        
-    Notes
-    -----
-    Use a solver for non-stiff systems. If the run becomes very slow, think about 
-    using another solver (e.g. 'lsoda'). 
     
     '''
     An_linear_interpolation = interp1d(An.index, An)
     t = np.linspace(start_time, stop_time, number_of_output_steps)
-    solver = ode(func).set_integrator("dop853").set_initial_value(initial_conditions).set_f_params(An_linear_interpolation)
-    k = 0
-    soln = [initial_conditions]
-    while solver.successful() and solver.t < t[-1]: # do not integrate at times beyond t[-1]
-        k += 1
-        solver.integrate(t[k])
-        soln.append(solver.y)
-    soln = np.array(soln)
-
+    soln = odeint(func, initial_conditions, t, (An_linear_interpolation,))
     return pd.DataFrame.from_items([('t', t), ('Photosynthesis', photosynthesis(An[t],LAMINA_AREA)),
                                     ('STORAGE', soln[:, 0]), ('SUCROSE_lamina', soln[:, 1]),
                                     ('TRIOSESP', soln[:, 2])])
