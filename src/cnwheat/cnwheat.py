@@ -254,3 +254,10 @@ def run(start_time, stop_time, number_of_output_steps, organs=[], phloem=None):
     return pd.DataFrame.from_items(result_items)
 
 
+def main():
+    # TODO
+    print 'cnwheat.main() !!!'
+
+
+if __name__ == '__main__':
+    main()
