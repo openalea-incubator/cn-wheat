@@ -37,4 +37,11 @@ def plot_linear_regression(ModelMaker_array, python_array, plot_filepath=None):
         plt.savefig(plot_filepath, dpi=200, format='PNG')
 
 
+def main():
+    # TODO
+    print 'cnwheat.main() !!!'
+
+
+if __name__ == '__main__':
+    main() 
 
