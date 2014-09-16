@@ -15,7 +15,7 @@ import organ
 
 
 def calculate_all_derivatives(y, t, organs, phloem):
-    '''Compute the derivative of y at t.
+    '''Compute the derivative of `y` at `t`.
     '''
     y_iter = iter(y)
     y_derivatives = []
@@ -118,33 +118,30 @@ def calculate_all_derivatives(y, t, organs, phloem):
     
 def run(start_time, stop_time, number_of_output_steps, organs=[], phloem=None):
     '''
-    Compute CN exchanges between laminae and and phloem.
+    Compute CN exchanges between `organs` and `phloem`.
     
     The computation is done between `start_time` and `stop_time`, for `number_of_output_steps` steps. 
     
-    Parameters
-    ----------
-    start_time: int
-        The starting of the time grid.
-    stop_time: int
-        The end of the time grid.
-    number_of_output_steps: float
-        Number of time points for which to compute the CN exchanges in the system. 
-    organs: list
-        List of organs. Each organ can be organ.Lamina. 
-    phloem: organ.Phloem or None
-        The phloem of the system. 
-        None if there is no phloem in the system (default).
-     
-    Returns
-    -------
-    out : pandas.DataFrame
-        Dataframe containing the CN exchanges between laminae and phloem 
-        for each desired time.
+    :Parameters:
+    
+        - `start_time` (:class:`int`) - The starting of the time grid.
         
-    References
-    ----------
-    .. Barillot et al. 2014.
+        - `stop_time` (:class:`int`) - The end of the time grid.
+        
+        - `number_of_output_steps` (:class:`int`) - Number of time points for which to compute the CN exchanges in the system.
+        
+        - `organs` (:class:`list`) - List of :class:`cnwheat.organ.Organ`. Does not include the phloem.
+        
+        - `phloem` (:class:`cnwheat.organ.Phloem`) - The phloem of the system. `None` if there is no phloem.
+        
+    :Returns:
+        Dataframe containing the CN exchanges between the *organs* and *phloem* 
+        for each desired time. 
+    
+    :Returns Type:
+        :class:`pandas.DataFrame`
+    
+    .. seealso:: Barillot et al. 2014.
     
     '''
     
