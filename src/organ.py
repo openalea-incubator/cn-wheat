@@ -119,40 +119,7 @@ class Lamina(Organ):
     def calculate_TRIOSESP_derivative(self, Photosynthesis, S_sucrose, S_storage):
         '''µmol of C''' 
         return Photosynthesis - (S_sucrose + S_storage) * (self.Mstruct*Lamina.alpha)
-    
-    
-class Ear(Organ):
-    
-    Vmax = 0.026
-    K = 2
-    
-    def __init__(self, value_0, name='ear'):
-        super(Ear, self).__init__(name)
-        # initialization
-        # flow from phloem
-        self.Unloading = 0
-        # compartments
-        self.value_0 = value_0
-        
-    def get_initial_conditions(self):
-        return [self.value_0]
-        
-    # VARIABLES
-    
-    def calculate_Dry_mass(self, value):
-        '''g of C'''
-        return value/(12000000)
-    
-    # FLOWS
-    
-    def calculate_Unloading(self, SUCROSE_phloem):
-        return max(0, (Ear.Vmax*(SUCROSE_phloem/(Organ.Mstruct_axis*Organ.alpha_axis)))/(Ear.K+(SUCROSE_phloem/(Organ.Mstruct_axis*Organ.alpha_axis))))
-    
-    # COMPARTMENTS
-    
-    def calculate_value_derivative(self, Unloading):
-        return Unloading
-    
+       
     
 class Phloem(Organ):
     
@@ -187,8 +154,6 @@ class Phloem(Organ):
         for organ_ in organs:
             if isinstance(organ_, Lamina):
                 SUCROSE_derivative += organ_.Loading_sucrose*organ_.Mstruct*Lamina.alpha
-            elif isinstance(organ_, Ear):
-                SUCROSE_derivative -= organ_.Unloading*Organ.Mstruct_axis*Organ.alpha_axis
             elif isinstance(organ_, Sheath):
                 SUCROSE_derivative += (organ_.Loading_sucrose + organ_.D_fructan - organ_.S_fructan) * (organ_.Mstruct*Sheath.alpha)
             elif isinstance(organ_, Internode):
@@ -198,7 +163,7 @@ class Phloem(Organ):
             elif isinstance(organ_, Chaff):
                 SUCROSE_derivative += (organ_.Loading_sucrose*organ_.Mstruct*Chaff.alpha)
             elif isinstance(organ_, Grains):
-                SUCROSE_derivative -= (organ_.Loading_sucrose_structure + (organ_.Loading_sucrose_storage * ((organ_.STRUCTURE/1E6)*12)))  # TODO: why does STRUCTURE is used here? According to the ModelMaker model "Main", only Loading_sucrose_structure and Loading_sucrose_storage should be used here.
+                SUCROSE_derivative -= (organ_.Loading_sucrose_structure + (organ_.Loading_sucrose_storage * ((organ_.STRUCTURE/1E6)*12)))
             elif isinstance(organ_, Roots):
                 SUCROSE_derivative -= (organ_.Loading_sucrose * organ_.Mstruct)
         return SUCROSE_derivative
@@ -552,7 +517,7 @@ class Grains(Organ):
         # flow to phloem
         self.Loading_sucrose_structure = 0
         self.Loading_sucrose_storage = 0
-        self.STRUCTURE = 0 # TODO: why is it a flow to phloem?
+        self.STRUCTURE = 0
         
         # compartments
         self.STORAGE_0 = STORAGE_0
