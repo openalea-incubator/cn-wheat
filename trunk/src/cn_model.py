@@ -47,14 +47,6 @@ def calculate_all_derivatives(y, t, organs, phloem):
             TRIOSESP_derivative = organ_.calculate_TRIOSESP_derivative(Photosynthesis, S_sucrose, S_storage)
             y_derivatives.extend([STORAGE_derivative, SUCROSE_derivative, TRIOSESP_derivative])
             
-        elif isinstance(organ_, organ.Ear):
-            value = y_iter.next()
-            # flows
-            organ_.Unloading = organ_.calculate_Unloading(SUCROSE_phloem)
-            # compartments derivatives
-            value_derivative = organ_.calculate_value_derivative(organ_.Unloading)
-            y_derivatives.append(value_derivative)
-            
         elif isinstance(organ_, organ.Chaff):
             STORAGE = y_iter.next()
             SUCROSE = y_iter.next()
@@ -124,9 +116,9 @@ def calculate_all_derivatives(y, t, organs, phloem):
     return y_derivatives
     
     
-def run(start_time, stop_time, number_of_output_steps, organs, phloem=None):
+def run(start_time, stop_time, number_of_output_steps, organs=[], phloem=None):
     '''
-    Compute CN exchanges between laminae, ear and phloem.
+    Compute CN exchanges between laminae and and phloem.
     
     The computation is done between `start_time` and `stop_time`, for `number_of_output_steps` steps. 
     
@@ -139,7 +131,7 @@ def run(start_time, stop_time, number_of_output_steps, organs, phloem=None):
     number_of_output_steps: float
         Number of time points for which to compute the CN exchanges in the system. 
     organs: list
-        List of organs. Each organ can be organ.Lamina or organ.Ear. 
+        List of organs. Each organ can be organ.Lamina. 
     phloem: organ.Phloem or None
         The phloem of the system. 
         None if there is no phloem in the system (default).
@@ -147,7 +139,7 @@ def run(start_time, stop_time, number_of_output_steps, organs, phloem=None):
     Returns
     -------
     out : pandas.DataFrame
-        Dataframe containing the CN exchanges between laminae, ear and phloem 
+        Dataframe containing the CN exchanges between laminae and phloem 
         for each desired time.
         
     References
@@ -207,11 +199,6 @@ def run(start_time, stop_time, number_of_output_steps, organs, phloem=None):
             compartments = [(('STORAGE_%s' % organ_.name).rstrip('_'), STORAGE), 
                             (('SUCROSE_%s' % organ_.name).rstrip('_'), SUCROSE),
                             (('TRIOSESP_%s' % organ_.name).rstrip('_'), TRIOSESP)]
-        elif isinstance(organ_, organ.Ear):
-            value = soln_iter.next()
-            variables = [(('Dry_mass_%s' % organ_.name).rstrip('_'), organ_.calculate_Dry_mass(value))]
-            flows = [(('Unloading_%s' % organ_.name).rstrip('_'), map(organ_.calculate_Unloading, SUCROSE_phloem))]
-            compartments = [(('value_%s' % organ_.name).rstrip('_'), value)]
         elif isinstance(organ_, organ.Chaff):
             STORAGE = soln_iter.next()
             SUCROSE = soln_iter.next()
