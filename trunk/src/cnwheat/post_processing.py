@@ -37,7 +37,7 @@ def plot_linear_regression(x_array, y_array, x_label='x', y_label='y', plot_file
 
     # Create a string, showing the form of the equation (with fitted coefficients) and r squared value.
     # Coefficients are rounded to two decimal places.
-    equation = 'y = {} x + {} (R2 = {})'.format(round(aCoeff,2), round(bCoeff,2), round(rVal**2,2))
+    equation = 'y = {} x + {} (R$^2$ = {})'.format(round(aCoeff,2), round(bCoeff,2), round(rVal**2,2))
     
     plt.figure()
     
