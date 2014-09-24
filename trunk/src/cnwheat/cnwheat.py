@@ -14,18 +14,14 @@ from scipy.interpolate import interp1d
 import organ
 
 
-def _calculate_all_derivatives(y, t, organs, phloem):
+def _calculate_all_derivatives(y, t, phloem, organs):
     '''Compute the derivative of `y` at `t`.
     '''
     y_iter = iter(y)
     y_derivatives = []
     
-    if phloem is not None:
-        SUCROSE_phloem = y_iter.next()
-        Respiration_phloem = y_iter.next()
-    else:
-        SUCROSE_phloem = 0
-        Respiration_phloem = 0
+    SUCROSE_phloem = y_iter.next()
+    Respiration_phloem = y_iter.next()
         
     for organ_ in organs:
         
@@ -107,16 +103,15 @@ def _calculate_all_derivatives(y, t, organs, phloem):
             Sucrose_derivative = organ_.calculate_Sucrose_derivative(organ_.Loading_sucrose)
             y_derivatives.extend([Sucrose_derivative])
             
-    if phloem is not None:
-        SUCROSE_phloem_derivative = phloem.calculate_SUCROSE_derivative(organs)
-        Maintenance_respiration = phloem.calculate_Maintenance_respiration()
-        Respiration_phloem_derivative = phloem.calculate_Respiration_derivative(Maintenance_respiration)
-        y_derivatives = [SUCROSE_phloem_derivative, Respiration_phloem_derivative] + y_derivatives
+    SUCROSE_phloem_derivative = phloem.calculate_SUCROSE_derivative(organs)
+    Maintenance_respiration = phloem.calculate_Maintenance_respiration()
+    Respiration_phloem_derivative = phloem.calculate_Respiration_derivative(Maintenance_respiration)
+    y_derivatives = [SUCROSE_phloem_derivative, Respiration_phloem_derivative] + y_derivatives
             
     return y_derivatives
     
     
-def run(start_time, stop_time, number_of_output_steps, organs=[], phloem=None):
+def run(start_time, stop_time, number_of_output_steps, phloem, organs):
     '''
     Compute CN exchanges between `organs` and `phloem`.
     
@@ -130,9 +125,9 @@ def run(start_time, stop_time, number_of_output_steps, organs=[], phloem=None):
         
         - `number_of_output_steps` (:class:`int`) - Number of time points for which to compute the CN exchanges in the system.
         
-        - `organs` (:class:`list`) - List of :class:`cnwheat.organ.Organ`. Does not include the phloem.
+        - `phloem` (:class:`cnwheat.organ.Phloem`) - The phloem of the system.
         
-        - `phloem` (:class:`cnwheat.organ.Phloem`) - The phloem of the system. `None` if there is no phloem.
+        - `organs` (:class:`list`) - List of :class:`cnwheat.organ.Organ`. Does not include the phloem.
         
     :Returns:
         Dataframe containing the CN exchanges between the *organs* and *phloem* 
@@ -148,8 +143,7 @@ def run(start_time, stop_time, number_of_output_steps, organs=[], phloem=None):
     # interpolate the Assimilation and construct the list of initial conditions
     initial_conditions = []
     
-    if phloem is not None:
-        initial_conditions.extend(phloem.get_initial_conditions())
+    initial_conditions.extend(phloem.get_initial_conditions())
         
     for organ_ in organs:
         try:
@@ -160,23 +154,21 @@ def run(start_time, stop_time, number_of_output_steps, organs=[], phloem=None):
             
     t = np.linspace(start_time, stop_time, number_of_output_steps)
     
-    soln = odeint(_calculate_all_derivatives, initial_conditions, t, (organs, phloem))
+    soln = odeint(_calculate_all_derivatives, initial_conditions, t, (phloem, organs))
     
     soln_iter = iter(soln.T)
     
+    # construct the table of the results    
     result_items = [('t', t)]
     
-    if phloem is not None:
-        SUCROSE_phloem = soln_iter.next()
-        Respiration_phloem = soln_iter.next()
-        variables = [(('Conc_Sucrose_%s' % phloem.name).rstrip('_'), phloem.calculate_Conc_Sucrose(SUCROSE_phloem)), 
-                     (('Conc_C_Sucrose_%s' % phloem.name).rstrip('_'), phloem.calculate_Conc_C_Sucrose(SUCROSE_phloem))]
-        flows = [(('Maintenance_respiration_%s' % phloem.name).rstrip('_'), [phloem.calculate_Maintenance_respiration()] * number_of_output_steps)]
-        compartments = [(('SUCROSE_%s' % phloem.name).rstrip('_'), SUCROSE_phloem),
-                        (('Respiration_%s' % phloem.name).rstrip('_'), Respiration_phloem)]
-        result_items.extend(variables + flows + compartments)
-    else:
-        SUCROSE_phloem = Respiration_phloem = np.zeros_like(t)
+    SUCROSE_phloem = soln_iter.next()
+    Respiration_phloem = soln_iter.next()
+    variables = [(('Conc_Sucrose_%s' % phloem.name).rstrip('_'), phloem.calculate_Conc_Sucrose(SUCROSE_phloem)), 
+                 (('Conc_C_Sucrose_%s' % phloem.name).rstrip('_'), phloem.calculate_Conc_C_Sucrose(SUCROSE_phloem))]
+    flows = [(('Maintenance_respiration_%s' % phloem.name).rstrip('_'), [phloem.calculate_Maintenance_respiration()] * number_of_output_steps)]
+    compartments = [(('SUCROSE_%s' % phloem.name).rstrip('_'), SUCROSE_phloem),
+                    (('Respiration_%s' % phloem.name).rstrip('_'), Respiration_phloem)]
+    result_items.extend(variables + flows + compartments)
         
     for organ_ in organs:
         if isinstance(organ_, organ.Lamina):
