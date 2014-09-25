@@ -240,17 +240,6 @@ class Chaff(Organ):
     def get_initial_conditions(self):
         return [self.STORAGE_0, self.SUCROSE_0, self.TRIOSESP_0] # keep this order !
 
-    # COMPARTMENTS
-
-    def calculate_STORAGE_derivative(self, S_storage, D_storage):
-        '''µmol of C'''
-        return (S_storage ) * (self.Mstruct*Organ.alpha)-D_storage
-
-    def calculate_SUCROSE_derivative(self, S_sucrose, D_storage, Loading_sucrose):
-        '''µmol of C'''
-        return (S_sucrose  - Loading_sucrose) * (self.Mstruct*Organ.alpha)+D_storage
-
-
 class Internode(Organ):
 
     def __init__(self, Area, Mstruct, Assimilation, FRUCTAN_0, STORAGE_0,
