@@ -161,15 +161,14 @@ class Lamina(Organ):
 
 class Phloem(Organ):
 
-    def __init__(self, SUCROSE_0, Respiration_0, name='phloem'):
+    def __init__(self, SUCROSE_0, name='phloem'):
         super(Phloem, self).__init__(name)
         # initialization
         # compartments
         self.SUCROSE_0 = SUCROSE_0
-        self.Respiration_0 = Respiration_0 # TODO: self.Respiration_0 not used anywhere. Keep it anyway? Answer: No it can be deleted
 
     def get_initial_conditions(self):
-        return [self.SUCROSE_0, self.Respiration_0]
+        return [self.SUCROSE_0]
 
     # VARIABLES
 
@@ -182,11 +181,6 @@ class Phloem(Organ):
         '''Sucrose concentration expressed in C (µmol C sucrose g-1 MS)
         '''
         return SUCROSE/(Organ.Mstruct_axis*Organ.alpha_axis)
-
-    # FLOWS
-
-    def calculate_Maintenance_respiration(self):
-        return 0.004208754*Organ.delta_t #TODO: to delete
 
     # COMPARTMENTS
 
@@ -210,10 +204,6 @@ class Phloem(Organ):
             elif isinstance(organ_, Roots):
                 SUCROSE_derivative -= (organ_.Loading_sucrose * organ_.Mstruct)
         return SUCROSE_derivative
-
-    def calculate_Respiration_derivative(self, Maintenance_respiration): #TODO: delete
-        '''From Evers et al (2010)'''
-        return Maintenance_respiration*Organ.Mstruct_axis
 
 
 class Chaff(Organ):
