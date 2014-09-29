@@ -45,11 +45,11 @@ class Organ(object):
 
     # Concentrations output (expressed in amount of substance g-1 MS)
 
-    def calculate_Photosynthesis(self, t):
+    def calculate_Photosynthesis(self, t, An):
         '''Total photosynthesis of an organ integrated over delta_t (µmol CO2 on organ area integrated over delat_t)
         '''
-        return self.An_linear_interpolation(t)*self.Area*Organ.delta_t
-
+        return An*self.Area*Organ.delta_t
+    
     def calculate_Conc_TriosesP(self, TRIOSESP):
         '''Trioses Phosphate concentration (µmol TriosesP g-1 MS)
         '''
@@ -111,17 +111,20 @@ class Lamina(Organ):
                                 'lamina2': (480, 68.61),
                                 'lamina3': (360, 48.76)}
 
-    def __init__(self, Area, Mstruct, Rdark, Assimilation, STORAGE_0,
+    def __init__(self, Area, Mstruct, Rdark, PAR, STORAGE_0,
                  SUCROSE_0, TRIOSESP_0, name='lamina'):
         super(Lamina, self).__init__(name)
         # parameters
         self.Area = Area                    # Area (m-2)
         self.Mstruct = Mstruct              # Structural mass (g)
         self.Rdark = Rdark                  # Respiration in the dark (µmol of C respired m-2 s-1)
-        self.Assimilation = Assimilation    # Assimilation estimated from photosynthesis model, TODO: homogeneiser les termes pr la photosynthese (unite?)
+        self.PAR = PAR    # PAR estimated from photosynthesis model, TODO: homogeneiser les termes pr la photosynthese (unite?)
 
-        # linear interpolation of Assimilation
-        self.An_linear_interpolation = None
+        # linear interpolation of PAR
+        self.PAR_linear_interpolation = None
+        
+        # mapping to store the computed photosynthesis
+        self.photosynthesis_mapping = {}
 
         # initialization
         # flow to phloem
@@ -137,16 +140,16 @@ class Lamina(Organ):
 
     # VARIABLES
 
-    def calculate_Photosynthesis(self, t):
+    def calculate_Photosynthesis(self, t, An):
         '''Total photosynthesis of lamina integrated over delta_t (µmol CO2 on lamina area * delat_t)
         '''
         t_inflexion, value_inflexion = Lamina.laminae_inflexion_points.get(self.name, (float("inf"), None))
         if t <= t_inflexion: # Non-senescent lamina
-            Photosynthesis = self.An_linear_interpolation(t)*self.Area*Organ.delta_t
+            Photosynthesis = An*self.Area*Organ.delta_t
         else:                # Senescent lamina
-            Photosynthesis = max(0, self.An_linear_interpolation(t) * ((-0.0721*t + value_inflexion)/10000) * Organ.delta_t)
+            Photosynthesis = max(0, An * ((-0.0721*t + value_inflexion)/10000) * Organ.delta_t)
         return Photosynthesis
-
+    
     def calculate_Rd(self, Photosynthesis):
         '''Total dark respiration of lamina integrated over delta_t (µmol of C respired on lamina area * delat_t)
         '''
@@ -213,16 +216,19 @@ class Phloem(Organ):
 
 class Chaff(Organ):
 
-    def __init__(self, Area, Mstruct, Assimilation, STORAGE_0, SUCROSE_0,
+    def __init__(self, Area, Mstruct, PAR, STORAGE_0, SUCROSE_0,
                  TRIOSESP_0, name='chaff'):
         super(Chaff, self).__init__(name)
         # parameters
         self.Area = Area                    # Area (m-2)
         self.Mstruct = Mstruct              # Structural mass (g)
-        self.Assimilation = Assimilation
+        self.PAR = PAR
 
-        # linear interpolation of Assimilation
-        self.An_linear_interpolation = None
+        # linear interpolation of PAR
+        self.PAR_linear_interpolation = None
+        
+        # mapping to store the computed photosynthesis
+        self.photosynthesis_mapping = {}
 
         # initialization
         # flow to phloem
@@ -237,16 +243,19 @@ class Chaff(Organ):
 
 class Internode(Organ):
 
-    def __init__(self, Area, Mstruct, Assimilation, FRUCTAN_0, STORAGE_0,
+    def __init__(self, Area, Mstruct, PAR, FRUCTAN_0, STORAGE_0,
                  SUCROSE_0, TRIOSESP_0, name='internode'):
         super(Internode, self).__init__(name)
         # parameters
         self.Area = Area                    # Area (m-2)
         self.Mstruct = Mstruct              # Structural mass (g)
-        self.Assimilation = Assimilation
+        self.PAR = PAR
 
-        # linear interpolation of Assimilation
-        self.An_linear_interpolation = None
+        # linear interpolation of PAR
+        self.PAR_linear_interpolation = None
+        
+        # mapping to store the computed photosynthesis
+        self.photosynthesis_mapping = {}
 
         # initialization
         # flow to phloem
@@ -300,16 +309,19 @@ class Internode(Organ):
 
 class Peduncle(Organ):
 
-    def __init__(self, Area, Mstruct, Assimilation, FRUCTAN_0, STORAGE_0,
+    def __init__(self, Area, Mstruct, PAR, FRUCTAN_0, STORAGE_0,
                  SUCROSE_0, TRIOSESP_0, name='peduncle'):
         super(Peduncle, self).__init__(name)
         # parameters
         self.Area = Area                    # Area (m-2)
         self.Mstruct = Mstruct              # Structural mass (g)
-        self.Assimilation = Assimilation
+        self.PAR = PAR
 
-        # linear interpolation of Assimilation
-        self.An_linear_interpolation = None
+        # linear interpolation of PAR
+        self.PAR_linear_interpolation = None
+        
+        # mapping to store the computed photosynthesis
+        self.photosynthesis_mapping = {}
 
         # initialization
         # flow to phloem
@@ -363,17 +375,20 @@ class Peduncle(Organ):
 
 class Sheath(Organ):
 
-    def __init__(self, Area, Mstruct, Assimilation, FRUCTAN_0, STORAGE_0,
+    def __init__(self, Area, Mstruct, PAR, FRUCTAN_0, STORAGE_0,
                  SUCROSE_0, TRIOSESP_0, name='sheath'):
         super(Sheath, self).__init__(name)
 
         # parameters
         self.Area = Area                    # Area (m-2)
         self.Mstruct = Mstruct              # Structural mass (g)
-        self.Assimilation = Assimilation
+        self.PAR = PAR
 
-        # linear interpolation of Assimilation
-        self.An_linear_interpolation = None
+        # linear interpolation of PAR
+        self.PAR_linear_interpolation = None
+        
+        # mapping to store the computed photosynthesis
+        self.photosynthesis_mapping = {}
 
         # initialization
         # flow to phloem

@@ -61,8 +61,7 @@ Go to directory "cn-wheat" and run: python setup.py install (or python setup.py 
 Go to directory "cn-wheat" and run: nosetests
 
 
-Build the documentation
-=======================
+=== Build the documentation ===
 
 Go to directory "cn-wheat" and run: python setup.py build_sphinx
 
@@ -70,14 +69,12 @@ Then open the file :download:`doc/_build/html/index.html <_build/html/index.html
 with your web browser.
 
 
-Mailing list
-============
+=== Mailing list ===
 
 cn-wheat@groupes.renater.fr
 
 
-Bug reports
-===========
+=== Bug reports ===
 
 https://sourcesup.renater.fr/tracker/?atid=5057&group_id=1515&func=browse
 
