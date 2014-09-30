@@ -1,10 +1,13 @@
 # -*- coding: latin-1 -*-
+"""
+    cnwheat.cnwheat
+    ~~~~~~~~~~~~~~~
 
-'''
-Created on 28 juil. 2014
+    Function to run the model.
 
-@author: cchambon
-'''
+    :copyright: Copyright 2014 INRA-EGC, see AUTHORS.txt.
+    :license: TODO, see LICENSE.txt for details.
+"""
 
 from __future__ import division # use "//" to do integer division
 

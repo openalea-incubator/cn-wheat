@@ -7,7 +7,7 @@ Notes:
 
 '''
 import ez_setup
-ez_setup.use_setuptools() # TODO: check that it works with the current installed version of setuptools
+ez_setup.use_setuptools()
 
 from setuptools import setup, find_packages
 
