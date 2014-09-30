@@ -2,9 +2,8 @@
 '''
 Notes:
 
-- recommend the users to use setup.py develop when tracking in-development code, and tell them that this needs to be run after every update or commit
-- when removing modules or data files from the project, do remind the users to run setup.py clean --all and delete any obsolete .pyc or .pyo.
-
+- use setup.py develop when tracking in-development code
+- when removing modules or data files from the project, run setup.py clean --all and delete any obsolete .pyc or .pyo.
 
 '''
 import ez_setup
