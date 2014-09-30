@@ -20,8 +20,8 @@ import organ
 import photosynthesis
 
 def _calculate_all_derivatives(y, t, phloem, organs, meteo_interpolations, photosynthesis_computation_interval):
-    '''Compute the derivative of `y` at `t`.
-    '''
+    """Compute the derivative of `y` at `t`.
+    """
     y_iter = iter(y)
     y_derivatives = []
 
@@ -129,7 +129,7 @@ def _calculate_all_derivatives(y, t, phloem, organs, meteo_interpolations, photo
     
     
 def run(start_time, stop_time, number_of_output_steps, phloem, organs, meteo, photosynthesis_computation_interval=0, odeint_mxstep=5000):
-    '''
+    """
     Compute CN exchanges between `organs` and `phloem`.
 
     The computation is done between `start_time` and `stop_time`, for `number_of_output_steps` steps.
@@ -172,7 +172,7 @@ def run(start_time, stop_time, number_of_output_steps, phloem, organs, meteo, ph
     
     .. seealso:: Barillot et al. 2014.
 
-    '''
+    """
     
     # check the consistency of meteo
     lowest_t = meteo.first_valid_index()
@@ -182,9 +182,9 @@ def run(start_time, stop_time, number_of_output_steps, phloem, organs, meteo, ph
     integrator_upper_boundary = stop_time + 1
     highest_t = meteo.last_valid_index()
     if highest_t < integrator_upper_boundary:
-        raise Exception('''Error: the highest t ({}) in meteo data is lower than stop_time + 1 = {}. 
+        raise Exception("""Error: the highest t ({}) in meteo data is lower than stop_time + 1 = {}. 
                         scipy.integrate.odeint requires the highest t to be equal or 
-                        greater than stop_time + 1'''.format(highest_t, integrator_upper_boundary))
+                        greater than stop_time + 1""".format(highest_t, integrator_upper_boundary))
     
     # check the consistency of the PAR
     for organ_ in organs:
@@ -194,9 +194,9 @@ def run(start_time, stop_time, number_of_output_steps, phloem, organs, meteo, ph
                 raise Exception('Error: the lowest t ({}) in the PAR of {} is greater than start_time ({}).'.format(lowest_t, organ_.name, start_time))
             highest_t = organ_.PAR.last_valid_index()
             if highest_t < integrator_upper_boundary:
-                raise Exception('''Error: the highest t ({}) in the PAR of {} is lower than stop_time + 1 = {}. 
+                raise Exception("""Error: the highest t ({}) in the PAR of {} is lower than stop_time + 1 = {}. 
                                 scipy.integrate.odeint requires the highest t to be equal or 
-                                greater than stop_time + 1'''.format(highest_t, organ_.name, integrator_upper_boundary))
+                                greater than stop_time + 1""".format(highest_t, organ_.name, integrator_upper_boundary))
     
     # interpolate meteo data
     meteo_interpolations = {}
