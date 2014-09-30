@@ -66,7 +66,7 @@ class PhotosynthesisModel(object):
     
     @classmethod
     def leaf_temperature (cls, leaf_width, z, H, wind0, PAR, gs, Ta, Tleaf=Ta):
-        '''
+        """
         Energy balance for the estimation of leaf temperature
         - leaf_width (m)
         - z: height of leaf from soil (m)
@@ -75,7 +75,7 @@ class PhotosynthesisModel(object):
         - PAR (umol m-2 s-1)
         - gs: stomatal conductance (mol m-2 s-1)
         - Tleaf: leaf temperature (degree C). By default = air temperature
-        '''
+        """
         
         # Wind speed (m s-1)
         wind = wind0 * exp(cls.a*(z/H -1))                      # From Campbell and Norman (1998), second edition. z: organ height, H: height of the canopy 
@@ -120,12 +120,12 @@ class PhotosynthesisModel(object):
         
     @classmethod
     def stomatal_conductance(cls, Ag, An, Na, Ca):
-        '''
+        """
         BWB model of stomatal conductance
         - Ag: global assimilation (umol m-2 s-1)
         - An: net assimilation (umol m-2 s-1)
         - Na: nitrogen content of leaf (g m-2)
-        '''
+        """
         
         Cs = Ca - An *(1.37/(cls.gb))                            # CO2 concentration at leaf surface (umol mol-1 or Pa). From Prieto et al. (2012). gb in mol m-2 s-1
         m = cls.param_N['delta1'] * Na**cls.param_N['delta2']        # Scaling factor dependance to Na (dimensionless). This focntion is maintained although I'm not sure that it should be taken into account
@@ -134,12 +134,12 @@ class PhotosynthesisModel(object):
     
     @classmethod
     def f_temperature(cls, pname, p25, T):
-        '''
+        """
         Photosynthetic parameters relation to temperature
         - pname: name of parameter
         - p25: parameter value at 25 degree C
         - T: leaf temperature (degree C)
-        '''
+        """
         Tk = T + 273.15
         deltaHa = cls.param_temp['deltaHa'][pname]
         Tref = cls.param_temp['Tref']
@@ -160,7 +160,7 @@ class PhotosynthesisModel(object):
     
     @classmethod
     def grapher(cls, dict):
-        '''Note: module read_csv_file must be in PYTHON_PATH to run this function.'''
+        """Note: module read_csv_file must be in PYTHON_PATH to run this function."""
         import matplotlib.pyplot as plt
         import datetime
         from matplotlib import dates
@@ -208,7 +208,7 @@ class PhotosynthesisModel(object):
     
     @classmethod
     def out(cls, dict, fout, file_name):
-        '''Note: module read_csv_file must be in PYTHON_PATH to run this function.'''
+        """Note: module read_csv_file must be in PYTHON_PATH to run this function."""
         import read_csv_file
         meteo_file = r'meteo.csv'
         meteo = read_csv_file.read_csv_file(meteo_file)
@@ -231,13 +231,13 @@ class PhotosynthesisModel(object):
     
     @classmethod
     def photosynthesis (cls, PAR, Na, Tleaf, Ci):
-        '''
+        """
         In this version, most of the parameters are derived from Braune et al. (2009) on barley
         - PAR: PAR intercepted by leaf (umol m-2 s-1)
         - Na: nitrogen content of leaf (g m-2)
         - Tleaf: leaf temperature (degree C)
         - Ci: internal CO2 (umol mol-1), by default = 0.7*CO2air
-        '''
+        """
         
         ### # RuBisCO-limited carboxylation rate ###
         # RuBisCO parameters dependance to temperature
@@ -278,7 +278,7 @@ class PhotosynthesisModel(object):
     
     @classmethod
     def calculate_An(cls, t, PAR, Ta, Ca, RH):
-        '''
+        """
         
         :Parameters:
         
@@ -296,7 +296,7 @@ class PhotosynthesisModel(object):
         :Returns Type:
             :class:`float`
         
-        '''
+        """
         
         ### Physical parameters ###
         try:

@@ -14,7 +14,7 @@ from scipy import stats
 import matplotlib.pyplot as plt
 
 def plot_linear_regression(x_array, y_array, x_label='x', y_label='y', plot_filepath=None):
-    '''Perform a linear regression of `x_array` vs `y_array` 
+    """Perform a linear regression of `x_array` vs `y_array` 
     and create a plot showing the fit against the original data.
     If `plot_filepath` is not None, save the plot to a PNG file.
     
@@ -34,7 +34,7 @@ def plot_linear_regression(x_array, y_array, x_label='x', y_label='y', plot_file
         - `plot_filepath` (:class:`str`) - The file path to save the plot in. 
             If `None`, do not save the plot.
         
-    '''
+    """
     # Perform fit
     (aCoeff, bCoeff, rVal, pVal, stdError) = stats.linregress(x_array, y_array)
     
@@ -66,7 +66,7 @@ def plot_linear_regression(x_array, y_array, x_label='x', y_label='y', plot_file
         
         
 def plot_column(x, y, x_label='', y_label='', title='', matplotlib_kwargs={}, plot_filepath=None):
-    '''Plot y = f(x), using `matplotlib_kwargs` to set the `kwargs` of :func:`matplotlib.pyplot.plot`.
+    """Plot y = f(x), using `matplotlib_kwargs` to set the `kwargs` of :func:`matplotlib.pyplot.plot`.
     If `matplotlib_kwargs` is empty, then use the default `kwargs` of :func:`matplotlib.pyplot.plot`.
     If `plot_filepath` is not None, save the plot to a PNG file.
     
@@ -83,7 +83,7 @@ def plot_column(x, y, x_label='', y_label='', title='', matplotlib_kwargs={}, pl
         
         - `plot_filepath` (:class:`str`) - The file path to save the plot in. If `None`, do not save the plot.
         
-    '''
+    """
     matplotlib_kwargs['label'] = y_label
     plt.figure()
     plt.plot(x, y, **matplotlib_kwargs)
@@ -98,7 +98,7 @@ def plot_column(x, y, x_label='', y_label='', title='', matplotlib_kwargs={}, pl
 
 
 def plot_columns(dataframe, title='', column_to_matplotlib_kwargs={}, plot_filepath=None):
-    '''Plot the columns in `column_to_matplotlib_kwargs`, with `x_label='t'` and 
+    """Plot the columns in `column_to_matplotlib_kwargs`, with `x_label='t'` and 
     `y_labels=column_to_matplotlib_kwargs.keys()`.
     For each `column` in `column_to_matplotlib_kwargs`, use `kwargs=column_to_matplotlib_kwargs[column]` 
     to set the `kwargs` of :func:`matplotlib.pyplot.plot`.
@@ -119,7 +119,7 @@ def plot_columns(dataframe, title='', column_to_matplotlib_kwargs={}, plot_filep
         
         - `plot_filepath` (:class:`str`) - The file path to save the plot in. If `None`, do not save the plot.
         
-    '''
+    """
     if len(column_to_matplotlib_kwargs) == 0:
         column_to_matplotlib_kwargs = dict.fromkeys(dataframe.columns, {})
     

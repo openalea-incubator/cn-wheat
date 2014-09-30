@@ -1,11 +1,11 @@
 # -*- coding: latin-1 -*-
-'''
+"""
 Notes:
 
 - use setup.py develop when tracking in-development code
 - when removing modules or data files from the project, run setup.py clean --all and delete any obsolete .pyc or .pyo.
 
-'''
+"""
 import ez_setup
 ez_setup.use_setuptools()
 
