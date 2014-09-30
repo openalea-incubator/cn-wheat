@@ -10,6 +10,8 @@
     :license: TODO, see LICENSE.txt for details.
 """
 
+from __future__ import division # use "//" to do integer division
+
 from math import sqrt, log,  exp
 
 class PhotosynthesisModel(object):
@@ -22,19 +24,16 @@ class PhotosynthesisModel(object):
     
     #: Nitrogen dependance of photosynthetic parameters
     #: Derived from Braune et al. (2009):
-    #: - S_Na: slope of the relation between Na and the parameters (umol g-1 s-1)
-    #: - Na_min: minimum amount of leaf nitrogen below which photosynthesis rate is zero (g (N) m-2 leaf)
-    #: - Gamma_Na1 and Gamma_Na2: parameters of alpha dependance to Na (mol mol-1 and m2 g-1 respectively)
-    #: - delta1 and delta2: parameters of m (scaling factor of gs) dependance to Na (m2 g-1 and dimensionless respectively)
+    #:     * S_Na: slope of the relation between Na and the parameters (umol g-1 s-1)
+    #:     * Na_min: minimum amount of leaf nitrogen below which photosynthesis rate is zero (g (N) m-2 leaf)
+    #:     * Gamma_Na1 and Gamma_Na2: parameters of alpha dependance to Na (mol mol-1 and m2 g-1 respectively)
+    #:     * delta1 and delta2: parameters of m (scaling factor of gs) dependance to Na (m2 g-1 and dimensionless respectively)
     param_N = {'S_Na': {'Vc_max25': 63.2, 'Jmax25': 151, 'TPU25': 9.25, 'Rdark25': 0.493}, 'Na_min': {'Vc_max25': 0.198, 'Jmax25': 0.225, 'TPU25': 0.229, 'Rdark25': 0.118}, 
                 'Gamma_Na1': 0.437, 'Gamma_Na2': 2.29, 'delta1': 14.7, 'delta2': -0.548}
     
     gsmin = 0.05            #: Stomatal conductance parameter: Minimum gs, measured in the dark (mol m-2 s-1). Braune et al. (2009).
     gb = 3.5                #: Stomatal conductance parameter: Boundary layer conductance (mol m-2 s-1). Muller et al., (2005)
      
-    Ta = 25                 #: Physical parameter: Air temperature (degree Celsius)
-    RH = 0.85               #: Physical parameter: Relative humidity (decimal fraction)
-    
     sigma = 5.6704E-8       #: Physical parameter: Stefan-Bolzmann constant (W-2 K-4)
     I0 = 1370               #: Physical parameter: Extraterrestrial solar radiation (W m-2)
     Lambda = 2260E3         #: Physical parameter: Latent heat for vaporisation of water (J kg-1)
@@ -50,10 +49,10 @@ class PhotosynthesisModel(object):
     
     #: Temperature dependance of photosynthetic parameters
     #: Parameter values derived from Braune et al. (2009) except for Kc, Ko, and Rdark (Bernacchi et al., 2001)
-    #:  - deltaHa, deltaHd: enthalpie of activation and deactivation respectively (kJ mol-1)
-    #:  - deltaS: entropy term (kJ mol-1 K-1)
-    #:  - Tref: reference temperature (K)
-    #:  - R: universal gas constant (kJ mol-1 K-1) 
+    #:     * deltaHa, deltaHd: enthalpie of activation and deactivation respectively (kJ mol-1)
+    #:     * deltaS: entropy term (kJ mol-1 K-1)
+    #:     * Tref: reference temperature (K)
+    #:     * R: universal gas constant (kJ mol-1 K-1) 
     param_temp = {'deltaHa': {'Vc_max': 89.7, 'Jmax': 48.9, 'TPU': 47., 'Kc': 79.43, 'Ko': 36.38, 'Gamma': 35., 'Rdark': 46.39}, 
                   'deltaHd': {'Vc_max': 149.3, 'Jmax': 152.3, 'TPU': 152.3}, 
                   'deltaS': {'Vc_max': 0.486, 'Jmax': 0.495, 'TPU': 0.495}, 
@@ -65,7 +64,7 @@ class PhotosynthesisModel(object):
     Na_init = 2.5     #: g m-2
     
     @classmethod
-    def leaf_temperature (cls, leaf_width, z, H, wind0, PAR, gs, Ta, Tleaf=Ta):
+    def leaf_temperature(cls, leaf_width, z, H, wind0, PAR, gs, Ta, Tleaf, RH):
         """
         Energy balance for the estimation of leaf temperature
         - leaf_width (m)
@@ -74,7 +73,8 @@ class PhotosynthesisModel(object):
         - Wind0: wind at the top of the canopy (m s-1)
         - PAR (umol m-2 s-1)
         - gs: stomatal conductance (mol m-2 s-1)
-        - Tleaf: leaf temperature (degree C). By default = air temperature
+        - Tleaf: leaf temperature (degree C)
+        - RH: Relative humidity (decimal fraction)
         """
         
         # Wind speed (m s-1)
@@ -89,7 +89,7 @@ class PhotosynthesisModel(object):
         # Net absorbed radiation Rn (PAR and NIR, J m-2 s-1)
         Iabs = (PAR*(1-cls.fr-cls.ft))/(0.55*4.55)                  # Global absorbed radiation by leaf (J m-2 s-1). TODO: relation a verifier
         es_Ta = 0.611 * exp((17.4*Ta)/(239+Ta))             # Saturated vapour pressure of the air (kPa), Ta in degree Celsius
-        V = cls.RH * es_Ta                                      # Vapour pressure of the air (kPa)
+        V = RH * es_Ta                                      # Vapour pressure of the air (kPa)
         fvap = 0.56 - 0.079*sqrt(10*V)                      # Fraction of vapour pressure
         
         tau = Iabs/cls.I0                                       # Atmospheric transmissivity (dimensionless)
@@ -119,17 +119,19 @@ class PhotosynthesisModel(object):
         return Tleaf, Ep
         
     @classmethod
-    def stomatal_conductance(cls, Ag, An, Na, Ca):
+    def stomatal_conductance(cls, Ag, An, Na, Ca, RH):
         """
         BWB model of stomatal conductance
         - Ag: global assimilation (umol m-2 s-1)
         - An: net assimilation (umol m-2 s-1)
         - Na: nitrogen content of leaf (g m-2)
+        - Ca: Air CO2 (umol mol-1)
+        - RH: Relative humidity (decimal fraction)
         """
         
         Cs = Ca - An *(1.37/(cls.gb))                            # CO2 concentration at leaf surface (umol mol-1 or Pa). From Prieto et al. (2012). gb in mol m-2 s-1
         m = cls.param_N['delta1'] * Na**cls.param_N['delta2']        # Scaling factor dependance to Na (dimensionless). This focntion is maintained although I'm not sure that it should be taken into account
-        gs = (cls.gsmin + m*((Ag*cls.RH)/(Cs)))                      # Stomatal conductance (mol m-2 s-1), from Braune et al. (2009), Muller et al. (2005): using Ag rather than An. Would be better with a function of VPD and with (Ci-gamma) instead of Cs.
+        gs = (cls.gsmin + m*((Ag*RH)/(Cs)))                      # Stomatal conductance (mol m-2 s-1), from Braune et al. (2009), Muller et al. (2005): using Ag rather than An. Would be better with a function of VPD and with (Ci-gamma) instead of Cs.
         return gs
     
     @classmethod
@@ -159,78 +161,7 @@ class PhotosynthesisModel(object):
         return p
     
     @classmethod
-    def grapher(cls, dict):
-        """Note: module read_csv_file must be in PYTHON_PATH to run this function."""
-        import matplotlib.pyplot as plt
-        import datetime
-        from matplotlib import dates
-        
-        import read_csv_file
-        meteo_file = r'meteo.csv'
-        meteo = read_csv_file.read_csv_file(meteo_file)
-        
-        DOY = map(int, meteo['DOY'])
-        DOY_ord = map(datetime.date.fromordinal,DOY)        # Return date from DOY (year not correct but not used)
-        HU = map(int, meteo['HU'])
-        HUt = map(datetime.time, HU)                        # Return time object
-        dts = map(datetime.datetime.combine,DOY_ord, HUt)   # Combine date and time
-        fds = dates.date2num(dts)                           # Converted into matplotlib format
-        
-        # Matplotlib date format object
-        hfmt = dates.DateFormatter('%d/%m %Hh')
-        
-        fig = plt.figure()
-        axid = 421
-        leg = {'An': u"An (µmol m$^{-2}$ s$^{-1}$)", 'Ci': u'Ci (µmol mol$^{-1}$)', 'Tleaf': u'Tleaf (°C)', 'gs': u'gs (mol m$^{-2}$ s$^{-1}$)',
-                'PAR': u'PAR (µmol m$^{-2}$ s$^{-1}$)', 'E': u'E (mmol m$^{-2}$ s$^{-1}$)', 'Rd': u"Rd (µmol m$^{-2}$ s$^{-1}$)"}
-        
-        for k in dict.keys():
-            axis = plt.subplot(axid)
-            y = dict[k]
-            axis.plot(fds,y,label=k)
-            
-            if axid in (325, 326):
-                axis.xaxis.set_major_formatter(hfmt)
-                plt.xticks(rotation=45)
-    
-            else:
-                axis.get_xaxis().set_ticklabels('') # Remove labels from these axes
-    
-            axis.yaxis.set_label_coords(-0.25, 0.5)
-            axis.set_ylabel(leg[k])
-            axid +=1
-    
-        plt.tight_layout()    
-        graph_name = 'photosynthesis.png'
-        plt.savefig(graph_name)
-        plt.show()
-        plt.close()
-    
-    @classmethod
-    def out(cls, dict, fout, file_name):
-        """Note: module read_csv_file must be in PYTHON_PATH to run this function."""
-        import read_csv_file
-        meteo_file = r'meteo.csv'
-        meteo = read_csv_file.read_csv_file(meteo_file)
-        
-        for i in range(len(dict['PAR'])):
-            PAR = str(dict['PAR'][i])
-            An_mes, An_pred = str(meteo['Photo (?mol)'][i]), str(dict['An'][i])
-            gs_mes, gs_pred = str(meteo['Cond (mol)'][i]), str(dict['gs'][i])
-            Ci_mes, Ci_pred = str(meteo['Ci (?mol)'][i]), str(dict['Ci'][i])
-            Tr_mes, Tr_pred = str(meteo['Trmmol'][i]), str(dict['E'][i])
-            Tleaf_mes, Tleaf_pred = str(meteo['Tleaf (ºC)'][i]), str(dict['Tleaf'][i])
-            Na = str(dict['Na_init'][i])
-            
-            
-            fout.write(file_name + '\t' + meteo['Leaf number'][i] + '\t' + Na + '\t' + PAR + '\t' + An_mes + '\t' + An_pred + '\t' + 
-                       gs_mes + '\t' + gs_pred + '\t' +
-                       Ci_mes + '\t' + Ci_pred + '\t' +
-                       Tr_mes + '\t' + Tr_pred + '\t' +
-                       Tleaf_mes + '\t' + Tleaf_pred + '\n')
-    
-    @classmethod
-    def photosynthesis (cls, PAR, Na, Tleaf, Ci):
+    def photosynthesis(cls, PAR, Na, Tleaf, Ci):
         """
         In this version, most of the parameters are derived from Braune et al. (2009) on barley
         - PAR: PAR intercepted by leaf (umol m-2 s-1)
@@ -279,6 +210,7 @@ class PhotosynthesisModel(object):
     @classmethod
     def calculate_An(cls, t, PAR, Ta, Ca, RH):
         """
+        Compute the CO2 assimilation.
         
         :Parameters:
         
@@ -299,32 +231,28 @@ class PhotosynthesisModel(object):
         """
         
         ### Physical parameters ###
-        try:
-            RH /= 100.0
-        except:
-            pass                            
-        wind0 = 5                                                   # Wind speed at the top of the canopy (m s-1)
+        wind0 = 5 #: Wind speed at the top of the canopy (m s-1)
     
         ### Iterations to find leaf temperature and Ci ###
         Ci, Tleaf = 0.7*Ca, Ta # Initial values
-        __Ci, __Tleaf = 0.1, 0.1
+        prec_Ci, prec_Tleaf = 0.1, 0.1
         count = 0
-        while abs((Ci - __Ci)/__Ci) >= 0.01 or abs((Tleaf - __Tleaf)/__Tleaf) >= 0.01:
+        while abs((Ci - prec_Ci)/prec_Ci) >= 0.01 or abs((Tleaf - prec_Tleaf)/prec_Tleaf) >= 0.01:
             if count >=30: # TODO: test a faire? Semble prendre du tps de calcul
-                if abs((Ci - __Ci)/__Ci) >= 0.01:
-                    print "Ci cannot converge at t= %s, __Ci= %s, Ci= %s" %(t, __Ci, Ci)
+                if abs((Ci - prec_Ci)/prec_Ci) >= 0.01:
+                    print "Ci cannot converge at t= %s, prec_Ci= %s, Ci= %s" %(t, prec_Ci, Ci)
                 else:
-                    print "Tleaf cannot converge at t= %s, __Tleaf= %s, Tleaf= %s" %(t, __Tleaf, Tleaf)
+                    print "Tleaf cannot converge at t= %s, prec_Tleaf= %s, Tleaf= %s" %(t, prec_Tleaf, Tleaf)
                 break
             else:
-                __Ci, __Tleaf = Ci, Tleaf
+                prec_Ci, prec_Tleaf = Ci, Tleaf
                 An, Ag, Rd = cls.photosynthesis(PAR, cls.Na_init, Tleaf, Ci)
                 # Stomatal conductance
-                gs = cls.stomatal_conductance(Ag, An, cls.Na_init, Ca)
+                gs = cls.stomatal_conductance(Ag, An, cls.Na_init, Ca, RH)
                 # New value of Ci
                 Ci = Ca - An * ((1.6/gs) + (1.37/cls.gb)) # gs and gb in mol m-2 s-1
                 # New value of Tleaf
-                Tleaf, E = cls.leaf_temperature(cls.leaf_width, cls.H_organ, cls.H_canopy, wind0, PAR, gs, Ta, Tleaf)
+                Tleaf, E = cls.leaf_temperature(cls.leaf_width, cls.H_organ, cls.H_canopy, wind0, PAR, gs, Ta, Tleaf, RH)
                 count +=1
     
         return An
