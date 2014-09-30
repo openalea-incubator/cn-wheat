@@ -1,9 +1,13 @@
 # -*- coding: latin-1 -*-
-'''
-Created on 2 sept. 2014
+"""
+    cnwheat.post_processing
+    ~~~~~~~~~~~~~~~~~~~~~~~
 
-@author: cchambon, adapted from http://www.landmap.ac.uk/index.php/Learning-Materials/Python-Scripting/6.4-Fitting-linear-equations#sthash.wDZ5zBrD.dpuf
-'''
+    Post processings to apply on cnwheat output.
+
+    :copyright: Copyright 2014 INRA-EGC, see AUTHORS.txt.
+    :license: TODO, see LICENSE.txt for details.
+"""
 
 import numpy as np
 from scipy import stats
@@ -13,6 +17,9 @@ def plot_linear_regression(x_array, y_array, x_label='x', y_label='y', plot_file
     '''Perform a linear regression of `x_array` vs `y_array` 
     and create a plot showing the fit against the original data.
     If `plot_filepath` is not None, save the plot to a PNG file.
+    
+    This is derived from http://www.landmap.ac.uk/index.php/Learning-Materials/Python-Scripting/6.4-Fitting-linear-equations#sthash.wDZ5zBrD.dpuf, 
+    which is: Copyright TODO
     
     :Parameters:
     

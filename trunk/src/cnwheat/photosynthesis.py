@@ -1,60 +1,68 @@
 #!/usr/bin/env python
 # -*- coding: latin-1 -*-
+"""
+    cnwheat.photosynthesis
+    ~~~~~~~~~~~~~~~~~~~~~~
+
+    The model of photosynthesis.
+
+    :copyright: Copyright 2014 INRA-EGC, see AUTHORS.txt.
+    :license: TODO, see LICENSE.txt for details.
+"""
+
 from math import sqrt, log,  exp
 
 class PhotosynthesisModel(object):
 
-    ### Some photosynthetic parameters
-    O = 21000      # Intercellular O2 concentration, umol mol(air)-1 or Pa, from Bernacchi et al. (2001)
-    Kc25 = 404     # Affinity constant of RuBisCO for C, umol mol-1 or Pa, from Bernacchi et al. (2001) (estimation in Braune et al. (2009) not enough accurate)
-    Ko25 = 278.4E3 # Affinity constant of RuBisCO for O, umol mol-1 or Pa, from Bernacchi et al. (2001) (estimation in Braune et al. (2009) not enough accurate)
-    Gamma25 = 39   # CO2 compensation point, umol(CO2) mol-1 (air), from Braune et al. (2009)
-    theta = 0.72    # curvature parameter of J, dimensionless
+    O = 21000      #: Photosynthetic parameter: Intercellular O2 concentration, umol mol(air)-1 or Pa, from Bernacchi et al. (2001)
+    Kc25 = 404     #: Photosynthetic parameter: Affinity constant of RuBisCO for C, umol mol-1 or Pa, from Bernacchi et al. (2001) (estimation in Braune et al. (2009) not enough accurate)
+    Ko25 = 278.4E3 #: Photosynthetic parameter: Affinity constant of RuBisCO for O, umol mol-1 or Pa, from Bernacchi et al. (2001) (estimation in Braune et al. (2009) not enough accurate)
+    Gamma25 = 39   #: Photosynthetic parameter: CO2 compensation point, umol(CO2) mol-1 (air), from Braune et al. (2009)
+    theta = 0.72    #: Photosynthetic parameter: curvature parameter of J, dimensionless
     
-    ### Nitrogen dependance of photosynthetic parameters ###
-    ''' 
-    Derived from Braune et al. (2009):
-     - S_Na: slope of the relation between Na and the parameters (umol g-1 s-1)
-     - Na_min: minimum amount of leaf nitrogen below which photosynthesis rate is zero (g (N) m-2 leaf)
-     - Gamma_Na1 and Gamma_Na2: parameters of alpha dependance to Na (mol mol-1 and m2 g-1 respectively)
-     - delta1 and delta2: parameters of m (scaling factor of gs) dependance to Na (m2 g-1 and dimensionless respectively)
-    '''
+    #: Nitrogen dependance of photosynthetic parameters
+    #: Derived from Braune et al. (2009):
+    #: - S_Na: slope of the relation between Na and the parameters (umol g-1 s-1)
+    #: - Na_min: minimum amount of leaf nitrogen below which photosynthesis rate is zero (g (N) m-2 leaf)
+    #: - Gamma_Na1 and Gamma_Na2: parameters of alpha dependance to Na (mol mol-1 and m2 g-1 respectively)
+    #: - delta1 and delta2: parameters of m (scaling factor of gs) dependance to Na (m2 g-1 and dimensionless respectively)
     param_N = {'S_Na': {'Vc_max25': 63.2, 'Jmax25': 151, 'TPU25': 9.25, 'Rdark25': 0.493}, 'Na_min': {'Vc_max25': 0.198, 'Jmax25': 0.225, 'TPU25': 0.229, 'Rdark25': 0.118}, 
                 'Gamma_Na1': 0.437, 'Gamma_Na2': 2.29, 'delta1': 14.7, 'delta2': -0.548}
     
-    ### Stomatal conductance ###
-    gsmin = 0.05            # Minimum gs, measured in the dark (mol m-2 s-1). Braune et al. (2009).
-    gb = 3.5                # Boundary layer conductance (mol m-2 s-1). Muller et al., (2005)
+    gsmin = 0.05            #: Stomatal conductance parameter: Minimum gs, measured in the dark (mol m-2 s-1). Braune et al. (2009).
+    gb = 3.5                #: Stomatal conductance parameter: Boundary layer conductance (mol m-2 s-1). Muller et al., (2005)
      
-    ### Physical parameters ###
-    Ta = 25                 # Air temperature (degree Celsius)
-    RH = 0.85               # Relative humidity (decimal fraction)
+    Ta = 25                 #: Physical parameter: Air temperature (degree Celsius)
+    RH = 0.85               #: Physical parameter: Relative humidity (decimal fraction)
     
-    sigma = 5.6704E-8       # Stefan-Bolzmann constant (W-2 K-4)
-    I0 = 1370               # Extraterrestrial solar radiation (W m-2)
-    Lambda = 2260E3         # Latent heat for vaporisation of water (J kg-1)
-    rhocp = 1256            # Volumetric heat capacity of air (J m-3 K-1)
-    gamma = 66E-3           # Psychrometric constant (KPa K-1). Mean value
-    a = 2.5                 # Attenuation coefficient of wind within a wheat canopy. From Campbell and Norman (1998), second edition. Can also be estimaed by: a = sqrt((0.2*LAI*h)/sqrt((4*width*h)/(pi*LAI))
-    R = 8.3144              # Gas constant (J mol-1 K-1)
-    Patm = 1.01325E5        # Atmospheric pressure (Pa)
+    sigma = 5.6704E-8       #: Physical parameter: Stefan-Bolzmann constant (W-2 K-4)
+    I0 = 1370               #: Physical parameter: Extraterrestrial solar radiation (W m-2)
+    Lambda = 2260E3         #: Physical parameter: Latent heat for vaporisation of water (J kg-1)
+    rhocp = 1256            #: Physical parameter: Volumetric heat capacity of air (J m-3 K-1)
+    gamma = 66E-3           #: Physical parameter: Psychrometric constant (KPa K-1). Mean value
+    a = 2.5                 #: Physical parameter: Attenuation coefficient of wind within a wheat canopy. From Campbell and Norman (1998), second edition. Can also be estimaed by: a = sqrt((0.2*LAI*h)/sqrt((4*width*h)/(pi*LAI))
+    R = 8.3144              #: Physical parameter: Gas constant (J mol-1 K-1)
+    Patm = 1.01325E5        #: Physical parameter: Atmospheric pressure (Pa)
     
     #TODO: trouver des bonnes valeurs de fr, ft
-    fr = 0.15               # Leaf radiation reflectance
-    ft = 0.15               # Leaf radiation transmittance
+    fr = 0.15               #: Physical parameter: Leaf radiation reflectance
+    ft = 0.15               #: Physical parameter: Leaf radiation transmittance
     
-    ### Temperature dependance of photosynthetic parameters ###
-    '''
-    Parameter values derived from Braune et al. (2009) except for Kc, Ko, and Rdark (Bernacchi et al., 2001)
-     - deltaHa, deltaHd: enthalpie of activation and deactivation respectively (kJ mol-1)
-     - deltaS: entropy term (kJ mol-1 K-1)
-     - Tref: reference temperature (K)
-     - R: universal gas constant (kJ mol-1 K-1) 
-    '''
-    param_temp = {'deltaHa': {'Vc_max': 89.7, 'Jmax': 48.9, 'TPU': 47., 'Kc': 79.43, 'Ko': 36.38, 'Gamma': 35., 'Rdark': 46.39},
-                  'deltaHd': {'Vc_max': 149.3, 'Jmax': 152.3, 'TPU': 152.3},
-                  'deltaS' : {'Vc_max': 0.486, 'Jmax': 0.495, 'TPU': 0.495}, 
+    #: Temperature dependance of photosynthetic parameters
+    #: Parameter values derived from Braune et al. (2009) except for Kc, Ko, and Rdark (Bernacchi et al., 2001)
+    #:  - deltaHa, deltaHd: enthalpie of activation and deactivation respectively (kJ mol-1)
+    #:  - deltaS: entropy term (kJ mol-1 K-1)
+    #:  - Tref: reference temperature (K)
+    #:  - R: universal gas constant (kJ mol-1 K-1) 
+    param_temp = {'deltaHa': {'Vc_max': 89.7, 'Jmax': 48.9, 'TPU': 47., 'Kc': 79.43, 'Ko': 36.38, 'Gamma': 35., 'Rdark': 46.39}, 
+                  'deltaHd': {'Vc_max': 149.3, 'Jmax': 152.3, 'TPU': 152.3}, 
+                  'deltaS': {'Vc_max': 0.486, 'Jmax': 0.495, 'TPU': 0.495}, 
                   'Tref': 298.15, 'R': 8.3145E-03}
+    
+    leaf_width = 0.01 #: m
+    H_canopy = 1      #: m
+    H_organ = 0.5     #: m
+    Na_init = 2.5     #: g m-2
     
     @classmethod
     def leaf_temperature (cls, leaf_width, z, H, wind0, PAR, gs, Ta, Tleaf=Ta):
@@ -267,13 +275,6 @@ class PhotosynthesisModel(object):
         An = Ag - Rd
         return An, Ag, Rd
     
-    
-    ###################################
-    
-    leaf_width = 0.01 # m
-    H_canopy = 1      # m
-    H_organ = 0.5     # m
-    Na_init = 2.5     # g m-2
     
     @classmethod
     def calculate_An(cls, t, PAR, Ta, Ca, RH):

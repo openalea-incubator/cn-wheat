@@ -1,49 +1,51 @@
 # -*- coding: latin-1 -*-
+"""
+    cnwheat.organ
+    ~~~~~~~~~~~~~
 
-'''
-Created on 11 août 2014
+    The classes of the organs.
 
-@author: cchambon
-'''
+    :copyright: Copyright 2014 INRA-EGC, see AUTHORS.txt.
+    :license: TODO, see LICENSE.txt for details.
+"""
 
 from __future__ import division # use "//" to do integer division
 
 
 class Organ(object):
 
-    Mstruct_axis = 2.08             # Structural mass  of a plant (g) (Bertheloot, 2011)
-    alpha_axis = 1                  # Proportion of the structural mass containing the substrates
-    delta_t = 3600                  # Timestep of the model (s)
+    Mstruct_axis = 2.08             #: Structural mass  of a plant (g) (Bertheloot, 2011)
+    alpha_axis = 1                  #: Proportion of the structural mass containing the substrates
+    delta_t = 3600                  #: Timestep of the model (s)
 
     # Sucrose
-    Vmax_sucrose = 1                # Maximal rate of sucrose synthesis (µmol C s-1 g-1 MS)
-    K_sucrose = 0.66                # Affinity coefficient of sucrose synthesis (µmol C g-1 MS)
+    Vmax_sucrose = 1                #: Maximal rate of sucrose synthesis (µmol C s-1 g-1 MS)
+    K_sucrose = 0.66                #: Affinity coefficient of sucrose synthesis (µmol C g-1 MS)
 
     # Storage
-    Vmax_storage = 2                # Maximal rate of storage synthesis (µmol C s-1 g-1 MS)
-    K_storage = 20                  # Affinity coefficient of storage synthesis (µmol C g-1 MS)
-    delta_Dstorage = 0.0001         # Rate of storage degradation (µmol C storage s-1 g-1 MS)
+    Vmax_storage = 2                #: Maximal rate of storage synthesis (µmol C s-1 g-1 MS)
+    K_storage = 20                  #: Affinity coefficient of storage synthesis (µmol C g-1 MS)
+    delta_Dstorage = 0.0001         #: Rate of storage degradation (µmol C storage s-1 g-1 MS)
 
     # Fructans
-    Vmax_Sfructan = 0.2             # Maximal rate of fructan synthesis (µmol C s-1 g-1 MS)
-    K_Sfructan = 20000              # Affinity coefficient of fructan synthesis (µmol C g-1 MS)
-    n_Sfructan = 3                  # Number of "substrates" for fructan synthesis (dimensionless)
-    Vmax_regul_Sfructan = 1         # Maximal value of the regulation function of fructan synthesis (dimensionless)
-    K_regul_Sfructan = 8            # Affinity coefficient of the regulation function of fructan synthesis (dimensionless)
-    n_regul_Sfructan = 15           # Parameter of the regulation function of fructan synthesis (dimensionless)
-    Vmax_Dfructan = 0.035           # Maximal rate of fructan degradation (µmol C s-1 g-1 MS)
-    K_Dfructan = 100                # Affinity coefficient of fructan degradation (µmol C g-1 MS)
+    Vmax_Sfructan = 0.2             #: Maximal rate of fructan synthesis (µmol C s-1 g-1 MS)
+    K_Sfructan = 20000              #: Affinity coefficient of fructan synthesis (µmol C g-1 MS)
+    n_Sfructan = 3                  #: Number of "substrates" for fructan synthesis (dimensionless)
+    Vmax_regul_Sfructan = 1         #: Maximal value of the regulation function of fructan synthesis (dimensionless)
+    K_regul_Sfructan = 8            #: Affinity coefficient of the regulation function of fructan synthesis (dimensionless)
+    n_regul_Sfructan = 15           #: Parameter of the regulation function of fructan synthesis (dimensionless)
+    Vmax_Dfructan = 0.035           #: Maximal rate of fructan degradation (µmol C s-1 g-1 MS)
+    K_Dfructan = 100                #: Affinity coefficient of fructan degradation (µmol C g-1 MS)
 
-    # Loading sucrose to phloem
-    sigma = 1.85e-07                # Conductivity of an organ-phloem pathway (g mol-1 m-2 s-1)
+    sigma = 1.85e-07                #: Conductivity of an organ-phloem pathway (g mol-1 m-2 s-1) ; used to compute the sucrose loaded to the phloem
 
 
-    alpha = 1 # Proportion of leaf structural mass containing substrate # TODO: is it really common to all organs? NOTE: I think this parameter is unneeded
+    alpha = 1 #: Proportion of leaf structural mass containing substrate # TODO: is it really common to all organs? NOTE: I think this parameter is unneeded
 
     def __init__(self, name):
         self.name = name
 
-    # Concentrations output (expressed in amount of substance g-1 MS)
+    # VARIABLES
 
     def calculate_Photosynthesis(self, t, An):
         '''Total photosynthesis of an organ integrated over delta_t (µmol CO2 on organ area integrated over delat_t)
@@ -51,62 +53,72 @@ class Organ(object):
         return An*self.Area*Organ.delta_t
     
     def calculate_Conc_TriosesP(self, TRIOSESP):
-        '''Trioses Phosphate concentration (µmol TriosesP g-1 MS)
+        '''Trioses Phosphate concentration (µmol TriosesP g-1 MS).
+        This is a concentration output (expressed in amount of substance g-1 MS).
         '''
         return (TRIOSESP/self.Mstruct)/3
 
     def calculate_Conc_Sucrose(self, SUCROSE):
-        '''Sucrose concentration (µmol sucrose g-1 MS)
+        '''Sucrose concentration (µmol sucrose g-1 MS).
+        This is a concentration output (expressed in amount of substance g-1 MS).
         '''
         return (SUCROSE/self.Mstruct)/12
 
     def calculate_Conc_Storage(self, STORAGE):
-        '''Storage concentration (µmol storage g-1 MS (eq glucose))
+        '''Storage concentration (µmol storage g-1 MS (eq glucose)).
+        This is a concentration output (expressed in amount of substance g-1 MS).
         '''
         return (STORAGE/self.Mstruct)/6
 
-    # FLOWS (expressed in amount of C substance g-1 MS integrated over delta_t)
+    # FLOWS
 
     def calculate_S_sucrose(self, TRIOSESP):
-        '''Rate of SUCROSE synthesis from TRIOSESP (µmol C sucrose s-1 g-1 MS * delta_t)
+        '''Rate of SUCROSE synthesis from TRIOSESP (µmol C sucrose s-1 g-1 MS * delta_t).
+        This is a flow (expressed in amount of C substance g-1 MS integrated over delta_t).
         '''
         return (((max(0,TRIOSESP)/(self.Mstruct*Organ.alpha)) * Organ.Vmax_sucrose) / ((max(0, TRIOSESP)/(self.Mstruct*Organ.alpha)) + Organ.K_sucrose)) * Organ.delta_t
 
     def calculate_S_storage(self, TRIOSESP):
-        '''Rate of STORAGE synthesis from TRIOSESP (µmol C storage s-1 g-1 MS * delta_t)
+        '''Rate of STORAGE synthesis from TRIOSESP (µmol C storage s-1 g-1 MS * delta_t).
+        This is a flow (expressed in amount of C substance g-1 MS integrated over delta_t).
         '''
         return (((max(0, TRIOSESP)/(self.Mstruct*Organ.alpha)) * Organ.Vmax_storage) / ((max(0, TRIOSESP)/(self.Mstruct*Organ.alpha)) + Organ.K_storage)) * Organ.delta_t
 
     def calculate_D_storage(self, STORAGE):
-        '''Rate of STORAGE degradation from TRIOSESP (µmol C storage s-1 g-1 MS * delta_t)
+        '''Rate of STORAGE degradation from TRIOSESP (µmol C storage s-1 g-1 MS * delta_t).
+        This is a flow (expressed in amount of C substance g-1 MS integrated over delta_t).
         '''
         return max(0, Organ.delta_Dstorage * (STORAGE/(self.Mstruct*Organ.alpha))) * Organ.delta_t
 
     def calculate_Loading_sucrose(self, SUCROSE, SUCROSE_phloem):
-        '''Rate of SUCROSE loading to phloem (µmol C sucrose s-1 g-1 MS * delta_t)
+        '''Rate of SUCROSE loading to phloem (µmol C sucrose s-1 g-1 MS * delta_t).
+        This is a flow (expressed in amount of C substance g-1 MS integrated over delta_t).
         '''
         return ((max(0, SUCROSE)/(self.Mstruct*Organ.alpha)) * ((max(0, SUCROSE)/(self.Mstruct*Organ.alpha)) - (max(0, SUCROSE_phloem)/(Organ.Mstruct_axis*Organ.alpha_axis))) * (Organ.sigma * self.Mstruct**(2/3))) * Organ.delta_t
 
-    # COMPARTMENTS (differential equations of compartments expressed as a variation of the total amount of C substance in an organ per delta_t)
+    # COMPARTMENTS
 
     def calculate_TRIOSESP_derivative(self, Photosynthesis, S_sucrose, S_storage):
-        ''' delta TRIOSESP of organ integrated over delta-1 (µmol C TRIOSESP)
+        ''' delta TRIOSESP of organ integrated over delta-1 (µmol C TRIOSESP).
+        This is a differential equation of compartment expressed as a variation of the total amount of C substance in an organ per delta_t.
         '''
         return Photosynthesis - (S_sucrose + S_storage) * (self.Mstruct*Organ.alpha)
 
     def calculate_SUCROSE_derivative(self, S_sucrose, D_storage, Loading_sucrose):
-        '''delta SUCROSE of organ integrated over delta-1 (µmol C SUCROSE)
+        '''delta SUCROSE of organ integrated over delta-1 (µmol C SUCROSE).
+        This is a differential equation of compartment expressed as a variation of the total amount of C substance in an organ per delta_t.
         '''
         return (S_sucrose + D_storage - Loading_sucrose) * (self.Mstruct*Organ.alpha)
 
     def calculate_STORAGE_derivative(self, S_storage, D_storage):
-        '''delta STORAGE of organ integrated over delta-1 (µmol C STORAGE)
+        '''delta STORAGE of organ integrated over delta-1 (µmol C STORAGE).
+        This is a differential equation of compartment expressed as a variation of the total amount of C substance in an organ per delta_t.
         '''
         return (S_storage - D_storage) * (self.Mstruct*Organ.alpha)
 
 
 class Lamina(Organ):
-    # Temporary estimation of lamina senescence ({'lamina_order': (time of senescence beginning (h), offset of the linear regression)})
+    #: Temporary estimation of lamina senescence ({'lamina_order': (time of senescence beginning (h), offset of the linear regression)})
     laminae_inflexion_points = {'lamina1': (600, 78.75),
                                 'lamina2': (480, 68.61),
                                 'lamina3': (360, 48.76)}
@@ -115,24 +127,21 @@ class Lamina(Organ):
                  SUCROSE_0, TRIOSESP_0, name='lamina'):
         super(Lamina, self).__init__(name)
         # parameters
-        self.Area = Area                    # Area (m-2)
-        self.Mstruct = Mstruct              # Structural mass (g)
-        self.Rdark = Rdark                  # Respiration in the dark (µmol of C respired m-2 s-1)
-        self.PAR = PAR    # PAR estimated from photosynthesis model, TODO: homogeneiser les termes pr la photosynthese (unite?)
+        self.Area = Area                    #: Area (m-2)
+        self.Mstruct = Mstruct              #: Structural mass (g)
+        self.Rdark = Rdark                  #: Respiration in the dark (µmol of C respired m-2 s-1)
+        self.PAR = PAR    #: PAR estimated from photosynthesis model, TODO: homogeneiser les termes pr la photosynthese (unite?)
 
-        # linear interpolation of PAR
-        self.PAR_linear_interpolation = None
+        self.PAR_linear_interpolation = None #: linear interpolation of PAR
         
-        # mapping to store the computed photosynthesis
-        self.photosynthesis_mapping = {}
+        self.photosynthesis_mapping = {} #: mapping to store the computed photosynthesis
 
-        # initialization
-        # flow to phloem
-        self.Loading_sucrose = 0
-        # compartments
-        self.TRIOSESP_0 = TRIOSESP_0
-        self.STORAGE_0 = STORAGE_0
-        self.SUCROSE_0 = SUCROSE_0
+        self.Loading_sucrose = 0 #: current rate of SUCROSE loading to phloem
+        
+        # initialize the compartments
+        self.TRIOSESP_0 = TRIOSESP_0 #: initial value of compartment TRIOSESP
+        self.STORAGE_0 = STORAGE_0 #: initial value of compartment STORAGE
+        self.SUCROSE_0 = SUCROSE_0 #: initial value of compartment SUCROSE
 
 
     def get_initial_conditions(self):
@@ -171,9 +180,9 @@ class Phloem(Organ):
 
     def __init__(self, SUCROSE_0, name='phloem'):
         super(Phloem, self).__init__(name)
-        # initialization
-        # compartments
-        self.SUCROSE_0 = SUCROSE_0
+        
+        # intialize the compartment
+        self.SUCROSE_0 = SUCROSE_0  #: initial value of compartment SUCROSE
 
     def get_initial_conditions(self):
         return [self.SUCROSE_0]
@@ -220,23 +229,20 @@ class Chaff(Organ):
                  TRIOSESP_0, name='chaff'):
         super(Chaff, self).__init__(name)
         # parameters
-        self.Area = Area                    # Area (m-2)
-        self.Mstruct = Mstruct              # Structural mass (g)
+        self.Area = Area                    #: Area (m-2)
+        self.Mstruct = Mstruct              #: Structural mass (g)
         self.PAR = PAR
 
-        # linear interpolation of PAR
-        self.PAR_linear_interpolation = None
+        self.PAR_linear_interpolation = None #: linear interpolation of PAR
         
-        # mapping to store the computed photosynthesis
-        self.photosynthesis_mapping = {}
+        self.photosynthesis_mapping = {} #: mapping to store the computed photosynthesis
 
-        # initialization
-        # flow to phloem
-        self.Loading_sucrose = 0
-        # compartments
-        self.TRIOSESP_0 = TRIOSESP_0
-        self.STORAGE_0 = STORAGE_0
-        self.SUCROSE_0 = SUCROSE_0
+        self.Loading_sucrose = 0 #: current rate of SUCROSE loading to phloem
+
+        # initialize the compartments
+        self.TRIOSESP_0 = TRIOSESP_0 #: initial value of compartment TRIOSESP
+        self.STORAGE_0 = STORAGE_0 #: initial value of compartment STORAGE
+        self.SUCROSE_0 = SUCROSE_0 #: initial value of compartment SUCROSE
 
     def get_initial_conditions(self):
         return [self.STORAGE_0, self.SUCROSE_0, self.TRIOSESP_0] # keep this order !
@@ -247,25 +253,21 @@ class Internode(Organ):
                  SUCROSE_0, TRIOSESP_0, name='internode'):
         super(Internode, self).__init__(name)
         # parameters
-        self.Area = Area                    # Area (m-2)
-        self.Mstruct = Mstruct              # Structural mass (g)
+        self.Area = Area                    #: Area (m-2)
+        self.Mstruct = Mstruct              #: Structural mass (g)
         self.PAR = PAR
-
-        # linear interpolation of PAR
-        self.PAR_linear_interpolation = None
         
-        # mapping to store the computed photosynthesis
-        self.photosynthesis_mapping = {}
+        self.PAR_linear_interpolation = None #: linear interpolation of PAR
+        
+        self.photosynthesis_mapping = {} #: mapping to store the computed photosynthesis
 
-        # initialization
-        # flow to phloem
-        self.Loading_sucrose = 0
+        self.Loading_sucrose = 0 #: current rate of SUCROSE loading to phloem
 
-        # compartments
-        self.TRIOSESP_0 = TRIOSESP_0
-        self.STORAGE_0 = STORAGE_0
-        self.SUCROSE_0 = SUCROSE_0
-        self.FRUCTAN_0 = FRUCTAN_0
+        # initialize the compartments
+        self.TRIOSESP_0 = TRIOSESP_0 #: initial value of compartment TRIOSESP
+        self.STORAGE_0 = STORAGE_0 #: initial value of compartment STORAGE
+        self.SUCROSE_0 = SUCROSE_0 #: initial value of compartment SUCROSE
+        self.FRUCTAN_0 = FRUCTAN_0 #: initial value of compartment FRUCTAN
 
     def get_initial_conditions(self):
         return [self.FRUCTAN_0, self.STORAGE_0, self.SUCROSE_0, self.TRIOSESP_0]
@@ -313,25 +315,21 @@ class Peduncle(Organ):
                  SUCROSE_0, TRIOSESP_0, name='peduncle'):
         super(Peduncle, self).__init__(name)
         # parameters
-        self.Area = Area                    # Area (m-2)
-        self.Mstruct = Mstruct              # Structural mass (g)
+        self.Area = Area                    #: Area (m-2)
+        self.Mstruct = Mstruct              #: Structural mass (g)
         self.PAR = PAR
 
-        # linear interpolation of PAR
-        self.PAR_linear_interpolation = None
+        self.PAR_linear_interpolation = None #: linear interpolation of PAR
         
-        # mapping to store the computed photosynthesis
-        self.photosynthesis_mapping = {}
+        self.photosynthesis_mapping = {} #: mapping to store the computed photosynthesis
 
-        # initialization
-        # flow to phloem
-        self.Loading_sucrose = 0
+        self.Loading_sucrose = 0 #: current rate of SUCROSE loading to phloem
 
-        # compartments
-        self.TRIOSESP_0 = TRIOSESP_0
-        self.STORAGE_0 = STORAGE_0
-        self.SUCROSE_0 = SUCROSE_0
-        self.FRUCTAN_0 = FRUCTAN_0
+        # initialize the compartments
+        self.TRIOSESP_0 = TRIOSESP_0 #: initial value of compartment TRIOSESP
+        self.STORAGE_0 = STORAGE_0 #: initial value of compartment STORAGE
+        self.SUCROSE_0 = SUCROSE_0 #: initial value of compartment SUCROSE
+        self.FRUCTAN_0 = FRUCTAN_0 #: initial value of compartment FRUCTAN
 
     def get_initial_conditions(self):
         return [self.FRUCTAN_0, self.STORAGE_0, self.SUCROSE_0, self.TRIOSESP_0]
@@ -380,25 +378,21 @@ class Sheath(Organ):
         super(Sheath, self).__init__(name)
 
         # parameters
-        self.Area = Area                    # Area (m-2)
-        self.Mstruct = Mstruct              # Structural mass (g)
+        self.Area = Area                    #: Area (m-2)
+        self.Mstruct = Mstruct              #: Structural mass (g)
         self.PAR = PAR
 
-        # linear interpolation of PAR
-        self.PAR_linear_interpolation = None
+        self.PAR_linear_interpolation = None #: linear interpolation of PAR
         
-        # mapping to store the computed photosynthesis
-        self.photosynthesis_mapping = {}
+        self.photosynthesis_mapping = {} #: mapping to store the computed photosynthesis
 
-        # initialization
-        # flow to phloem
-        self.Loading_sucrose = 0
+        self.Loading_sucrose = 0 #: current rate of SUCROSE loading to phloem
 
-        # compartments
-        self.TRIOSESP_0 = TRIOSESP_0
-        self.STORAGE_0 = STORAGE_0
-        self.SUCROSE_0 = SUCROSE_0
-        self.FRUCTAN_0 = FRUCTAN_0
+        # initialize the compartments
+        self.TRIOSESP_0 = TRIOSESP_0 #: initial value of compartment TRIOSESP
+        self.STORAGE_0 = STORAGE_0 #: initial value of compartment STORAGE
+        self.SUCROSE_0 = SUCROSE_0 #: initial value of compartment SUCROSE
+        self.FRUCTAN_0 = FRUCTAN_0 #: initial value of compartment FRUCTAN
 
     def get_initial_conditions(self):
         return [self.FRUCTAN_0, self.STORAGE_0, self.SUCROSE_0, self.TRIOSESP_0]
@@ -443,29 +437,29 @@ class Sheath(Organ):
 class Grains(Organ):
 
     # Structure
-    Grain_structure = 0     # Initial value of structural mass of grains (µmol of C sucrose) TODO: initial value given in ModelMaker?
-    Vmax_RGR = 1.9e-06      # Maximal value of the Relative Growth Rate of grain structure (dimensionless)
-    K_RGR = 300             # Affinity coefficient of the Relative Growth Rate of grain structure (dimensionless)
+    Grain_structure = 0     #: Initial value of structural mass of grains (µmol of C sucrose) TODO: initial value given in ModelMaker?
+    Vmax_RGR = 1.9e-06      #: Maximal value of the Relative Growth Rate of grain structure (dimensionless)
+    K_RGR = 300             #: Affinity coefficient of the Relative Growth Rate of grain structure (dimensionless)
 
     # Storage
-    Grain_storage = 0       # Initial value of grain storage (µmol of C) TODO: needed?
-    Vmax_storage = 0.5      # Maximal rate of grain filling (µmol C s-1 g-1 MS)
-    K_storage = 100         # Affinity coefficient of grain filling (µmol C g-1 MS)
+    Grain_storage = 0       #: Initial value of grain storage (µmol of C) TODO: needed?
+    Vmax_storage = 0.5      #: Maximal rate of grain filling (µmol C s-1 g-1 MS)
+    K_storage = 100         #: Affinity coefficient of grain filling (µmol C g-1 MS)
 
-    Y_grains = 0.75         # Proportion of C loaded from phloem actually used for grain structure and storage (1 - Y_grains is a kind of growth respiration)
-    filling_init = 360      # Time (h) at which phloem loading switch from grain structure to grain storage
+    Y_grains = 0.75         #: Proportion of C loaded from phloem actually used for grain structure and storage (1 - Y_grains is a kind of growth respiration)
+    filling_init = 360      #: Time (h) at which phloem loading switch from grain structure to grain storage
 
     def __init__(self, STORAGE_0, STRUCTURE_0, name='grains'):
         super(Grains, self).__init__(name)
 
-        # initialization
         # flow to phloem
-        self.Loading_sucrose_structure = 0
-        self.Loading_sucrose_storage = 0
+        self.Loading_sucrose_structure = 0 #: current unloading of sucrose from phloem to grain structure
+        self.Loading_sucrose_storage = 0 #: current unloading of sucrose from phloem to grain storage
         self.STRUCTURE = 0# TODO: utlisation valeur init??
-        # compartments
-        self.STORAGE_0 = STORAGE_0
-        self.STRUCTURE_0 = STRUCTURE_0
+        
+        # initialize the compartments
+        self.STORAGE_0 = STORAGE_0 #: initial value of compartment STORAGE
+        self.STRUCTURE_0 = STRUCTURE_0 #: initial value of compartment STRUCTURE
 
     def get_initial_conditions(self):
         return [self.STORAGE_0, self.STRUCTURE_0]
@@ -516,21 +510,19 @@ class Grains(Organ):
 
 
 class Roots(Organ):
-    Vmax_roots = 0.015  # Maximal rate of sucrose unloading from phloem to roots (µmol C unloaded sucrose s-1 g-1 MS)
-    K_roots = 100       # Affinity coefficient of sucrose unloading from phloem to roots (µmol C unloaded sucrose g-1 MS)
+    Vmax_roots = 0.015  #: Maximal rate of sucrose unloading from phloem to roots (µmol C unloaded sucrose s-1 g-1 MS)
+    K_roots = 100       #: Affinity coefficient of sucrose unloading from phloem to roots (µmol C unloaded sucrose g-1 MS)
 
     def __init__(self, Mstruct, Sucrose_0, name='roots'):
         super(Roots, self).__init__(name)
 
         # parameters
-        self.Mstruct = Mstruct # Structural mass (g)
+        self.Mstruct = Mstruct #: Structural mass (g)
 
-        # initialization
-        # flow to phloem
-        self.Loading_sucrose = 0
+        self.Loading_sucrose = 0 #: current unloading of sucrose from phloem to roots
 
-        # compartments
-        self.Sucrose_0 = Sucrose_0
+        # initialize the compartment
+        self.Sucrose_0 = Sucrose_0 #: initial value of compartment Sucrose
 
     def get_initial_conditions(self):
         return [self.Sucrose_0] # keep this order !
