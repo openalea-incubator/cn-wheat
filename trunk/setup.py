@@ -9,15 +9,24 @@ Notes:
 import ez_setup
 ez_setup.use_setuptools()
 
+import sys
 from setuptools import setup, find_packages
+
+import cnwheat
+
+if sys.version_info < (2, 7):
+    print('ERROR: CN-Wheat requires at least Python 2.7 to run.')
+    sys.exit(1)
+    
+if sys.version_info >= (3, 0):
+    print('WARNING: CN-Wheat has not been tested with Python 3.')
 
 setup(
     name = "CN-Wheat",
-    version = "0.0.1",
-    package_dir = {'': 'src'},
-    packages = find_packages('src'),
+    version=cnwheat.__version__,
+    packages = find_packages(),
     
-    install_requires = ['numpy', 'pandas', 'scipy', 'matplotlib'], 
+    install_requires = ['numpy>=1.7.2', 'pandas>=0.14.0', 'scipy>=0.12.1'], 
     include_package_data = True, 
     
     # metadata for upload to PyPI
