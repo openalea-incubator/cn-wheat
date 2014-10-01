@@ -109,7 +109,7 @@ class Organ(object):
         """Rate of SUCROSE loading to phloem (µmol C sucrose s-1 g-1 MS * delta_t).
         This is a flow (expressed in amount of C substance g-1 MS integrated over delta_t).
         """
-        return ((max(0.1, SUCROSE)/(self.Mstruct*Organ.alpha)) * ((max(0.1, SUCROSE)/(self.Mstruct*Organ.alpha)) - (max(0, SUCROSE_phloem)/(Organ.Mstruct_axis*Organ.alpha_axis))) * (Organ.sigma * self.Mstruct**(2/3))) * Organ.delta_t
+        return ((max(0, SUCROSE)/(self.Mstruct*Organ.alpha)) * ((max(0, SUCROSE)/(self.Mstruct*Organ.alpha)) - (max(0, SUCROSE_phloem)/(Organ.Mstruct_axis*Organ.alpha_axis))) * (Organ.sigma * self.Mstruct**(2/3))) * Organ.delta_t
     
     def calculate_S_fructan(self, SUCROSE, Regul_Sfructan):
         """Rate of fructan synthesis (µmol C fructan s-1 g-1 MS * delta_t)
