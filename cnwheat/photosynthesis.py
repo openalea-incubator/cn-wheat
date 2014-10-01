@@ -6,8 +6,8 @@
 
     Model of photosynthesis based on Farquhar's approach. The model includes the dependance of photosynthesis to organ temperature and nitrogen content. Internal CO2 and organ temperature are found numerically.
 
-    :copyright: Copyright 2014 INRA-EGC, see AUTHORS.txt.
-    :license: TODO, see LICENSE.txt for details.
+    :copyright: Copyright 2014 INRA-EGC, see AUTHORS.
+    :license: TODO, see LICENSE for details.
 """
 
 from __future__ import division # use "//" to do integer division

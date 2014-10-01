@@ -5,8 +5,8 @@
 
     Function to run the model.
 
-    :copyright: Copyright 2014 INRA-EGC, see AUTHORS.txt.
-    :license: TODO, see LICENSE.txt for details.
+    :copyright: Copyright 2014 INRA-EGC, see AUTHORS.
+    :license: TODO, see LICENSE for details.
 """
 
 from __future__ import division # use "//" to do integer division
