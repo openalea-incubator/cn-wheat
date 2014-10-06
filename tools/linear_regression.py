@@ -5,7 +5,7 @@
 
     Perform a linear regression of two arrays and create a plot showing 
     the fit against the original data.
-    Save the plot to a PNG file.
+    Display the plot or save it to a PNG file.
 
     :copyright: Copyright 2014 INRA-EGC, see AUTHORS.
     :license: TODO, see LICENSE for details.
@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 def plot_linear_regression(x_array, y_array, x_label='x', y_label='y', plot_filepath=None):
     """Perform a linear regression of `x_array` vs `y_array` 
     and create a plot showing the fit against the original data.
-    If `plot_filepath` is not None, save the plot to a PNG file.
+    If `plot_filepath` is not None, save the plot to a PNG file. Otherwise display the plot.
     
     This is derived from http://www.landmap.ac.uk/index.php/Learning-Materials/Python-Scripting/6.4-Fitting-linear-equations#sthash.wDZ5zBrD.dpuf, 
     which is: Copyright TODO
@@ -35,6 +35,17 @@ def plot_linear_regression(x_array, y_array, x_label='x', y_label='y', plot_file
         
         - `plot_filepath` (:class:`str`) - The file path to save the plot in. 
             If `None`, do not save the plot.
+            
+    :Examples:        
+
+    >>> import pandas as pd
+    >>> modelmaker_output_df = pd.read_csv('modelmaker_output.csv') # 'modelmaker_output.csv' must contain at least the column 'SUCROSE_phloem'
+    >>> cnwheat_output_df = pd.read_csv('cnwheat_output.csv') # 'cnwheat_output.csv' must contain at least the column 'SUCROSE_phloem'
+    >>> plot_linear_regression(modelmaker_output_df['SUCROSE_phloem'], 
+                               cnwheat_output_df['SUCROSE_phloem'], 
+                               x_label='modelmaker_{}'.format('SUCROSE_phloem'), 
+                               y_label='cnwheat_{}'.format('SUCROSE_phloem'), 
+                               plot_filepath='compare.png')
         
     """
     # Perform fit
@@ -63,7 +74,10 @@ def plot_linear_regression(x_array, y_array, x_label='x', y_label='y', plot_file
     plt.legend(['x vs y', equation])
 
     # Save plot
-    if plot_filepath is not None:
+    if plot_filepath is None:
+        plt.show()
+    else:
         plt.savefig(plot_filepath, dpi=200, format='PNG')
+        plt.close()
         
     
