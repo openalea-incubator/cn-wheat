@@ -11,9 +11,9 @@
 
 import matplotlib.pyplot as plt
 
-def plot_dataframe(dataframe, x_label='', y_label='', title='', column_to_matplotlib_kwargs={}, plot_filepath=None):
-    """Plot the columns in `column_to_matplotlib_kwargs`, with `x_label='t'` and
-    `y_labels=column_to_matplotlib_kwargs.keys()`.
+def plot_dataframe(dataframe, x='t', x_label='Time (hour)', y_label='', title='', column_to_matplotlib_kwargs={}, plot_filepath=None):
+    """Plot the columns in `column_to_matplotlib_kwargs`, with `x='t'` and
+    `y=column_to_matplotlib_kwargs.keys()`.
     For each `column` in `column_to_matplotlib_kwargs`, use `kwargs=column_to_matplotlib_kwargs[column]`
     to set the `kwargs` of :func:`matplotlib.pyplot.plot`.
     If `column_to_matplotlib_kwargs` is empty, then plot all the columns of `dataframe` and use
@@ -23,6 +23,8 @@ def plot_dataframe(dataframe, x_label='', y_label='', title='', column_to_matplo
     :Parameters:
 
         - `dataframe` (:class:`pandas.DataFrame`) - A dataframe with a column 't'.
+
+        - `x` (:class:`str`) - x axis of the plot
 
         - `x_label` (:class:`str`) - The *x* label of the plot.
 
@@ -35,14 +37,15 @@ def plot_dataframe(dataframe, x_label='', y_label='', title='', column_to_matplo
             If `column_to_matplotlib_kwargs` is empty, then plot all the columns of `dataframe` and use
             the default `kwargs` of :func:`matplotlib.pyplot.plot`.
 
-        - `plot_filepath` (:class:`str`) - The file path to save the plot in. If `None`, do not save the plot.
+        - `plot_filepath` (:class:`str`) - The file path to save the plot in. If `None`, do not save the plot but display it.
 
     :Examples:
 
     >>> import pandas as pd
     >>> cnwheat_output_df = pd.read_csv('cnwheat_output.csv') # 'cnwheat_output.csv' must contain at least the columns 't', 'SUCROSE_lamina' and 'SUCROSE_phloem'
     >>> plot_dataframe(cnwheat_output_df,
-                       x_label='t',
+                       x = 't'
+                       x_label='Time (Hour)',
                        y_label='SUCROSE',
                        title='{} = f({})'.format('SUCROSE', 't'),
                        column_to_matplotlib_kwargs={'SUCROSE_lamina': {'color': 'green', 'linestyle': 'solid', 'marker': 'o', 'markerfacecolor': 'blue', 'markersize': 12},
@@ -53,7 +56,7 @@ def plot_dataframe(dataframe, x_label='', y_label='', title='', column_to_matplo
     if len(column_to_matplotlib_kwargs) == 0:
         column_to_matplotlib_kwargs = dict.fromkeys(dataframe.columns, {})
 
-    x = dataframe[x_label]
+    x = dataframe[x]
 
     plt.figure()
     ax = plt.subplot(111)
@@ -66,7 +69,7 @@ def plot_dataframe(dataframe, x_label='', y_label='', title='', column_to_matplo
 
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
-    ax.legend(loc='upper center',  bbox_to_anchor=(0.5, 1.15))
+    ax.legend(loc='upper center',  bbox_to_anchor=(0.5, 1.05), prop={'size':6})
     ax.set_title(title)
 
     # Save plot
