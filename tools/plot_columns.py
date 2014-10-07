@@ -42,15 +42,15 @@ def plot_dataframe(dataframe, x_name='t', x_label='Time (hour)', y_label='', tit
     :Examples:
 
     >>> import pandas as pd
-    >>> cnwheat_output_df = pd.read_csv('cnwheat_output.csv') # 'cnwheat_output.csv' must contain at least the columns 't', 'SUCROSE_lamina' and 'SUCROSE_phloem'
+    >>> cnwheat_output_df = pd.read_csv('cnwheat_output.csv') # 'cnwheat_output.csv' must contain at least the columns 't', 'Sucrose_Lamina' and 'Sucrose_Phloem'
     >>> plot_dataframe(cnwheat_output_df,
                        x_name = 't'
                        x_label='Time (Hour)',
-                       y_label='SUCROSE',
-                       title='{} = f({})'.format('SUCROSE', 't'),
-                       column_to_matplotlib_kwargs={'SUCROSE_lamina': {'color': 'green', 'linestyle': 'solid', 'marker': 'o', 'markerfacecolor': 'blue', 'markersize': 12, 'label': 'lamina'},
-                                                    'SUCROSE_phloem': {'color': 'red', 'linestyle': 'dashed', 'marker': '*', 'markerfacecolor': 'yellow', 'markersize': 16, 'label': 'phloem'}},
-                       plot_filepath='SUCROSE.png')
+                       y_label='Sucrose',
+                       title='{} = f({})'.format('Sucrose', 't'),
+                       column_to_matplotlib_kwargs={'Sucrose_Lamina': {'color': 'green', 'linestyle': 'solid', 'marker': 'o', 'markerfacecolor': 'blue', 'markersize': 12, 'label': 'Lamina'},
+                                                    'Sucrose_Phloem': {'color': 'red', 'linestyle': 'dashed', 'marker': '*', 'markerfacecolor': 'yellow', 'markersize': 16, 'label': 'Phloem'}},
+                       plot_filepath='Sucrose.png')
 
     """
     if len(column_to_matplotlib_kwargs) == 0:
