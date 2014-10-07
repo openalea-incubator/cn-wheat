@@ -39,12 +39,12 @@ def plot_linear_regression(x_array, y_array, x_label='x', y_label='y', plot_file
     :Examples:        
 
     >>> import pandas as pd
-    >>> modelmaker_output_df = pd.read_csv('modelmaker_output.csv') # 'modelmaker_output.csv' must contain at least the column 'SUCROSE_phloem'
-    >>> cnwheat_output_df = pd.read_csv('cnwheat_output.csv') # 'cnwheat_output.csv' must contain at least the column 'SUCROSE_phloem'
-    >>> plot_linear_regression(modelmaker_output_df['SUCROSE_phloem'], 
-                               cnwheat_output_df['SUCROSE_phloem'], 
-                               x_label='modelmaker_{}'.format('SUCROSE_phloem'), 
-                               y_label='cnwheat_{}'.format('SUCROSE_phloem'), 
+    >>> modelmaker_output_df = pd.read_csv('modelmaker_output.csv') # 'modelmaker_output.csv' must contain at least the column 'Sucrose_Phloem'
+    >>> cnwheat_output_df = pd.read_csv('cnwheat_output.csv') # 'cnwheat_output.csv' must contain at least the column 'Sucrose_Phloem'
+    >>> plot_linear_regression(modelmaker_output_df.Sucrose_Phloem, 
+                               cnwheat_output_df.Sucrose_Phloem, 
+                               x_label='modelmaker_{}'.format('Sucrose_Phloem'), 
+                               y_label='cnwheat_{}'.format('Sucrose_Phloem'), 
                                plot_filepath='compare.png')
         
     """

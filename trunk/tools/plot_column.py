@@ -36,14 +36,14 @@ def plot_series(x, y, x_label='', y_label='', title='', matplotlib_kwargs={}, pl
     :Examples:        
 
     >>> import pandas as pd
-    >>> cnwheat_output_df = pd.read_csv('cnwheat_output.csv') # 'cnwheat_output.csv' must contain at least the columns 't' and 'Conc_Sucrose_phloem'
+    >>> cnwheat_output_df = pd.read_csv('cnwheat_output.csv') # 'cnwheat_output.csv' must contain at least the columns 't' and 'Conc_Sucrose_Phloem'
     >>> plot_series(x=cnwheat_output_df.t,
-                    y=cnwheat_output_df.Conc_Sucrose_phloem,
+                    y=cnwheat_output_df.Conc_Sucrose_Phloem,
                     x_label='t', 
-                    y_label='Conc_Sucrose_phloem',
-                    title='{} = f({})'.format('Conc_Sucrose_phloem', 't'), 
+                    y_label='Conc_Sucrose_Phloem',
+                    title='{} = f({})'.format('Conc_Sucrose_Phloem', 't'), 
                     matplotlib_kwargs={'color': 'green', 'linestyle': 'solid', 'marker': 'o', 'markerfacecolor': 'blue', 'markersize': 12},
-                    plot_filepath='Conc_Sucrose_phloem.png')
+                    plot_filepath='Conc_Sucrose_Phloem.png')
         
     """
     if 'label' not in matplotlib_kwargs:
