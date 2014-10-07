@@ -11,7 +11,7 @@
 
 import matplotlib.pyplot as plt
 
-def plot_dataframe(dataframe, x='t', x_label='Time (hour)', y_label='', title='', column_to_matplotlib_kwargs={}, plot_filepath=None):
+def plot_dataframe(dataframe, x_name='t', x_label='Time (hour)', y_label='', title='', column_to_matplotlib_kwargs={}, plot_filepath=None):
     """Plot the columns in `column_to_matplotlib_kwargs`, with `x='t'` and
     `y=column_to_matplotlib_kwargs.keys()`.
     For each `column` in `column_to_matplotlib_kwargs`, use `kwargs=column_to_matplotlib_kwargs[column]`
@@ -24,7 +24,7 @@ def plot_dataframe(dataframe, x='t', x_label='Time (hour)', y_label='', title=''
 
         - `dataframe` (:class:`pandas.DataFrame`) - A dataframe with a column 't'.
 
-        - `x` (:class:`str`) - x axis of the plot
+        - `x_name` (:class:`str`) - x axis of the plot
 
         - `x_label` (:class:`str`) - The *x* label of the plot.
 
@@ -44,19 +44,19 @@ def plot_dataframe(dataframe, x='t', x_label='Time (hour)', y_label='', title=''
     >>> import pandas as pd
     >>> cnwheat_output_df = pd.read_csv('cnwheat_output.csv') # 'cnwheat_output.csv' must contain at least the columns 't', 'SUCROSE_lamina' and 'SUCROSE_phloem'
     >>> plot_dataframe(cnwheat_output_df,
-                       x = 't'
+                       x_name = 't'
                        x_label='Time (Hour)',
                        y_label='SUCROSE',
                        title='{} = f({})'.format('SUCROSE', 't'),
-                       column_to_matplotlib_kwargs={'SUCROSE_lamina': {'color': 'green', 'linestyle': 'solid', 'marker': 'o', 'markerfacecolor': 'blue', 'markersize': 12},
-                                                    'SUCROSE_phloem': {'color': 'red', 'linestyle': 'dashed', 'marker': '*', 'markerfacecolor': 'yellow', 'markersize': 16}},
+                       column_to_matplotlib_kwargs={'SUCROSE_lamina': {'color': 'green', 'linestyle': 'solid', 'marker': 'o', 'markerfacecolor': 'blue', 'markersize': 12, 'label': 'lamina'},
+                                                    'SUCROSE_phloem': {'color': 'red', 'linestyle': 'dashed', 'marker': '*', 'markerfacecolor': 'yellow', 'markersize': 16, 'label': 'phloem'}},
                        plot_filepath='SUCROSE.png')
 
     """
     if len(column_to_matplotlib_kwargs) == 0:
         column_to_matplotlib_kwargs = dict.fromkeys(dataframe.columns, {})
 
-    x = dataframe[x]
+    x = dataframe[x_name]
 
     plt.figure()
     ax = plt.subplot(111)
@@ -69,7 +69,7 @@ def plot_dataframe(dataframe, x='t', x_label='Time (hour)', y_label='', title=''
 
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
-    ax.legend(loc='upper center',  bbox_to_anchor=(0.5, 1.05), prop={'size':6})
+    ax.legend(loc='upper center',  bbox_to_anchor=(0.5, 1.125), prop={'size':10})
     ax.set_title(title)
 
     # Save plot
