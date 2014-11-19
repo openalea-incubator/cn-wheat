@@ -9,6 +9,15 @@
     :license: TODO, see LICENSE for details.
 """
 
+"""
+    Information about this versioned file:
+        $LastChangedBy$
+        $LastChangedDate$
+        $LastChangedRevision$
+        $URL$
+        $Id$
+"""
+
 import matplotlib.pyplot as plt
 
 def plot_dataframe(dataframe, x_name='t', x_label='Time (hour)', y_label='', title='', column_to_matplotlib_kwargs={}, plot_filepath=None):
