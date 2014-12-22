@@ -53,7 +53,7 @@ def plot_dataframe(dataframe, x_name='t', x_label='Time (hour)', y_label='', tit
     >>> import pandas as pd
     >>> cnwheat_output_df = pd.read_csv('cnwheat_output.csv') # 'cnwheat_output.csv' must contain at least the columns 't', 'Sucrose_Lamina' and 'Sucrose_Phloem'
     >>> plot_dataframe(cnwheat_output_df,
-                       x_name = 't'
+                       x_name = 't',
                        x_label='Time (Hour)',
                        y_label='Sucrose',
                        title='{} = f({})'.format('Sucrose', 't'),
@@ -63,7 +63,7 @@ def plot_dataframe(dataframe, x_name='t', x_label='Time (hour)', y_label='', tit
 
     """
     if len(column_to_matplotlib_kwargs) == 0:
-        column_to_matplotlib_kwargs = dict.fromkeys(dataframe.columns, {})
+        column_to_matplotlib_kwargs = dict(zip(column_to_matplotlib_kwargs.keys(), [{} for _ in xrange(len(column_to_matplotlib_kwargs))]))
 
     x = dataframe[x_name]
 
@@ -86,4 +86,4 @@ def plot_dataframe(dataframe, x_name='t', x_label='Time (hour)', y_label='', tit
         plt.show()
     else:
         plt.savefig(plot_filepath, dpi=200, format='PNG')
-    plt.close()
+        plt.close()
