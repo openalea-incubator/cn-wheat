@@ -19,27 +19,28 @@
 """
 
 import types
+from itertools import cycle
 
 import matplotlib.pyplot as plt
 
 from cnwheat.simulation import CNWheat
 
-def plot(outputs, x_name, y_name, x_label='', y_label='', title='', filters={}, plot_filepath=None):
+def plot(outputs, x_name, y_name, x_label='', y_label='', title='', filters={}, plot_filepath=None, colors=[], linestyles=[]):
     """Plot `outputs`, with `x=x_name` and `y=y_name`.
-    
-    The general algorithm is: 
-    
-        * find the scale of `outputs` and keep only the needed columns, 
+
+    The general algorithm is:
+
+        * find the scale of `outputs` and keep only the needed columns,
         * apply `filters` to `outputs` and make groups according to the scale,
         * plot each group as a new line,
         * save or display the plot.
-    
+
     :Parameters:
 
         - `outputs` (:class:`pandas.DataFrame`) - The outputs of CN-Wheat.
 
         - `x_name` (:class:`str`) - x axis of the plot.
-        
+
         - `y_name` (:class:`str`) - y axis of the plot.
 
         - `x_label` (:class:`str`) - The x label of the plot. Default is ''.
@@ -47,14 +48,19 @@ def plot(outputs, x_name, y_name, x_label='', y_label='', title='', filters={}, 
         - `y_label` (:class:`str`) - The y label of the plot. Default is ''.
 
         - `title` (:class:`str`) - the title of the plot. Default is ''.
-        
-        - `filters` (:class:`dict`) - A dictionary whose keys are the columns of 
-          `outputs` for which we want to apply a specific filter. 
-          The value associated to each key is a criteria that the rows of `outputs` 
-          must satisfy to be plotted. The values can be either one value or a list of values. 
+
+        - `filters` (:class:`dict`) - A dictionary whose keys are the columns of
+          `outputs` for which we want to apply a specific filter.
+          These columns can be one or more element of :const:`ELEMENTS_INDEXES <cnwheat.simulation.CNWheat.ELEMENTS_INDEXES>`.
+          The value associated to each key is a criteria that the rows of `outputs`
+          must satisfy to be plotted. The values can be either one value or a list of values.
           If no value is given for any column, then all rows are plotted (default).
 
-        - `plot_filepath` (:class:`str`) - The file path to save the plot. 
+        - `colors` (:class:`list`) - The colors for lines. If empty, let matplotlib default line colors.
+
+        - `linestyles` (:class:`list`) - The styles for lines. If empty, let matplotlib default line styles.
+
+        - `plot_filepath` (:class:`str`) - The file path to save the plot.
           If `None`, do not save the plot but display it.
 
     :Examples:
@@ -64,13 +70,13 @@ def plot(outputs, x_name, y_name, x_label='', y_label='', title='', filters={}, 
     >>> plot(cnwheat_output_df, x_name = 't', y_name = 'Conc_Sucrose', x_label='Time (Hour)', y_label=u'[Sucrose] (µmol g$^{-1}$ mstruct)', title='{} = f({})'.format('Conc_Sucrose', 't'), filters={'plant': 1, 'axis': 'MS', 'organ': 'Lamina', 'element': 1})
 
     """
-    
+
     # finds the scale of `outputs`
     group_keys = [key for key in CNWheat.ELEMENTS_INDEXES if key in outputs and key != x_name and key != y_name]
-    
+
     # keep only the needed columns (to make the grouping faster)
     outputs = outputs[group_keys + [x_name, y_name]]
-    
+
     # apply filters to outputs
     for key, value in filters.iteritems():
         if key in outputs:
@@ -86,18 +92,37 @@ def plot(outputs, x_name, y_name, x_label='', y_label='', title='', filters={}, 
                     values = [values]
             # select data from outputs
             outputs = outputs[outputs[key].isin(values)]
-            
+
     # makes groups according to the scale
     outputs_grouped = outputs.groupby(group_keys)
-    
+
     # plots each group as a new line
     plt.figure()
     ax = plt.subplot(111)
-    
+
+    matplot_colors_cycler = cycle(colors)
+    matplot_linestyles_cycler = cycle(linestyles)
+
     for outputs_group_name, outputs_group in outputs_grouped:
         line_label = '_'.join([str(key) for key in outputs_group_name])
-        ax.plot(outputs_group[x_name], outputs_group[y_name], **{'label': line_label})
-        
+        kwargs = {'label': line_label}
+
+        try:
+            color = next(matplot_colors_cycler)
+        except StopIteration:
+            pass
+        else:
+            kwargs['color'] = color
+
+        try:
+            color = next(matplot_linestyles_cycler)
+        except StopIteration:
+            pass
+        else:
+            kwargs['linestyle'] = linestyle
+
+        ax.plot(outputs_group[x_name], outputs_group[y_name], **kwargs)
+
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
     ax.legend(prop={'size':10}, framealpha=0.5)
