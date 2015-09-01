@@ -13,7 +13,6 @@ Prerequisites
     * NumPy >= 1.7.2, http://www.numpy.org/
     * SciPy >= 0.12.1, http://www.scipy.org/
     * Pandas >= 0.14.0, http://pandas.pydata.org/
-    * Respi-Wheat >= 0.0.1, https://sourcesup.renater.fr/projects/respi-wheat/
 * To run the tools: Matplotlib >= 1.3.1, http://matplotlib.org/
 * To build the documentation: Sphinx >= 1.1.3, http://sphinx-doc.org/
 * To run the tests: Nose >= 1.3.0, http://nose.readthedocs.org/
