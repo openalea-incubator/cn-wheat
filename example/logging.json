@@ -69,15 +69,6 @@
             "mode": "w",
             "formatter": "simple"
         },
-        "HiddenGrowingZone_compartments_file": {
-            "level": "DEBUG",
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": "HiddenGrowingZone_compartments.csv",
-            "maxBytes": 10485760,
-            "backupCount": 20,
-            "mode": "w",
-            "formatter": "simple"
-        },
         "elements_compartments_file": {
             "level": "DEBUG",
             "class": "logging.handlers.RotatingFileHandler",
@@ -132,15 +123,6 @@
             "mode": "w",
             "formatter": "simple"
         },
-        "HiddenGrowingZone_derivatives_file": {
-            "level": "DEBUG",
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": "HiddenGrowingZone_derivatives.csv",
-            "maxBytes": 10485760,
-            "backupCount": 20,
-            "mode": "w",
-            "formatter": "simple"
-        },        
         "elements_derivatives_file": {
             "level": "DEBUG",
             "class": "logging.handlers.RotatingFileHandler",
@@ -197,11 +179,6 @@
                 "organs_compartments_file"
             ]
         },
-        "cnwheat.compartments.HiddenGrowingZone": {
-            "handlers": [
-                "HiddenGrowingZone_compartments_file"
-            ]
-        },        
         "cnwheat.compartments.elements": {
             "handlers": [
                 "elements_compartments_file"
@@ -235,11 +212,6 @@
                 "organs_derivatives_file"
             ]
         },
-        "cnwheat.derivatives.HiddenGrowingZone": {
-            "handlers": [
-                "HiddenGrowingZone_derivatives_file"
-            ]
-        },        
         "cnwheat.derivatives.elements": {
             "handlers": [
                 "elements_derivatives_file"

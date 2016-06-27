@@ -45,9 +45,6 @@ PHYTOMERS_STATE_VARIABLES = simulation.Simulation.PHYTOMERS_INPUTS_INDEXES + sim
 #: the topology and state variables at ORGAN scale
 ORGANS_STATE_VARIABLES = simulation.Simulation.ORGANS_INPUTS_INDEXES + simulation.Simulation.ORGANS_STATE
 
-#: the topology and state variables at ORGAN scale
-HGZS_STATE_VARIABLES = simulation.Simulation.HIDDENGROWINGZONE_INPUTS_INDEXES + simulation.Simulation.HIDDENGROWINGZONE_STATE
-
 #: the topology and state variables at ELEMENT scale
 ELEMENTS_STATE_VARIABLES = simulation.Simulation.ELEMENTS_INPUTS_INDEXES + simulation.Simulation.ELEMENTS_STATE
 
@@ -63,13 +60,12 @@ SOILS_TOPOLOGY_COLUMNS = ['plant', 'axis']
 #: the mapping of CNWheat organ classes to the attributes in axis and phytomer which represent an organ
 CNWHEAT_ATTRIBUTES_MAPPING = {model.Internode: 'internode', model.Lamina: 'lamina',
                               model.Sheath: 'sheath', model.Peduncle: 'peduncle', model.Chaff: 'chaff',
-                              model.Roots: 'roots', model.Grains: 'grains', model.Phloem: 'phloem',
-                              model.HiddenGrowingZone: 'hgz'}
+                              model.Roots: 'roots', model.Grains: 'grains', model.Phloem: 'phloem'}
 
 #: the mapping of the CNWheat organ classes to organ names in MTG
 CNWHEAT_CLASSES_TO_MTG_ORGANS_MAPPING = {model.Internode: 'internode', model.Lamina: 'blade',
                                          model.Sheath: 'sheath', model.Peduncle: 'peduncle', model.Chaff: 'ear',
-                                         model.Roots: 'roots', model.Grains: 'grains', model.Phloem: 'phloem', model.HiddenGrowingZone: 'HiddenGrowingZone'}
+                                         model.Roots: 'roots', model.Grains: 'grains', model.Phloem: 'phloem'}
 
 #: the mapping of the name of each element, from MTG to CNWheat
 MTG_TO_CNWHEAT_ELEMENTS_NAMES_MAPPING = {'HiddenElement': 'enclosed_element', 'StemElement': 'exposed_element', 'LeafElement1': 'exposed_element'}
@@ -78,7 +74,7 @@ MTG_TO_CNWHEAT_ELEMENTS_NAMES_MAPPING = {'HiddenElement': 'enclosed_element', 'S
 MTG_TO_CNWHEAT_AXES_ORGANS_MAPPING = {'grains': model.Grains, 'phloem': model.Phloem, 'roots': model.Roots}
 
 #: the mapping of organs (which belong to a phytomer) labels in MTG to organ classes in CNWheat
-MTG_TO_CNWHEAT_PHYTOMERS_ORGANS_MAPPING = {'internode': model.Internode, 'blade': model.Lamina, 'sheath': model.Sheath, 'peduncle': model.Peduncle, 'ear': model.Chaff, 'HiddenGrowingZone': model.HiddenGrowingZone}
+MTG_TO_CNWHEAT_PHYTOMERS_ORGANS_MAPPING = {'internode': model.Internode, 'blade': model.Lamina, 'sheath': model.Sheath, 'peduncle': model.Peduncle, 'ear': model.Chaff}
 
 # the mapping of CNWheat photosynthetic organs to CNWheat photosynthetic organ elements
 CNWHEAT_ORGANS_TO_ELEMENTS_MAPPING = {model.Internode: model.InternodeElement, model.Lamina: model.LaminaElement, model.Sheath: model.SheathElement, model.Peduncle: model.PeduncleElement, model.Chaff: model.ChaffElement}
@@ -86,17 +82,17 @@ CNWHEAT_ORGANS_TO_ELEMENTS_MAPPING = {model.Internode: model.InternodeElement, m
 #: the parameters and variables which define the state of a CNWheat population
 POPULATION_STATE_VARIABLE = set(simulation.Simulation.PLANTS_STATE + simulation.Simulation.AXES_STATE +
                                 simulation.Simulation.PHYTOMERS_STATE + simulation.Simulation.ORGANS_STATE +
-                                simulation.Simulation.HIDDENGROWINGZONE_STATE + simulation.Simulation.ELEMENTS_STATE)
+                                simulation.Simulation.ELEMENTS_STATE)
 
 
-def from_dataframes(plants_inputs=None, axes_inputs=None, metamers_inputs=None, organs_inputs=None, hgzs_inputs=None, elements_inputs=None, soils_inputs=None):
+def from_dataframes(plants_inputs=None, axes_inputs=None, metamers_inputs=None, organs_inputs=None, elements_inputs=None, soils_inputs=None):
     """
-    If `plants_inputs`, `axes_inputs`, `metamers_inputs`, `organs_inputs`, `hgzs_inputs` and `elements_inputs` are not `None`, convert `plants_inputs`,
-    `axes_inputs`, `metamers_inputs`, `organs_inputs`, `hgzs_inputs` and  `elements_inputs` to a :class:`population <model.Population>`.
+    If `plants_inputs`, `axes_inputs`, `metamers_inputs`, `organs_inputs` and `elements_inputs` are not `None`, convert `plants_inputs`,
+    `axes_inputs`, `metamers_inputs`, `organs_inputs` and  `elements_inputs` to a :class:`population <model.Population>`.
 
     If `soils_inputs` is not `None`, convert `soils_inputs` to a dictionary of :class:`soils <model.Soil>`.
 
-    Data in `plants_inputs`, `axes_inputs`, `metamers_inputs`, `organs_inputs`, `hgzs_inputs`, `elements_inputs` and `soils_inputs`
+    Data in `plants_inputs`, `axes_inputs`, `metamers_inputs`, `organs_inputs`, `elements_inputs` and `soils_inputs`
     respect the naming convention of AdelWheat.
 
     :Parameters:
@@ -109,23 +105,21 @@ def from_dataframes(plants_inputs=None, axes_inputs=None, metamers_inputs=None, 
 
         - `organs_inputs` (:class:`pandas.DataFrame`) - Organs inputs, with one line by organ.
 
-        - `hgzs_inputs` (:class:`pandas.DataFrame`) - Hidden growing zones inputs, with one line by hidden growing zone.
-
         - `elements_inputs` (:class:`pandas.DataFrame`) - Elements inputs, with one line by element.
 
         - `soils_inputs` (:class:`pandas.DataFrame`) - Soils inputs, with one line by soil.
 
     :Returns:
-        If `plants_inputs`, `axes_inputs`, `metamers_inputs`, `organs_inputs`, `hgzs_inputs` and `elements_inputs` are not `None`, return a :class:`population <model.Population>`,
+        If `plants_inputs`, `axes_inputs`, `metamers_inputs`, `organs_inputs` and `elements_inputs` are not `None`, return a :class:`population <model.Population>`,
         and/or
         if `soils_inputs` is not `None`,  return a :class:`dict` of :class:`soils <model.Soil>`.
 
     :Returns Type:
-        :class:`tuple` or :class:`dict`.
+        :class:`tuple` or :class:`population <model.Population>` or :class:`dict`.
 
     """
 
-    convert_dataframes_to_population = plants_inputs is not None and axes_inputs is not None and metamers_inputs is not None and organs_inputs is not None and hgzs_inputs is not None and elements_inputs is not None
+    convert_dataframes_to_population = plants_inputs is not None and axes_inputs is not None and metamers_inputs is not None and organs_inputs is not None and elements_inputs is not None
     convert_dataframe_to_soils_dict = soils_inputs is not None
 
     if convert_dataframes_to_population:
@@ -167,7 +161,6 @@ def from_dataframes(plants_inputs=None, axes_inputs=None, metamers_inputs=None, 
                          ('sheath', model.Sheath, model.SheathElement)):
 
                         organ_label = CNWHEAT_CLASSES_TO_MTG_ORGANS_MAPPING[phytomer_attribute_class]
-
                         curr_elements_inputs = elements_inputs[(elements_inputs['plant'] == plant_index) & (elements_inputs['axis'] == axis_label) & (elements_inputs['metamer'] == metamer_index) & (elements_inputs['organ'] == organ_label)]
                         if organ_label not in curr_elements_inputs.organ.values:
                             continue
@@ -185,16 +178,6 @@ def from_dataframes(plants_inputs=None, axes_inputs=None, metamers_inputs=None, 
                             # create a new element
                             element = phytomer_attribute_element_class(mtg_element_label, **element_dict)
                             setattr(organ, cnwheat_element_name, element)
-
-                    hgz_inputs = hgzs_inputs[(hgzs_inputs['plant'] == plant_index) & (hgzs_inputs['axis'] == axis_label) & (hgzs_inputs['metamer'] == metamer_index)]
-                    if len(hgz_inputs) == 0:
-                        continue
-                    hgz_inputs = hgz_inputs.loc[:, simulation.Simulation.HIDDENGROWINGZONE_STATE]
-                    hgz_dict = hgz_inputs.loc[hgz_inputs.first_valid_index()].to_dict()
-                    # create a new hidden growing zone
-                    hgz = model.HiddenGrowingZone(CNWHEAT_CLASSES_TO_MTG_ORGANS_MAPPING[model.HiddenGrowingZone], **hgz_dict)
-                    hgz.initialize()
-                    phytomer.hiddengrowingzone = hgz
 
                 plant.axes.append(axis)
 
@@ -234,9 +217,7 @@ def to_dataframes(population=None, soils=None):
             * plant scale: plant index, state parameters and compartments of each plant (see :attr:`Simulation:PLANTS_STATE_VARIABLES`)
             * axis scale: plant index, axis id, state parameters and compartments of each axis (see :attr:`Simulation:AXES_STATE_VARIABLES`)
             * metamer scale: plant index, axis id, metamer index, state parameters and compartments of each metamer (see :attr:`Simulation:PHYTOMERS_STATE_VARIABLES`)
-            * organ scale:
-                * hidden growing zones: plant index, axis id, metamer index, state parameters and compartments of each organ (see :attr:`Simulation:HIDDENGROWINGZONE_STATE_VARIABLES`)
-                * roots, phloem and grains: plant index, axis id, organ type, state parameters and compartments of each organ (see :attr:`Simulation:ORGANS_STATE_VARIABLES`)
+            * organ scale: plant index, axis id, organ type, state parameters and compartments of each organ (see :attr:`Simulation:ORGANS_STATE_VARIABLES`)
             * and element scale: plant index, axis id, metamer index, organ type, element type, state parameters and compartments of each element (see :attr:`Simulation:ELEMENTS_STATE_VARIABLES`),
 
         and/or
@@ -267,7 +248,6 @@ def to_dataframes(population=None, soils=None):
         all_axes_df = pd.DataFrame(columns=AXES_STATE_VARIABLES)
         all_metamers_df = pd.DataFrame(columns=PHYTOMERS_STATE_VARIABLES)
         all_organs_df = pd.DataFrame(columns=ORGANS_STATE_VARIABLES)
-        all_hgzs_df = pd.DataFrame(columns=HGZS_STATE_VARIABLES)
         all_elements_df = pd.DataFrame(columns=ELEMENTS_STATE_VARIABLES)
 
         # run through the population tree and fill the dataframes
@@ -279,8 +259,6 @@ def to_dataframes(population=None, soils=None):
                     append_row(organ, [plant.index, axis.label, organ.label], simulation.Simulation.ORGANS_STATE, all_organs_df)
                 for phytomer in axis.phytomers:
                     append_row(phytomer, [plant.index, axis.label, phytomer.index], simulation.Simulation.PHYTOMERS_STATE, all_metamers_df)
-                    if phytomer.hiddengrowingzone is not None:
-                        append_row(phytomer.hiddengrowingzone, [plant.index, axis.label, phytomer.index], simulation.Simulation.HIDDENGROWINGZONE_STATE, all_hgzs_df)
                     for organ in (phytomer.chaff, phytomer.peduncle, phytomer.lamina, phytomer.internode, phytomer.sheath):
                         if organ is None:
                             continue
@@ -294,7 +272,6 @@ def to_dataframes(population=None, soils=None):
         all_axes_df.sort_index(by=AXES_STATE_VARIABLES, inplace=True)
         all_metamers_df.sort_index(by=PHYTOMERS_STATE_VARIABLES, inplace=True)
         all_organs_df.sort_index(by=ORGANS_STATE_VARIABLES, inplace=True)
-        all_hgzs_df.sort_index(by=HGZS_STATE_VARIABLES, inplace=True)
         all_elements_df.sort_index(by=ELEMENTS_STATE_VARIABLES, inplace=True)
 
         # infer the right types of the columns in the dataframes
@@ -302,7 +279,6 @@ def to_dataframes(population=None, soils=None):
         all_axes_df = all_axes_df.convert_objects(copy=False)
         all_metamers_df = all_metamers_df.convert_objects(copy=False)
         all_organs_df = all_organs_df.convert_objects(copy=False)
-        all_hgzs_df = all_hgzs_df.convert_objects(copy=False)
         all_elements_df = all_elements_df.convert_objects(copy=False)
 
         # convert the indexes of plants, metamers and elements to integers in the dataframes
@@ -310,14 +286,12 @@ def to_dataframes(population=None, soils=None):
         all_axes_df['plant'] = all_axes_df['plant'].astype(int)
         all_metamers_df[['plant', 'metamer']] = all_metamers_df[['plant', 'metamer']].astype(int)
         all_organs_df['plant'] = all_organs_df['plant'].astype(int)
-        all_hgzs_df[['plant', 'metamer']] = all_hgzs_df[['plant', 'metamer']].astype(int)
         all_elements_df[['plant', 'metamer']] = all_elements_df[['plant', 'metamer']].astype(int)
 
         all_plants_df.reset_index(drop=True, inplace=True)
         all_axes_df.reset_index(drop=True, inplace=True)
         all_metamers_df.reset_index(drop=True, inplace=True)
         all_organs_df.reset_index(drop=True, inplace=True)
-        all_hgzs_df.reset_index(drop=True, inplace=True)
         all_elements_df.reset_index(drop=True, inplace=True)
 
     if convert_soils_to_dataframe:
@@ -330,14 +304,14 @@ def to_dataframes(population=None, soils=None):
         all_soils_df.reset_index(drop=True, inplace=True)
 
     if convert_population_to_dataframes and convert_soils_to_dataframe:
-        return all_plants_df, all_axes_df, all_metamers_df, all_organs_df, all_hgzs_df, all_elements_df, all_soils_df
+        return all_plants_df, all_axes_df, all_metamers_df, all_organs_df, all_elements_df, all_soils_df
     elif convert_population_to_dataframes:
-        return all_plants_df, all_axes_df, all_metamers_df, all_organs_df, all_hgzs_df, all_elements_df
+        return all_plants_df, all_axes_df, all_metamers_df, all_organs_df, all_elements_df
     else:
         return all_soils_df
 
 
-def from_MTG(g, organs_inputs, elements_inputs): #TODO: update doc
+def from_MTG(g, organs_inputs, elements_inputs):
     """
     Convert a MTG to a CNWheat :class:`population <model.Population>`.
     Use data in `organs_inputs` and `elements_inputs` if `g` is incomplete.
@@ -347,6 +321,8 @@ def from_MTG(g, organs_inputs, elements_inputs): #TODO: update doc
 
             - g (:class:`openalea.mtg.mtg.MTG`) - A MTG which contains the inputs
               of CN-Wheat. These inputs are: :mod:`CNWHEAT_INPUTS`.
+
+            - `organs_inputs` (:class:`pandas.DataFrame`) - Organs dataframe, with one line by organ.
 
             - `elements_inputs` (:class:`pandas.DataFrame`) - Elements dataframe, with one line by element.
 
@@ -463,7 +439,6 @@ def from_MTG(g, organs_inputs, elements_inputs): #TODO: update doc
                     # create a new phytomer
                     phytomer = model.Phytomer(metamer_index)
                     has_valid_organ = False
-
                     for organ_vid in g.components_iter(metamer_vid):
                         organ_label = g.label(organ_vid)
                         if organ_label not in MTG_TO_CNWHEAT_PHYTOMERS_ORGANS_MAPPING: continue
@@ -471,49 +446,38 @@ def from_MTG(g, organs_inputs, elements_inputs): #TODO: update doc
                         organ_class = MTG_TO_CNWHEAT_PHYTOMERS_ORGANS_MAPPING[organ_label]
                         organ = organ_class(organ_label)
                         organ.initialize()
-                        if organ_label == CNWHEAT_CLASSES_TO_MTG_ORGANS_MAPPING[model.HiddenGrowingZone]:
-                            # create a new hgz
-                            vertex_properties = g.get_vertex_property(organ_vid)
-                            if set(vertex_properties).issuperset(simulation.Simulation.HIDDENGROWINGZONE_STATE):
-                                hgz_inputs = {}
-                                for hgz_input_name in simulation.Simulation.HIDDENGROWINGZONE_STATE:
-                                    hgz_inputs[hgz_input_name] = vertex_properties[hgz_input_name]
-                                hgz = model.HiddenGrowingZone(organ_label, **hgz_inputs)
-                                has_valid_organ = True
-                                setattr(phytomer, CNWHEAT_ATTRIBUTES_MAPPING[model.HiddenGrowingZone], hgz)
-                        else:
-                            has_valid_element = False
-                            for element_vid in g.components_iter(organ_vid):
-                                vertex_properties = g.get_vertex_property(element_vid)
-                                element_label = g.label(element_vid)
-                                element_id = (plant_index, axis_label, metamer_index, organ_label, element_label)
-                                if element_id in elements_inputs_grouped.groups:
-                                    elements_inputs_group = elements_inputs_grouped.get_group(element_id)
-                                    elements_inputs_group_series = elements_inputs_group.loc[elements_inputs_group.first_valid_index(), elements_inputs_group.columns.intersection(simulation.Simulation.ELEMENTS_STATE)]
+                        has_valid_element = False
+                        for element_vid in g.components_iter(organ_vid):
+                            vertex_properties = g.get_vertex_property(element_vid)
+                            element_label = g.label(element_vid)
+                            element_id = (plant_index, axis_label, metamer_index, organ_label, element_label)
+                            if element_id in elements_inputs_grouped.groups:
+                                elements_inputs_group = elements_inputs_grouped.get_group(element_id)
+                                elements_inputs_group_series = elements_inputs_group.loc[elements_inputs_group.first_valid_index(), elements_inputs_group.columns.intersection(simulation.Simulation.ELEMENTS_STATE)]
+                            else:
+                                elements_inputs_group_series = pd.Series()
+                            element_inputs = {}
+                            is_valid_element = True
+                            for element_input_name in simulation.Simulation.ELEMENTS_STATE:
+                                if element_input_name in vertex_properties:
+                                    # use the properties of the vertex
+                                    element_inputs[element_input_name] = vertex_properties[element_input_name]
+                                    if element_input_name == 'green_area':
+                                        element_inputs[element_input_name] /= 10000.0 # convert from cm2 to m2 ; TODO: homogenize the units between the models
                                 else:
-                                    elements_inputs_group_series = pd.Series()
-                                element_inputs = {}
-                                is_valid_element = True
-                                for element_input_name in simulation.Simulation.ELEMENTS_STATE:
-                                    if element_input_name in vertex_properties:
-                                        # use the properties of the vertex
-                                        element_inputs[element_input_name] = vertex_properties[element_input_name]
-                                        if element_input_name == 'green_area':
-                                            element_inputs[element_input_name] /= 10000.0 # convert from cm2 to m2 ; TODO: homogenize the units between the models
+                                    # use the value in elements_inputs
+                                    if element_input_name in elements_inputs_group_series:
+                                        element_inputs[element_input_name] = elements_inputs_group_series[element_input_name]
                                     else:
-                                        # use the value in elements_inputs
-                                        if element_input_name in elements_inputs_group_series:
-                                            element_inputs[element_input_name] = elements_inputs_group_series[element_input_name]
-                                        else:
-                                            is_valid_element = False
-                                            break
-                                if is_valid_element:
-                                    has_valid_element = True
-                                    element = CNWHEAT_ORGANS_TO_ELEMENTS_MAPPING[organ_class](element_label, **element_inputs)
-                                    setattr(organ, MTG_TO_CNWHEAT_ELEMENTS_NAMES_MAPPING[element_label], element)
-                            if has_valid_element:
-                                has_valid_organ = True
-                                setattr(phytomer, CNWHEAT_ATTRIBUTES_MAPPING[organ_class], organ)
+                                        is_valid_element = False
+                                        break
+                            if is_valid_element:
+                                has_valid_element = True
+                                element = CNWHEAT_ORGANS_TO_ELEMENTS_MAPPING[organ_class](element_label, **element_inputs)
+                                setattr(organ, MTG_TO_CNWHEAT_ELEMENTS_NAMES_MAPPING[element_label], element)
+                        if has_valid_element:
+                            has_valid_organ = True
+                            setattr(phytomer, CNWHEAT_ATTRIBUTES_MAPPING[organ_class], organ)
 
                     if has_valid_organ:
                         axis.phytomers.append(phytomer)
@@ -602,12 +566,6 @@ def update_MTG(population, g):
                 for organ_property_name in organ_property_names:
                     g.property(organ_property_name)[organ_vid] = getattr(organ, organ_property_name)
 
-            # reinitialize the iterator
-            axis_components_iter = g.components_iter(axis_vid)
-            # ignore the roots and the phloem
-            next(axis_components_iter)
-            next(axis_components_iter)
-
             # update the metamers
             for phytomer in axis.phytomers:
                 phytomer_index = phytomer.index
@@ -616,14 +574,6 @@ def update_MTG(population, g):
                     if g.label(axis_component_vid).startswith('metamer') and int(g.index(axis_component_vid)) == phytomer_index:
                         break
                 metamer_vid = axis_component_vid
-
-                if phytomer.hiddengrowingzone is not None:
-                    # insert an hidden growing zone if needed, and update it
-                    metamer_components_iter = g.components_iter(metamer_vid)
-                    hgz_vid = next(metamer_components_iter)
-                    hgz_label = g.label(hgz_vid)
-                    for organ_property_name in simulation.Simulation.HIDDENGROWINGZONE_STATE:
-                        g.property(organ_property_name)[hgz_vid] = getattr(phytomer.hiddengrowingzone, organ_property_name)
 
                 # update the organs
                 for organ_vid in g.components_iter(metamer_vid):
