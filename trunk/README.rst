@@ -10,10 +10,10 @@ Prerequisites
 
 * To run the model: 
     * Python >= 2.7, http://www.python.org/
-    * NumPy >= 1.7.2, http://www.numpy.org/
-    * SciPy >= 0.12.1, http://www.scipy.org/
-    * Pandas >= 0.14.0, http://pandas.pydata.org/
-    * Respi-wheat, https://sourcesup.renater.fr/projects/respi-wheat/
+    * NumPy >= 1.11.0, http://www.numpy.org/
+    * SciPy >= 0.16.1, http://www.scipy.org/
+    * Pandas >= 0.18.0, http://pandas.pydata.org/
+    * Respi-wheat, https://sourcesup.renater.fr/projects/respi-wheat/ (or send an email to respi-wheat-request@groupes.renater.fr)
 * To run the tools: Matplotlib >= 1.3.1, http://matplotlib.org/
 * To build the documentation: Sphinx >= 1.1.3, http://sphinx-doc.org/
 * To run the tests: Nose >= 1.3.0, http://nose.readthedocs.org/
