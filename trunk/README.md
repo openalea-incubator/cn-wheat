@@ -1,0 +1,233 @@
+# CN-Wheat
+
+*CN-Wheat* is a model of nitrogen and carbon distribution in wheat.
+
+## 1. Getting Started
+
+These instructions will get you a copy of *CN-Wheat* up and running on your local 
+machine.
+
+### 1.1 Prerequisites
+
+To install and use *CN-Wheat*, you need first to install the dependencies.
+
+*CN-Wheat* has been tested on Windows 10 64 bit and Linux Fedora 24 64 bit.
+ 
+#### 1.1.1 Install the dependencies on Windows 10 64 bit
+
+1. Install Python  
+
+    * go to https://www.python.org/downloads/windows/download, 
+    * click on "Latest Python 2 Release [...]", 
+    * download "Windows x86-64 MSI installer" and install it.
+
+2. Install NumPy:  
+
+    * go to http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy, 
+    * download NumPy+MKL for Python 2 64 bit,
+    * install it using pip installer: `pip install numpy‑*.whl`.
+
+3. Install SciPy  
+
+    * go to http://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy, 
+    * download SciPy for Python 2 64 bit, 
+    * install it using pip installer: `pip install scipy‑*.whl`.
+
+4. Install Pandas  
+
+    * go to http://www.lfd.uci.edu/~gohlke/pythonlibs/#pandas, 
+    * download Pandas for Python 2 64 bit,
+    * install it using pip installer: `pip install pandas‑*.whl`.
+
+5. Install Matplotlib
+
+    * go to http://www.lfd.uci.edu/~gohlke/pythonlibs/#matplotlib, 
+    * download Matplotlib for Python 2 64 bit, 
+    * install it using pip installer: `pip install matplotlib‑*.whl`.
+
+6. Install Sphinx
+
+    * go to http://www.lfd.uci.edu/~gohlke/pythonlibs/#misc, 
+    * download Sphinx for Python 2, 
+    * install it using pip installer: `pip install Sphinx‑*.whl`.
+
+7. Install Nose
+
+    * go to http://www.lfd.uci.edu/~gohlke/pythonlibs/#misc, 
+    * download Nose for Python 2, 
+    * install it using pip installer: `pip install nose‑*.whl`.
+
+8. Install Coverage
+
+    * go to http://www.lfd.uci.edu/~gohlke/pythonlibs/#coverage, 
+    * download Coverage for Python 2 64 bit, 
+    * install it using pip installer: `pip install coverage‑*.whl`.
+
+9. Install Respi-Wheat
+
+    * download the lastest public release of model *Respi-Wheat* from https://sourcesup.renater.fr/frs/download.php/latestzip/2087/Respi-WheatPublic-latest.zip 
+      and install it:
+        * unzip it: you should obtain a zip file `respi-wheat_*.zip`,
+        * unzip the zip file `respi-wheat_*.zip`: you should obtain a folder `respi-wheat`,
+        * open a command line interpreter and go to folder `respi-wheat`,
+        * run command: `python setup.py install --user`.
+
+On Windows 10 64 bit, *CN-Wheat* has been tested with the following versions of the dependencies:  
+
+* Python 2.7.13 64 bit,
+* NumPy+MKL 1.13.1 64 bit,
+* SciPy 0.19.1 64 bit,
+* Pandas 0.20.3 64 bit,
+* Matplotlib 2.0.2 64 bit,
+* Sphinx 1.6.3,
+* Nose 1.3.7,
+* Coverage 4.4.1 64 bit.
+
+#### 1.1.2 Install the dependencies on Linux Fedora 24 64 bit
+
+To install the dependencies on Linux Fedora 24 64 bit:
+
+* open a terminal,
+* run this command with superuser privileges: `dnf -y install python2 python2-numpy python2-scipy python2-pandas python2-matplotlib python2-sphinx python2-nose python2-coverage`
+* download the lastest public release of model *Respi-Wheat* from https://sourcesup.renater.fr/frs/download.php/latestzip/2087/Respi-WheatPublic-latest.zip and install it:
+    * unzip file `Respi-WheatPublic-latest.zip`: you should obtain a zip file `respi-wheat_*.zip`,
+    * unzip file `respi-wheat_*.zip`: you should obtain a folder `respi-wheat`,
+    * go to folder `respi-wheat`,
+    * run command: `python setup.py install --user`.
+
+On Linux Fedora 24 64 bit, *CN-Wheat* has been tested with the following versions of the dependencies:  
+
+* Python 2.7.13 64 bit,
+* NumPy 1.11.0 64 bit,
+* SciPy 0.16.1 64 bit,
+* Pandas 0.18.0 64 bit,
+* Matplotlib 1.5.2rc2 64 bit,
+* Sphinx 1.4.8,
+* Nose 1.3.7,
+* Coverage 4.4.1 64 bit.
+
+
+### 1.2 Installing
+
+__Note__: We suppose you already installed the dependencies for your operating system. Otherwise follow these [instructions](prerequisites "Prerequisites").
+
+You can install *CN-Wheat* either in "install" or "develop" mode.
+
+#### 1.2.1 Install *CN-Wheat* in "install" mode
+
+Install *CN-Wheat* in "install" mode if you're not going to develop, edit or debug 
+it, i.e. you just want to used it as third party package.
+
+To install *CN-Wheat* in "end-user" mode:
+
+* open a command line interpreter,
+* go to your local copy of project *CN-Wheat*,
+* run command: `python setup.py install --user`.
+
+#### 1.2.2 Install *CN-Wheat* in "develop" mode
+
+Install *CN-Wheat* in "develop" mode if you want to get *CN-Wheat* installed and then 
+be able to frequently edit the code and not have to re-install *CN-Wheat* to have the 
+changes to take effect immediately.
+
+To install *CN-Wheat* in "develop" mode:
+
+* open a command line interpreter,
+* go to your local copy of project *CN-Wheat*,
+* run command: `python setup.py develop --user`.
+
+## 2. Reading the docs
+
+To build the documentation:
+
+* install the model (see [Installation of the model](installing "Installing")), 
+* open a command line interpreter,
+* go to the top directory of your local copy of the project,
+* run this command: `python setup.py build_sphinx`,
+* and direct your browser to file `doc/_build/html/index.html`.
+
+## 3. Testing
+
+The automated test permits to verify that the model implementation accurately 
+represents the developer’s conceptual description of the model and its solution.
+
+The automated test:
+
+* initializes the model from input data in CSV files,
+* runs the model on 2 steps, forcing the photosynthesis and senescence parameters 
+  before each run of the model,
+* concatenate the outputs of the model in dataframes, with one dataframe per topological scale,
+* write the outputs dataframes to CSV files,
+* compare actual to expected outputs,
+* raise an error if actual and expected outputs are not equal up to a given tolerance.     
+
+To run the automated test with coverage report:
+
+* install the model (see [Installation of the model](installing "Installing"), 
+* open a command line interpreter,
+* go to the directory `test` of your local copy of the project,
+* and run this command: `nosetests --with-coverage --cover-package=cnwheat test_cnwheat.py`.
+
+The automated test does not verify the validity of the model, i.e. it doesn't permit 
+to determine the degree to which the model is an accurate representation of the 
+real world from the perspective of the intended uses of the model.  
+To help verifying the validity of the model, use the plotting tools implemented 
+in module `cnwheat.tools`.   
+
+## Deployment
+
+*CN-Wheat* can be coupled with other ecophysiological models, to simulate the interaction 
+between CN distribution and (for example) leaves elongation, photosynthesis, growth, 
+senescence, light interception and topology of wheat crops.  
+Please contact <cn-wheat-request@groupes.renater.fr> for more information about the 
+possibility of coupling and integrate *CN-Wheat* with other ecophysiological models. 
+
+## Built With
+
+* [Python](http://www.python.org/), [NumPy](http://www.numpy.org/), [SciPy](http://www.scipy.org/), 
+  [Pandas](http://pandas.pydata.org/), [Respi-Wheat](https://sourcesup.renater.fr/projects/respi-wheat): 
+  implementation and deployment of the model,
+* [Matplotlib](http://matplotlib.org/): generation of graphs to help validating the model, 
+* [Sphinx](http://sphinx-doc.org/): building of the documentation, 
+* [Nose](http://nose.readthedocs.org/): run of the automated tests,
+* [Coverage](http://nedbatchelder.com/code/coverage/): coverage of code testing.
+
+## Contributing
+
+First, send an email to <cn-wheat-request@groupes.renater.fr> to be added to the project.  
+
+Then,
+ 
+* check for open issues or open a fresh issue to start a discussion around a
+  feature idea or a bug: https://sourcesup.renater.fr/tracker/?group_id=1515.
+* If you feel uncomfortable or uncertain about an issue or your changes, feel
+  free to email <cn-wheat@groupes.renater.fr>.
+
+## Contact
+
+For any question, send an email to <cn-wheat-request@groupes.renater.fr>.
+
+## Versioning
+
+We use an SVN repository on [SourceSup](https://sourcesup.renater.fr) for versioning.  
+If you need an access to the current in development version of the model, please send 
+an email to <cn-wheat-request@groupes.renater.fr>.   
+
+## Authors
+
+* **Romain BARILLOT** - *model designing, development and validation* - <Romain.Barillot@inra.fr>
+* **Camille CHAMBON** - *software designing, development, deployment and optimization* - <Camille.Chambon@inra.fr>
+
+Also contributed strongly to the development of this software: 
+
+* **Bruno ANDRIEU** - *model designing and validation, scientific project management* - <Bruno.Andrieu@inra.fr> 
+
+## License
+
+This project is licensed under the CeCILL-C License - see the [LICENSE](LICENSE) file for details
+
+## Acknowledgments
+
+The research leading these results has received funding through the 
+Investment for the Future programme managed by the Research National Agency 
+(BreedWheat project ANR-10-BTBR-03).
