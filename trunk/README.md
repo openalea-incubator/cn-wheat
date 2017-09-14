@@ -19,50 +19,88 @@ To install and use *CN-Wheat*, you need first to install the dependencies.
 
     * go to https://www.python.org/downloads/windows/download, 
     * click on "Latest Python 2 Release [...]", 
-    * download "Windows x86-64 MSI installer" and install it.
+    * download "Windows x86-64 MSI installer" and install it selecting the following options:
+        * install for all users,
+        * default destination directory,
+        * install all subfeatures, including subfeature "Add python.exe to Path".
 
 2. Install NumPy:  
 
     * go to http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy, 
-    * download NumPy+MKL for Python 2 64 bit,
-    * install it using pip installer: `pip install numpy‑*.whl`.
+    * download `NumPy+MKL` for Python 2 64 bit,
+    * install it using `pip` installer: 
+        * open a command line interpreter,
+        * go to the directory where you saved `NumPy+MKL` for Python 2 64 bit,
+        * install `NumPy+MKL` from the downloaded wheel file.  
+          For example, if you downloaded file "numpy‑1.13.1+mkl‑cp27‑cp27m‑win_amd64.whl", 
+          type: `pip install "numpy‑1.13.1+mkl‑cp27‑cp27m‑win_amd64.whl"`.
 
 3. Install SciPy  
 
     * go to http://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy, 
-    * download SciPy for Python 2 64 bit, 
-    * install it using pip installer: `pip install scipy‑*.whl`.
+    * download `SciPy` for Python 2 64 bit,
+    * install it using `pip` installer: 
+        * open a command line interpreter,
+        * go to the directory where you saved `SciPy` for Python 2 64 bit,
+        * install `SciPy` from the downloaded wheel file.  
+          For example, if you downloaded file "scipy‑0.19.1‑cp27‑cp27m‑win_amd64.whl", 
+          type: `pip install "scipy‑0.19.1‑cp27‑cp27m‑win_amd64.whl"`.
 
 4. Install Pandas  
 
     * go to http://www.lfd.uci.edu/~gohlke/pythonlibs/#pandas, 
-    * download Pandas for Python 2 64 bit,
-    * install it using pip installer: `pip install pandas‑*.whl`.
-
+    * download `Pandas` for Python 2 64 bit,
+    * install it using `pip` installer: 
+        * open a command line interpreter,
+        * go to the directory where you saved `Pandas` for Python 2 64 bit,
+        * install `Pandas` from the downloaded wheel file.  
+          For example, if you downloaded file "pandas‑0.20.3‑cp27‑cp27m‑win_amd64.whl", 
+          type: `pip install "pandas‑0.20.3‑cp27‑cp27m‑win_amd64.whl"`.
+          
 5. Install Matplotlib
 
     * go to http://www.lfd.uci.edu/~gohlke/pythonlibs/#matplotlib, 
-    * download Matplotlib for Python 2 64 bit, 
-    * install it using pip installer: `pip install matplotlib‑*.whl`.
-
+    * download `Matplotlib` for Python 2 64 bit,
+    * install it using `pip` installer: 
+        * open a command line interpreter,
+        * go to the directory where you saved `Matplotlib` for Python 2 64 bit,
+        * install `Matplotlib` from the downloaded wheel file.  
+          For example, if you downloaded file "matplotlib‑2.0.2‑cp27‑cp27m‑win_amd64.whl", 
+          type: `pip install "matplotlib‑2.0.2‑cp27‑cp27m‑win_amd64.whl"`.
+          
 6. Install Sphinx
 
     * go to http://www.lfd.uci.edu/~gohlke/pythonlibs/#misc, 
-    * download Sphinx for Python 2, 
-    * install it using pip installer: `pip install Sphinx‑*.whl`.
-
+    * download `Sphinx` for Python 2,
+    * install it using `pip` installer: 
+        * open a command line interpreter,
+        * go to the directory where you saved `Sphinx` for Python 2,
+        * install `Sphinx` from the downloaded wheel file.  
+          For example, if you downloaded file "Sphinx‑1.6.3‑py2.py3‑none‑any.whl", 
+          type: `pip install "Sphinx‑1.6.3‑py2.py3‑none‑any.whl"`.
+          
 7. Install Nose
 
     * go to http://www.lfd.uci.edu/~gohlke/pythonlibs/#misc, 
-    * download Nose for Python 2, 
-    * install it using pip installer: `pip install nose‑*.whl`.
-
+    * download `Nose` for Python 2 64 bit,
+    * install it using `pip` installer: 
+        * open a command line interpreter,
+        * go to the directory where you saved `Nose` for Python 2 64 bit,
+        * install `Nose` from the downloaded wheel file.  
+          For example, if you downloaded file "nose‑1.3.7‑py2‑none‑any.whl", 
+          type: `pip install "nose‑1.3.7‑py2‑none‑any.whl"`.
+          
 8. Install Coverage
 
     * go to http://www.lfd.uci.edu/~gohlke/pythonlibs/#coverage, 
-    * download Coverage for Python 2 64 bit, 
-    * install it using pip installer: `pip install coverage‑*.whl`.
-
+    * download `Coverage` for Python 2 64 bit,
+    * install it using `pip` installer: 
+        * open a command line interpreter,
+        * go to the directory where you saved `Coverage` for Python 2 64 bit,
+        * install `Coverage` from the downloaded wheel file.  
+          For example, if you downloaded file "coverage‑4.4.1‑cp27‑cp27m‑win_amd64.whl", 
+          type: `pip install "coverage‑4.4.1‑cp27‑cp27m‑win_amd64.whl"`.
+          
 9. Install Respi-Wheat
 
     * download the lastest public release of model *Respi-Wheat* from https://sourcesup.renater.fr/frs/download.php/latestzip/2087/Respi-WheatPublic-latest.zip 
