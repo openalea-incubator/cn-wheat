@@ -201,7 +201,7 @@ The automated test:
 
 To run the automated test with coverage report:
 
-* install the model (see [Installation of the model](installing "Installing"), 
+* install the model (see [Installation of the model](installing "Installing")), 
 * open a command line interpreter,
 * go to the directory `test` of your local copy of the project,
 * and run this command: `nosetests --with-coverage --cover-package=cnwheat test_cnwheat.py`.
