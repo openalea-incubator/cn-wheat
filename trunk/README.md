@@ -103,7 +103,7 @@ To install and use *CN-Wheat*, you need first to install the dependencies.
           
 9. Install Respi-Wheat
 
-    * download the lastest public release of model *Respi-Wheat* from https://sourcesup.renater.fr/frs/download.php/latestzip/2087/Respi-WheatPublic-latest.zip 
+    * download the lastest public release of model *Respi-Wheat* from https://sourcesup.renater.fr/frs/download.php/latestzip/2087/Respi-Wheat-Stable-latest.zip 
       and install it:
         * unzip it: you should obtain a zip file `respi-wheat_*.zip`,
         * unzip the zip file `respi-wheat_*.zip`: you should obtain a folder `respi-wheat`,
@@ -127,8 +127,8 @@ To install the dependencies on Linux Fedora 24 64 bit:
 
 * open a terminal,
 * run this command with superuser privileges: `dnf -y install python2 python2-numpy python2-scipy python2-pandas python2-matplotlib python2-sphinx python2-nose python2-coverage`
-* download the lastest public release of model *Respi-Wheat* from https://sourcesup.renater.fr/frs/download.php/latestzip/2087/Respi-WheatPublic-latest.zip and install it:
-    * unzip file `Respi-WheatPublic-latest.zip`: you should obtain a zip file `respi-wheat_*.zip`,
+* download the lastest public release of model *Respi-Wheat* from https://sourcesup.renater.fr/frs/download.php/latestzip/2087/Respi-Wheat-Stable-latest.zip and install it:
+    * unzip file `Respi-Wheat-Stable-latest.zip`: you should obtain a zip file `respi-wheat_*.zip`,
     * unzip file `respi-wheat_*.zip`: you should obtain a folder `respi-wheat`,
     * go to folder `respi-wheat`,
     * run command: `python setup.py install --user`.
