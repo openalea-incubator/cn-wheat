@@ -60,5 +60,5 @@ setup(
     license = "CeCILL-C",
     keywords = "functional-structural plant model, wheat, ode, system integration, scipy",
     url = "https://sourcesup.renater.fr/projects/cn-wheat/",
-    download_url = "https://sourcesup.renater.fr/frs/download.php/latestzip/1622/cn-wheat-latest.zip",
+    download_url = "https://sourcesup.renater.fr/frs/download.php/latestzip/2088/CN-Wheat-Stable-latest.zip",
 )
