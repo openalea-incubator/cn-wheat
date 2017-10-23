@@ -1,6 +1,26 @@
 # CN-Wheat
 
-*CN-Wheat* is a model of nitrogen and carbon distribution in wheat.
+This is the Read Me file of the model *CN-Wheat*, a model of CN distribution for wheat.
+
+*CN-Wheat* is a Functional-Structural Plant Model which simulates the distribution 
+of carbon and nitrogen into wheat culms in relation to photosynthesis, 
+N uptake, metabolite turnover, root exudation and tissue death. 
+
+This model was first produced as part of the project BreedWheat over the last 
+three years, through the Investment for the Future programme managed by the 
+French Research National Agency (ANR-10-BTBR-03). The aim of the project BreedWheat was 
+to improve the competiveness of the French wheat breeding sector, through the 
+definition/ identification of ideotypes, parameters of interest maximizing grain yield 
+and quality under sustainable agricultural systems and climate scenarios. 
+
+These researches lead to the publication of project report, and two articles:
+
+* Barillot, R., Chambon, C., & Andrieu, B. (2016). CN-Wheat, a functional–structural model 
+  of carbon and nitrogen metabolism in wheat culms after anthesis. I. Model description. 
+  Annals of Botany, 118(5), 997‑1013. https://doi.org/10.1093/aob/mcw143 
+* and Barillot, R., Chambon, C., & Andrieu, B. (2016). CN-Wheat, a functional–structural 
+  model of carbon and nitrogen metabolism in wheat culms after anthesis. II. Model evaluation. 
+  Annals of Botany, 118(5), 1015‑1031. https://doi.org/10.1093/aob/mcw144
 
 ## 1. Getting Started
 
@@ -174,9 +194,21 @@ To install *CN-Wheat* in "develop" mode:
 * go to your local copy of project *CN-Wheat*,
 * run command: `python setup.py develop --user`.
 
+### 1.3 Running
+
+__Note__: We suppose you already installed the model. Otherwise follow these [instructions](installing "Installing").
+
+To run a simulation example, compute post-processing and generate graphs for validation:
+
+* open a command line interpreter,
+* go to the directory `example/` of your local copy of project *CN-Wheat*,
+* run command: `python main.py`.
+
+See the user guide for a step by step explanation of how to set and run model *CN-Wheat*.
+
 ## 2. Reading the docs
 
-To build the documentation:
+To build the user and reference guides:
 
 * install the model (see [Installation of the model](installing "Installing")), 
 * open a command line interpreter,
@@ -247,22 +279,18 @@ For any question, send an email to <cn-wheat-request@groupes.renater.fr>.
 
 ## Versioning
 
-We use an SVN repository on [SourceSup](https://sourcesup.renater.fr) for versioning.  
+We use an SVN repository on [SourceSup](https://sourcesup.renater.fr) for 
+versioning: https://sourcesup.renater.fr/projects/cn-wheat/.  
 If you need an access to the current in development version of the model, please send 
-an email to <cn-wheat-request@groupes.renater.fr>.   
+an email to <cn-wheat-request@groupes.renater.fr>.
 
 ## Authors
 
-* **Romain BARILLOT** - *model designing, development and validation* - <Romain.Barillot@inra.fr>
-* **Camille CHAMBON** - *software designing, development, deployment and optimization* - <Camille.Chambon@inra.fr>
-
-Also contributed strongly to the development of this software: 
-
-* **Bruno ANDRIEU** - *model designing and validation, scientific project management* - <Bruno.Andrieu@inra.fr> 
+**Romain BARILLOT** and **Camille CHAMBON** - see file [AUTHORS](AUTHORS) for details
 
 ## License
 
-This project is licensed under the CeCILL-C License - see the [LICENSE](LICENSE) file for details
+This project is licensed under the CeCILL-C License - see file [LICENSE](LICENSE) for details
 
 ## Acknowledgments
 

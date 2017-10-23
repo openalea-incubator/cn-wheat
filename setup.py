@@ -55,10 +55,12 @@ setup(
     include_package_data = True,
     author = "C.Chambon, R.Barillot",
     author_email = "camille.chambon@inra.fr, romain.barillot@inra.fr",
-    description = "Model of CN distribution for wheat",
-    long_description = "Model of nitrogen and carbon distribution in wheat",
+    description = "CN-Wheat is a model of CN distribution for wheat",
+    long_description = """CN-Wheat is a Functional-Structural Plant Model which 
+simulates the distribution of carbon and nitrogen into wheat culms in relation 
+to photosynthesis, N uptake, metabolite turnover, root exudation and tissue death.""",
     license = "CeCILL-C",
-    keywords = "functional-structural plant model, wheat, ode, system integration, scipy",
+    keywords = "functional-structural plant model, wheat, ode, system integration, scipy", 
     url = "https://sourcesup.renater.fr/projects/cn-wheat/",
     download_url = "https://sourcesup.renater.fr/frs/download.php/latestzip/2088/CN-Wheat-Stable-latest.zip",
 )
