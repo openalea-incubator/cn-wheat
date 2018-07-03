@@ -495,7 +495,7 @@ class Grains(Organ):
         self.R_grain_growth_struct = None #: grain struct  respiration (µmol C respired)
         self.R_grain_growth_starch = None #: grain starch growth respiration (µmol C respired)
 
-    def initialize(self):
+    def initialize(self, delta_t):
         """Initialize the derived attributes of the organ.
         """
         self.structural_dry_mass = self.calculate_structural_dry_mass(self.structure)
@@ -681,6 +681,15 @@ class Roots(Organ):
         self.HATS_LATS = None #: Nitrate influx (µmol N)
         self.sum_respi = None #: Sum of respirations for roots i.e. related to N uptake, amino acids synthesis and residual (µmol C)
 
+    def initialize(self,delta_t):
+        self.KBIS_CYTOKININS_EXPORT = Roots.PARAMETERS.ALPHA * Roots.PARAMETERS.K_CYTOKININS_EXPORT * delta_t
+        self.VMAX_S_Cytokinins = Roots.PARAMETERS.VMAX_S_CYTOKININS* delta_t
+        self.N_SUC_CYTOKININS = Roots.PARAMETERS.N_SUC_CYTOKININS
+        self.KN_SUC_CYTOKININS = Roots.PARAMETERS.K_SUCROSE_CYTOKININS**Roots.PARAMETERS.N_SUC_CYTOKININS
+        self.N_NIT_CYTOKININS = Roots.PARAMETERS.N_NIT_CYTOKININS
+        self.KN_NIT_CYTOKININS = Roots.PARAMETERS.K_NITRATES_CYTOKININS**Roots.PARAMETERS.N_NIT_CYTOKININS
+        self.KBIS_AA_EXPORT = Roots.PARAMETERS.K_AMINO_ACIDS_EXPORT* delta_t
+
     def calculate_integrative_variables(self):
         self.Total_Organic_Nitrogen = self.calculate_Total_Organic_Nitrogen(self.amino_acids, self.Nstruct)
 
@@ -833,8 +842,8 @@ class Roots(Organ):
         if amino_acids <=0:
             Export_Amino_Acids = 0
         else:
-            f_amino_acids = (amino_acids/(self.mstruct*Roots.PARAMETERS.ALPHA))*Roots.PARAMETERS.K_AMINO_ACIDS_EXPORT
-            Export_Amino_Acids = f_amino_acids* self.mstruct * regul_transpiration * delta_t #: Amino acids export regulation by plant transpiration (µmol N)
+            f_amino_acids = (amino_acids/Roots.PARAMETERS.ALPHA)* self.KBIS_AA_EXPORT
+            Export_Amino_Acids = f_amino_acids * regul_transpiration  #: Amino acids export regulation by plant transpiration (µmol N)
 
         return Export_Amino_Acids
 
@@ -876,9 +885,9 @@ class Roots(Organ):
         """
         conc_sucrose = max(0, (sucrose_roots/self.mstruct))
         Conc_Nitrates = max(0, (nitrates_roots/self.mstruct))
-        f_sucrose = conc_sucrose**Roots.PARAMETERS.N_SUC_CYTOKININS/(conc_sucrose**Roots.PARAMETERS.N_SUC_CYTOKININS + Roots.PARAMETERS.K_SUCROSE_CYTOKININS**Roots.PARAMETERS.N_SUC_CYTOKININS)
-        f_nitrates = Conc_Nitrates**Roots.PARAMETERS.N_NIT_CYTOKININS/(Conc_Nitrates**Roots.PARAMETERS.N_NIT_CYTOKININS + Roots.PARAMETERS.K_NITRATES_CYTOKININS**Roots.PARAMETERS.N_NIT_CYTOKININS)
-        S_cytokinins = Roots.PARAMETERS.VMAX_S_CYTOKININS * f_sucrose * f_nitrates * delta_t
+        f_sucrose = conc_sucrose**self.N_SUC_CYTOKININS/(conc_sucrose**self.N_SUC_CYTOKININS + self.KN_SUC_CYTOKININS)
+        f_nitrates = Conc_Nitrates**self.N_NIT_CYTOKININS/(Conc_Nitrates**self.N_NIT_CYTOKININS + self.KN_NIT_CYTOKININS)
+        S_cytokinins = self.VMAX_S_Cytokinins * f_sucrose * f_nitrates
         return S_cytokinins
 
     def calculate_Export_cytokinins(self, cytokinins, regul_transpiration, delta_t):
@@ -897,8 +906,8 @@ class Roots(Organ):
         if cytokinins <=0:
             Export_cytokinins = 0
         else:
-            f_cytokinins = (cytokinins/(self.mstruct*Roots.PARAMETERS.ALPHA)) * Roots.PARAMETERS.K_CYTOKININS_EXPORT
-            Export_cytokinins = f_cytokinins* self.mstruct * regul_transpiration * delta_t #: Cytokinin export regulation by plant transpiration (AU)
+            f_cytokinins = cytokinins * self.KBIS_CYTOKININS_EXPORT
+            Export_cytokinins = f_cytokinins * regul_transpiration #: Cytokinin export regulation by plant transpiration (AU)
 
         return Export_cytokinins
 

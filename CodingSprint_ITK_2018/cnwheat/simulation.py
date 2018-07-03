@@ -472,6 +472,7 @@ class Simulation(object):
                     if organ is None:
                         continue
                     i = _init_initial_conditions(organ, i)
+                    organ.initialize(delta_t=self.delta_t)
                 for phytomer in axis.phytomers:
                     i = _init_initial_conditions(phytomer, i)
                     for organ in (phytomer.chaff, phytomer.peduncle, phytomer.lamina, phytomer.internode, phytomer.sheath, phytomer.hiddenzone):
