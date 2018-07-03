@@ -126,8 +126,8 @@ def main(stop_time, run_simu=True, run_postprocessing=True, generate_graphs=True
         print 'Prepare the simulation...'
         
         # set up the logging
-        cnwheat_tools.setup_logging(config_filepath=LOGGING_CONFIG_FILEPATH, level=LOGGING_LEVEL,
-                  log_model=False, log_compartments=False, log_derivatives=False)
+        # cnwheat_tools.setup_logging(config_filepath=LOGGING_CONFIG_FILEPATH, level=LOGGING_LEVEL,
+        #           log_model=False, log_compartments=False, log_derivatives=False)
         
         # create the simulation
         simulation_ = cnwheat_simulation.Simulation(respiration_model=respiwheat_model, delta_t=3600, culm_density=CULM_DENSITY)
@@ -210,7 +210,7 @@ def main(stop_time, run_simu=True, run_postprocessing=True, generate_graphs=True
         print 'Run the simulation... DONE!'
 
         execution_time = datetime.datetime.now() - current_time_of_the_system
-        print  'Simulation run in ', execution_time, '\n'
+        print 'Simulation run in ', execution_time, '\n'
 
         print 'Write the outputs to CSV files...'
         

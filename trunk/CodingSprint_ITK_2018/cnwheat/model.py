@@ -221,9 +221,22 @@ class HiddenZone(Organ):
         self.D_Fructan = None #: fructan degradation (µmol C g-1 mstruct)
         self.D_Proteins = None #: protein degradation (µmol N g-1 mstruct)
 
+    def initialize(self, delta_t):
+        self.conductance_Unloading_sucrose = parameters.HIDDEN_ZONE_PARAMETERS.SIGMA * parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.BETA * self.mstruct ** (2 / 3) * delta_t
+        self.conductance_Unloading_Amino_Acids = parameters.HIDDEN_ZONE_PARAMETERS.SIGMA * parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.BETA * self.mstruct ** (2 / 3) * delta_t
+        self.VMAX_SPROTEINS = parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.VMAX_SPROTEINS * delta_t
+        self.K_SPROTEINS = parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.K_SPROTEINS
+        self.delta_Dproteins = parameters.HIDDEN_ZONE_PARAMETERS.delta_Dproteins * delta_t
+        self.VMAX_SFRUCTAN_POT = PhotosyntheticOrgan.PARAMETERS.VMAX_SFRUCTAN_POT
+        self.K_REGUL_SFRUCTAN = (PhotosyntheticOrgan.PARAMETERS.K_REGUL_SFRUCTAN * delta_t)**PhotosyntheticOrgan.PARAMETERS.N_REGUL_SFRUCTAN
+        self.N_REGUL_SFRUCTAN = PhotosyntheticOrgan.PARAMETERS.N_REGUL_SFRUCTAN
+        self.K_SFRUCTAN = PhotosyntheticOrgan.PARAMETERS.K_SFRUCTAN
+        self.K_DFRUCTAN = PhotosyntheticOrgan.PARAMETERS.K_DFRUCTAN
+        self.VMAX_DFRUCTAN = PhotosyntheticOrgan.PARAMETERS.VMAX_DFRUCTAN * delta_t
+
     # FLUXES
     
-    def calculate_Unloading_Sucrose(self, sucrose, sucrose_phloem, mstruct_axis, delta_t):
+    def calculate_Unloading_Sucrose(self, sucrose, sucrose_phloem, mstruct_axis):
         """Sucrose Unloading from phloem to the hidden zone integrated over delta_t (µmol C sucrose unloaded g-1 mstruct s-1 * delta_t).
         Transport-resistance equation
 
@@ -237,11 +250,10 @@ class HiddenZone(Organ):
         :Returns Type:
             :class:`float`
         """
-        conductance = parameters.HIDDEN_ZONE_PARAMETERS.SIGMA * parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.BETA * self.mstruct**(2/3)
-        return ((sucrose_phloem / mstruct_axis) - (sucrose / self.mstruct)) * conductance * delta_t
+        return ((sucrose_phloem / mstruct_axis) - (sucrose / self.mstruct)) * self.conductance_Unloading_sucrose
 
 
-    def calculate_Unloading_Amino_Acids(self, amino_acids, amino_acids_phloem, mstruct_axis, delta_t):
+    def calculate_Unloading_Amino_Acids(self, amino_acids, amino_acids_phloem, mstruct_axis):
         """Amino acids Unloading from phloem to the hidden zone integrated over delta_t (µmol N amino acids unloaded g-1 mstruct s-1 * delta_t).
         Transport-resistance equation
 
@@ -255,10 +267,9 @@ class HiddenZone(Organ):
         :Returns Type:
             :class:`float`
         """
-        conductance = parameters.HIDDEN_ZONE_PARAMETERS.SIGMA * parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.BETA * self.mstruct**(2/3)
-        return ((amino_acids_phloem / mstruct_axis) - (amino_acids / self.mstruct)) * conductance * delta_t
+        return ((amino_acids_phloem / mstruct_axis) - (amino_acids / self.mstruct)) * self.conductance_Unloading_Amino_Acids
 
-    def calculate_S_proteins(self, amino_acids, delta_t):
+    def calculate_S_proteins(self, amino_acids):
         """Rate of protein synthesis (µmol N proteins s-1 g-1 MS * delta_t).
         Michaelis-Menten function of amino acids.
 
@@ -270,9 +281,9 @@ class HiddenZone(Organ):
         :Returns Type:
             :class:`float`
         """
-        return (parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.VMAX_SPROTEINS*max(0, (amino_acids / self.mstruct)))/(parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.K_SPROTEINS + max(0, (amino_acids / self.mstruct))) * delta_t
+        return (self.VMAX_SPROTEINS * max(0, (amino_acids / self.mstruct)))/(self.K_SPROTEINS + max(0, (amino_acids / self.mstruct)))
 
-    def calculate_D_Proteins(self, proteins, delta_t):
+    def calculate_D_Proteins(self, proteins):
         """Rate of protein degradation (µmol N proteins s-1 g-1 MS * delta_t).
         First order kinetic
 
@@ -284,7 +295,7 @@ class HiddenZone(Organ):
         :Returns Type:
             :class:`float`
         """
-        return max(0,(parameters.HIDDEN_ZONE_PARAMETERS.delta_Dproteins * (proteins / self.mstruct))) * delta_t
+        return max(0, (self.delta_Dproteins * (proteins / self.mstruct)))
 
 
     def calculate_Regul_S_Fructan(self, Loading_Sucrose, delta_t):
@@ -298,11 +309,11 @@ class HiddenZone(Organ):
             Maximal rate of fructan synthesis (µmol C g-1 mstruct)
         :Returns Type:
         """
-        if Loading_Sucrose <=0:
-            Vmax_Sfructans = PhotosyntheticOrgan.PARAMETERS.VMAX_SFRUCTAN_POT
+        if Loading_Sucrose <= 0:
+            Vmax_Sfructans = self.VMAX_SFRUCTAN_POT
         else: # Regulation by sucrose loading
-            rate_Loading_Sucrose_massic = Loading_Sucrose/self.mstruct/delta_t
-            Vmax_Sfructans = ((PhotosyntheticOrgan.PARAMETERS.VMAX_SFRUCTAN_POT * PhotosyntheticOrgan.PARAMETERS.K_REGUL_SFRUCTAN**(PhotosyntheticOrgan.PARAMETERS.N_REGUL_SFRUCTAN)) / (max(0, rate_Loading_Sucrose_massic**(PhotosyntheticOrgan.PARAMETERS.N_REGUL_SFRUCTAN)) + PhotosyntheticOrgan.PARAMETERS.K_REGUL_SFRUCTAN**(PhotosyntheticOrgan.PARAMETERS.N_REGUL_SFRUCTAN)))
+            rate_Loading_Sucrose_massic = Loading_Sucrose/self.mstruct
+            Vmax_Sfructans = ((self.VMAX_SFRUCTAN_POT * self.K_REGUL_SFRUCTAN) / (max(0, rate_Loading_Sucrose_massic**(self.N_REGUL_SFRUCTAN)) + self.K_REGUL_SFRUCTAN))
         return Vmax_Sfructans
 
     def calculate_S_Fructan(self, sucrose, Regul_S_Fructan, delta_t):
@@ -318,7 +329,7 @@ class HiddenZone(Organ):
         :Returns Type:
             :class:`float`
         """
-        return ((max(0, sucrose)/(self.mstruct)) * Regul_S_Fructan)/((max(0, sucrose)/(self.mstruct)) + PhotosyntheticOrgan.PARAMETERS.K_SFRUCTAN) * delta_t
+        return ((max(0, sucrose)/(self.mstruct)) * Regul_S_Fructan)/((max(0, sucrose)/(self.mstruct)) + self.K_SFRUCTAN) * delta_t
 
 
     def calculate_D_Fructan(self, sucrose, fructan, delta_t):
@@ -334,8 +345,8 @@ class HiddenZone(Organ):
         :Returns Type:
             :class:`float`
         """
-        d_potential = ((PhotosyntheticOrgan.PARAMETERS.K_DFRUCTAN * PhotosyntheticOrgan.PARAMETERS.VMAX_DFRUCTAN) / ((max(0, sucrose)/(self.mstruct)) + PhotosyntheticOrgan.PARAMETERS.K_DFRUCTAN)) * delta_t
-        d_actual = min(d_potential , max(0, fructan))
+        d_potential = ((self.K_DFRUCTAN * self.VMAX_DFRUCTAN) / ((max(0, sucrose)/(self.mstruct)) + self.K_DFRUCTAN))
+        d_actual = min(d_potential, max(0, fructan))
         return d_actual
 
     # COMPARTMENTS
@@ -353,7 +364,7 @@ class HiddenZone(Organ):
         :Returns Type:
             :class:`float`
         """
-        return Unloading_Sucrose  + (D_Fructan - S_Fructan) * self.mstruct + hiddenzone_Loading_Sucrose_contribution
+        return Unloading_Sucrose + (D_Fructan - S_Fructan) * self.mstruct + hiddenzone_Loading_Sucrose_contribution
 
     def calculate_amino_acids_derivative(self, Unloading_Amino_Acids, S_Proteins, D_Proteins, hiddenzone_Loading_Amino_Acids_contribution):
         """delta amino acids of hidden zone.
@@ -499,6 +510,9 @@ class Grains(Organ):
         """Initialize the derived attributes of the organ.
         """
         self.structural_dry_mass = self.calculate_structural_dry_mass(self.structure)
+        self.VMAX_STARCH = Grains.PARAMETERS.VMAX_STARCH * delta_t
+        self.K_STARCH = Grains.PARAMETERS.K_STARCH
+
 
     # VARIABLES
 
@@ -563,10 +577,11 @@ class Grains(Organ):
         """
         if self.age_from_flowering <= Grains.PARAMETERS.FILLING_INIT:   #: Grain enlargment
             S_grain_starch = 0
-        elif self.age_from_flowering> Grains.PARAMETERS.FILLING_END:    #: Grain maturity
+        elif self.age_from_flowering > Grains.PARAMETERS.FILLING_END:    #: Grain maturity
             S_grain_starch = 0
         else:                                                           #: Grain filling
-            S_grain_starch = (((max(0, sucrose_phloem)/(mstruct_axis * Axis.PARAMETERS.ALPHA)) * Grains.PARAMETERS.VMAX_STARCH) / ((max(0, sucrose_phloem)/(mstruct_axis * Axis.PARAMETERS.ALPHA)) + Grains.PARAMETERS.K_STARCH)) * delta_t
+            sucrose_phloem_conc = max(0, sucrose_phloem) / (mstruct_axis * Axis.PARAMETERS.ALPHA)
+            S_grain_starch = self.VMAX_STARCH * sucrose_phloem_conc / (sucrose_phloem_conc + self.K_STARCH)
         return S_grain_starch
 
     def calculate_S_proteins(self, S_grain_structure, S_grain_starch, amino_acids_phloem, sucrose_phloem, structural_dry_mass):
@@ -681,7 +696,21 @@ class Roots(Organ):
         self.HATS_LATS = None #: Nitrate influx (µmol N)
         self.sum_respi = None #: Sum of respirations for roots i.e. related to N uptake, amino acids synthesis and residual (µmol C)
 
-    def initialize(self,delta_t):
+    def initialize(self, delta_t):
+        Organ.initialize(self, delta_t=delta_t)
+        self.VMAX_SUCROSE_UNLOADING = Roots.PARAMETERS.VMAX_SUCROSE_UNLOADING * delta_t
+        self.K_SUCROSE_UNLOADING = Roots.PARAMETERS.K_SUCROSE_UNLOADING
+        self.LAMBDA_VMAX_HATS = Roots.PARAMETERS.LAMBDA_VMAX_HATS/self.mstruct
+        self.LAMBDA_K_HATS = Roots.PARAMETERS.LAMBDA_K_HATS/self.mstruct
+        self.LAMBDA_LATS = Roots.PARAMETERS.LAMBDA_LATS/self.mstruct
+        self.A_VMAX_HATS = Roots.PARAMETERS.A_VMAX_HATS * delta_t * self.mstruct
+        self.A_LATS = Roots.PARAMETERS.A_LATS * delta_t * self.mstruct
+
+        self.K_AMINO_ACIDS_NITRATES = Roots.PARAMETERS.K_AMINO_ACIDS_NITRATES * self.mstruct * Roots.PARAMETERS.ALPHA
+        self.K_AMINO_ACIDS_SUCROSE = Roots.PARAMETERS.K_AMINO_ACIDS_SUCROSE * self.mstruct * Roots.PARAMETERS.ALPHA
+        self.VMAX_AMINO_ACIDS = Roots.PARAMETERS.VMAX_AMINO_ACIDS * delta_t
+
+        self.K_BIS_NITRATE_EXPORT = Roots.PARAMETERS.K_NITRATE_EXPORT / Roots.PARAMETERS.ALPHA * delta_t
         self.KBIS_CYTOKININS_EXPORT = Roots.PARAMETERS.ALPHA * Roots.PARAMETERS.K_CYTOKININS_EXPORT * delta_t
         self.VMAX_S_Cytokinins = Roots.PARAMETERS.VMAX_S_CYTOKININS* delta_t
         self.N_SUC_CYTOKININS = Roots.PARAMETERS.N_SUC_CYTOKININS
@@ -736,7 +765,8 @@ class Roots(Organ):
         :Returns Type:
             :class:`float`
         """
-        return (((max(0, sucrose_phloem)/(mstruct_axis * Axis.PARAMETERS.ALPHA)) * Roots.PARAMETERS.VMAX_SUCROSE_UNLOADING) / ((max(0, sucrose_phloem)/(mstruct_axis * Axis.PARAMETERS.ALPHA)) + Roots.PARAMETERS.K_SUCROSE_UNLOADING)) * delta_t
+        sucrose_conc = max(0, sucrose_phloem) / (mstruct_axis * Axis.PARAMETERS.ALPHA)
+        return self.VMAX_SUCROSE_UNLOADING * sucrose_conc / (sucrose_conc + self.K_SUCROSE_UNLOADING)
 
     def calculate_Unloading_Amino_Acids(self, Unloading_Sucrose, sucrose_phloem, amino_acids_phloem):
         """Unloading of amino_acids from phloem to roots.
@@ -754,7 +784,7 @@ class Roots(Organ):
         if amino_acids_phloem <= 0:
             Unloading_Amino_Acids = 0
         else:
-            Unloading_Amino_Acids =  Unloading_Sucrose * (amino_acids_phloem / sucrose_phloem)
+            Unloading_Amino_Acids = Unloading_Sucrose * (amino_acids_phloem / sucrose_phloem)
         return Unloading_Amino_Acids
 
     def calculate_Uptake_Nitrates(self, Conc_Nitrates_Soil, nitrates_roots, sucrose_roots, delta_t):
@@ -774,16 +804,16 @@ class Roots(Organ):
             :class:`tuple` of 2 :class:`float`
         """
         #: High Affinity Transport System (HATS)
-        VMAX_HATS_MAX = Roots.PARAMETERS.A_VMAX_HATS * np.exp(-Roots.PARAMETERS.LAMBDA_VMAX_HATS*(nitrates_roots/self.mstruct))        #: Maximal rate of nitrates influx at saturating soil N concentration;HATS (µmol N nitrates g-1 mstruct s-1)
-        K_HATS = Roots.PARAMETERS.A_K_HATS * np.exp(-Roots.PARAMETERS.LAMBDA_K_HATS*(nitrates_roots/self.mstruct))                     #: Affinity coefficient of nitrates influx at saturating soil N concentration;HATS (µmol m-3)
-        HATS = (VMAX_HATS_MAX * Conc_Nitrates_Soil)/ (K_HATS + Conc_Nitrates_Soil)                                                     #: Rate of nitrate influx by HATS (µmol N nitrates uptaked s-1 g-1 mstruct)
+        VMAX_HATS_MAX = self.A_VMAX_HATS * np.exp(-self.LAMBDA_VMAX_HATS*nitrates_roots)        #: Maximal rate of nitrates influx at saturating soil N concentration;HATS (µmol N nitrates g-1 mstruct s-1)
+        K_HATS = Roots.PARAMETERS.A_K_HATS * np.exp(-self.LAMBDA_K_HATS*nitrates_roots)                     #: Affinity coefficient of nitrates influx at saturating soil N concentration;HATS (µmol m-3)
+        HATS = VMAX_HATS_MAX * Conc_Nitrates_Soil / (K_HATS + Conc_Nitrates_Soil)                                                     #: Rate of nitrate influx by HATS (µmol N nitrates uptaked s-1 g-1 mstruct)
 
         #: Low Affinity Transport System (LATS)
-        K_LATS = Roots.PARAMETERS.A_LATS * np.exp(-Roots.PARAMETERS.LAMBDA_LATS*(nitrates_roots/self.mstruct))                         #: Rate constant for nitrates influx at low soil N concentration; LATS (m3 g-1 mstruct s-1)
+        K_LATS = self.A_LATS * np.exp(-self.LAMBDA_LATS*nitrates_roots)                         #: Rate constant for nitrates influx at low soil N concentration; LATS (m3 g-1 mstruct s-1)
         LATS = (K_LATS * Conc_Nitrates_Soil)                                                                                           #: Rate of nitrate influx by LATS (µmol N nitrates uptaked s-1 g-1 mstruct)
 
         #: Nitrate influx (µmol N)
-        HATS_LATS = (HATS + LATS) * self.mstruct * delta_t
+        HATS_LATS = HATS + LATS
 
         # Regulations
         regul_C = (sucrose_roots/self.mstruct) / ((sucrose_roots/self.mstruct) + Roots.PARAMETERS.K_C)                                 #: Nitrate uptake regulation by root C
@@ -803,7 +833,9 @@ class Roots(Organ):
         :Returns Type:
             :class:`float`
         """
-        return Roots.PARAMETERS.VMAX_AMINO_ACIDS / ((1 + Roots.PARAMETERS.K_AMINO_ACIDS_NITRATES/(nitrates/(self.mstruct*Roots.PARAMETERS.ALPHA))) * (1 + Roots.PARAMETERS.K_AMINO_ACIDS_SUCROSE/(sucrose/(self.mstruct*Roots.PARAMETERS.ALPHA)))) * delta_t
+        nitrates_coeff = (1 + self.K_AMINO_ACIDS_NITRATES / nitrates)
+        sucrose_coeff = (1 + self.K_AMINO_ACIDS_SUCROSE / sucrose)
+        return self.VMAX_AMINO_ACIDS / (nitrates_coeff * sucrose_coeff)
 
     def calculate_Export_Nitrates(self, nitrates, regul_transpiration, delta_t):
         """Total export of nitrates from roots to shoot organs integrated over delta_t.
@@ -818,11 +850,10 @@ class Roots(Organ):
         :Returns Type:
             :class:`float`
         """
-        if nitrates <=0 or regul_transpiration<=0:
+        if nitrates <= 0 or regul_transpiration <= 0:
             Export_Nitrates = 0
         else:
-            f_nitrates = (nitrates/(self.mstruct*Roots.PARAMETERS.ALPHA))*Roots.PARAMETERS.K_NITRATE_EXPORT
-            Export_Nitrates = f_nitrates* self.mstruct * regul_transpiration * delta_t #: Nitrate export regulation by transpiration (µmol N)
+            Export_Nitrates = regul_transpiration * nitrates * self.K_BIS_NITRATE_EXPORT  #: Nitrate export regulation by transpiration (µmol N)
         return Export_Nitrates
 
     def calculate_Export_Amino_Acids(self, amino_acids, regul_transpiration, delta_t):
