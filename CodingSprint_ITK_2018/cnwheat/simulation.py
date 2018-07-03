@@ -471,6 +471,7 @@ class Simulation(object):
                 for organ in (axis.roots, axis.phloem, axis.grains):
                     if organ is None:
                         continue
+                    organ.initialize(delta_t=self.delta_t)
                     i = _init_initial_conditions(organ, i)
                     organ.initialize(delta_t=self.delta_t)
                 for phytomer in axis.phytomers:
@@ -771,10 +772,10 @@ class Simulation(object):
                         phloem_contributors.append(hiddenzone)
 
                         # Unloading of sucrose from phloem
-                        hiddenzone.Unloading_Sucrose = hiddenzone.calculate_Unloading_Sucrose(hiddenzone.sucrose, axis.phloem.sucrose, axis.mstruct, self.delta_t)
+                        hiddenzone.Unloading_Sucrose = hiddenzone.calculate_Unloading_Sucrose(hiddenzone.sucrose, axis.phloem.sucrose, axis.mstruct)
 
                         # Unloading of AA from phloem
-                        hiddenzone.Unloading_Amino_Acids = hiddenzone.calculate_Unloading_Amino_Acids(hiddenzone.amino_acids, axis.phloem.amino_acids, axis.mstruct, self.delta_t)
+                        hiddenzone.Unloading_Amino_Acids = hiddenzone.calculate_Unloading_Amino_Acids(hiddenzone.amino_acids, axis.phloem.amino_acids, axis.mstruct)
 
                         # Fructan synthesis
                         Regul_Sfructanes = hiddenzone.calculate_Regul_S_Fructan(hiddenzone.Unloading_Sucrose, self.delta_t)
@@ -784,10 +785,10 @@ class Simulation(object):
                         hiddenzone_D_Fructan = hiddenzone.calculate_D_Fructan(hiddenzone.sucrose, hiddenzone.fructan, self.delta_t)
 
                         # Synthesis proteins
-                        hiddenzone_S_Proteins = hiddenzone.calculate_S_proteins(hiddenzone.amino_acids, self.delta_t)
+                        hiddenzone_S_Proteins = hiddenzone.calculate_S_proteins(hiddenzone.amino_acids)
 
                         # Degradation proteins
-                        hiddenzone_D_Proteins = hiddenzone.calculate_D_Proteins(hiddenzone.proteins, self.delta_t)
+                        hiddenzone_D_Proteins = hiddenzone.calculate_D_Proteins(hiddenzone.proteins)
 
                     for organ in (phytomer.chaff, phytomer.peduncle, phytomer.lamina, phytomer.internode, phytomer.sheath):
 
@@ -996,10 +997,10 @@ class Simulation(object):
                         phloem_contributors.append(hiddenzone)
 
                         # Unloading of sucrose from phloem
-                        hiddenzone.Unloading_Sucrose = hiddenzone.calculate_Unloading_Sucrose(hiddenzone.sucrose, axis.phloem.sucrose, axis.mstruct, self.delta_t)
+                        hiddenzone.Unloading_Sucrose = hiddenzone.calculate_Unloading_Sucrose(hiddenzone.sucrose, axis.phloem.sucrose, axis.mstruct)
 
                         # Unloading of AA from phloem
-                        hiddenzone.Unloading_Amino_Acids = hiddenzone.calculate_Unloading_Amino_Acids(hiddenzone.amino_acids, axis.phloem.amino_acids, axis.mstruct, self.delta_t)
+                        hiddenzone.Unloading_Amino_Acids = hiddenzone.calculate_Unloading_Amino_Acids(hiddenzone.amino_acids, axis.phloem.amino_acids, axis.mstruct)
 
                         # Fructan synthesis
                         Regul_Sfructanes = hiddenzone.calculate_Regul_S_Fructan(hiddenzone.Unloading_Sucrose, self.delta_t)
@@ -1009,10 +1010,10 @@ class Simulation(object):
                         hiddenzone.D_Fructan = hiddenzone.calculate_D_Fructan(hiddenzone.sucrose, hiddenzone.fructan, self.delta_t)
 
                         # Synthesis proteins
-                        hiddenzone.S_Proteins = hiddenzone.calculate_S_proteins(hiddenzone.amino_acids, self.delta_t)
+                        hiddenzone.S_Proteins = hiddenzone.calculate_S_proteins(hiddenzone.amino_acids)
 
                         # Degradation proteins
-                        hiddenzone.D_Proteins = hiddenzone.calculate_D_Proteins(hiddenzone.proteins, self.delta_t)
+                        hiddenzone.D_Proteins = hiddenzone.calculate_D_Proteins(hiddenzone.proteins)
 
                     # photosynthetic organs
                     for organ in (phytomer.chaff, phytomer.peduncle, phytomer.lamina, phytomer.internode, phytomer.sheath):
