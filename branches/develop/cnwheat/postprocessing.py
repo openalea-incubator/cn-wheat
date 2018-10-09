@@ -56,7 +56,8 @@ AXES_INDEXES = cnwheat_simulation.Simulation.AXES_INDEXES
 #: concatenation of :attr:`T_INDEX` and :attr:`AXES_INDEXES`
 AXES_T_INDEXES = cnwheat_simulation.Simulation.AXES_T_INDEXES
 #: axes post-processing variables
-AXES_POSTPROCESSING_VARIABLES = ['C_N_ratio','C_N_ratio_shoot','N_content','N_content_shoot','sum_N_g','sum_N_g_shoot','sum_dry_mass','sum_dry_mass_shoot','sum_dry_mass_roots','dry_mass_phloem',
+AXES_POSTPROCESSING_VARIABLES = ['C_N_ratio','C_N_ratio_shoot','N_content','N_content_shoot','N_content_roots','sum_N_g','sum_N_g_shoot','sum_dry_mass','sum_dry_mass_shoot','sum_dry_mass_roots',
+                                 'dry_mass_phloem',
                                  'shoot_roots_ratio']
 #: concatenation of :attr:`AXES_T_INDEXES`, :attr:`AXES_RUN_VARIABLES <cnwheat.simulation.Simulation.AXES_RUN_VARIABLES>` and :attr:`AXES_POSTPROCESSING_VARIABLES`
 AXES_RUN_POSTPROCESSING_VARIABLES = AXES_T_INDEXES + cnwheat_simulation.Simulation.AXES_RUN_VARIABLES + AXES_POSTPROCESSING_VARIABLES
@@ -507,14 +508,14 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
 
     # plants
     if plants_df is not None:
-        pp_plants_df = pd.concat([plants_df, pd.DataFrame(columns=PLANTS_POSTPROCESSING_VARIABLES)])
+        pp_plants_df = pd.concat([plants_df, pd.DataFrame(columns=PLANTS_POSTPROCESSING_VARIABLES)],sort=False)
         pp_plants_df = pp_plants_df.reindex(PLANTS_RUN_POSTPROCESSING_VARIABLES, axis=1, copy=False)
         pp_plants_df['plant'] = pp_plants_df['plant'].astype(int)
         returned_dataframes.append(pp_plants_df)
 
     # axes
     if axes_df is not None:
-        pp_axes_df = pd.concat([axes_df, pd.DataFrame(columns=AXES_POSTPROCESSING_VARIABLES)])
+        pp_axes_df = pd.concat([axes_df, pd.DataFrame(columns=AXES_POSTPROCESSING_VARIABLES)],sort=False)
         # Integrated variables TODO : Homogeneiser la structure de ce bout de code
         if (hiddenzones_df is not None) and (organs_df is not None) and (elements_df is not None):
             C_MOLAR_MASS = 12
@@ -618,6 +619,8 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
                              elements_df.groupby(['t', 'plant', 'axis'])['N_g'].agg('sum'))
             N_content_shoot = sum_N_g_shoot / sum_dry_mass_shoot * 100
 
+            N_content_roots = (N_content*sum_dry_mass - N_content_shoot*sum_dry_mass_shoot)/sum_dry_mass_roots
+
             # C/N ratio
             sum_C_g = (organs_df.groupby(['t', 'plant', 'axis'])['C_g'].agg('sum') +
                        hiddenzones_df.groupby(['t', 'plant', 'axis'])['C_g'].agg('sum') +
@@ -635,6 +638,7 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
             pp_axes_df.loc[:, 'C_N_ratio_shoot'] = C_N_ratio_shoot.values[1:len(C_N_ratio_shoot)]
             pp_axes_df.loc[:, 'N_content'] = N_content.values[1:len(N_content)]
             pp_axes_df.loc[:, 'N_content_shoot'] = N_content_shoot.values[1:len(N_content_shoot)]
+            pp_axes_df.loc[:, 'N_content_roots'] = N_content_roots.values[1:len(N_content_roots)]
             pp_axes_df.loc[:, 'sum_N_g'] = sum_N_g.values[1:len(sum_N_g)]
             pp_axes_df.loc[:, 'sum_N_g_shoot'] = sum_N_g_shoot.values[1:len(sum_N_g_shoot)]
             pp_axes_df.loc[:, 'sum_dry_mass'] = sum_dry_mass.values[1:len(sum_dry_mass)]
@@ -649,14 +653,14 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
 
     # metamers
     if metamers_df is not None:
-        pp_metamers_df = pd.concat([metamers_df, pd.DataFrame(columns=PHYTOMERS_POSTPROCESSING_VARIABLES)])
+        pp_metamers_df = pd.concat([metamers_df, pd.DataFrame(columns=PHYTOMERS_POSTPROCESSING_VARIABLES)],sort=False)
         pp_metamers_df = pp_metamers_df.reindex(PHYTOMERS_RUN_POSTPROCESSING_VARIABLES, axis=1, copy=False)
         pp_metamers_df[['plant', 'metamer']] = pp_metamers_df[['plant', 'metamer']].astype(int)
         returned_dataframes.append(pp_metamers_df)
 
     # hidden zones
     if hiddenzones_df is not None:
-        pp_hiddenzones_df = pd.concat([hiddenzones_df, pd.DataFrame(columns=HIDDENZONE_POSTPROCESSING_VARIABLES)])
+        pp_hiddenzones_df = pd.concat([hiddenzones_df, pd.DataFrame(columns=HIDDENZONE_POSTPROCESSING_VARIABLES)],sort=False)
         pp_hiddenzones_df.loc[:, 'Conc_Amino_Acids'] = HiddenZone.calculate_Conc_Amino_Acids(hiddenzones_df['amino_acids'], hiddenzones_df['mstruct'])
         pp_hiddenzones_df.loc[:, 'Conc_Fructan'] = HiddenZone.calculate_conc_fructan(hiddenzones_df['fructan'], hiddenzones_df['mstruct'])
         pp_hiddenzones_df.loc[:, 'Conc_Proteins'] = HiddenZone.calculate_conc_protein(hiddenzones_df['proteins'], hiddenzones_df['mstruct'])
@@ -670,7 +674,7 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
 
     # organs
     if organs_df is not None:
-        pp_organs_df = pd.concat([organs_df, pd.DataFrame(columns=ORGANS_POSTPROCESSING_VARIABLES)])
+        pp_organs_df = pd.concat([organs_df, pd.DataFrame(columns=ORGANS_POSTPROCESSING_VARIABLES)],sort=False)
         # roots
         roots_df = organs_df.loc[organs_df.organ == 'roots']
         pp_organs_df.loc[pp_organs_df.organ == 'roots', 'Conc_Nitrates'] = Roots.calculate_Conc_Nitrates(roots_df['nitrates'], roots_df['mstruct'])
@@ -701,7 +705,7 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
 
     # elements
     if elements_df is not None:
-        pp_elements_df = pd.concat([elements_df, pd.DataFrame(columns=ELEMENTS_POSTPROCESSING_VARIABLES)])
+        pp_elements_df = pd.concat([elements_df, pd.DataFrame(columns=ELEMENTS_POSTPROCESSING_VARIABLES)],sort=False)
         pp_elements_df.loc[:, 'Conc_TriosesP'] = Element.calculate_conc_triosesP(elements_df['triosesP'], elements_df['mstruct'])
         pp_elements_df.loc[:, 'Conc_Starch'] = Element.calculate_conc_starch(elements_df['starch'], elements_df['mstruct'])
         pp_elements_df.loc[:, 'Conc_Sucrose'] = Element.calculate_conc_sucrose(elements_df['sucrose'], elements_df['mstruct'])
@@ -710,9 +714,29 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
         pp_elements_df.loc[:, 'Conc_Amino_Acids'] = Element.calculate_Conc_Amino_Acids(elements_df['amino_acids'], elements_df['mstruct'])
         pp_elements_df.loc[:, 'Conc_Proteins'] = Element.calculate_conc_proteins(elements_df['proteins'], elements_df['mstruct'])
         pp_elements_df.loc[:, 'Conc_cytokinins'] = Element.calculate_conc_cytokinins(elements_df['cytokinins'], elements_df['mstruct'])
-        pp_elements_df.loc[:, 'Surfacic N'] = Element. calculate_surfacic_nitrogen(elements_df['nitrates'],
+        pp_elements_df.loc[:, 'Surfacic N'] = Element.calculate_surfacic_nitrogen(elements_df['nitrates'],
                                                                                    elements_df['amino_acids'], elements_df['proteins'],
                                                                                    elements_df['Nstruct'], elements_df['green_area'])
+        # elements_df['sum_dry_mass'] = ((elements_df.fillna(0)['triosesP'] * 1E-6 * C_MOLAR_MASS) / TRIOSESP_MOLAR_MASS_C_RATIO +
+        #                                (elements_df.fillna(0)['sucrose'] * 1E-6 * C_MOLAR_MASS) / SUCROSE_MOLAR_MASS_C_RATIO +
+        #                                (elements_df.fillna(0)['starch'] * 1E-6 * C_MOLAR_MASS) / HEXOSE_MOLAR_MASS_C_RATIO +
+        #                                (elements_df.fillna(0)['fructan'] * 1E-6 * C_MOLAR_MASS) / HEXOSE_MOLAR_MASS_C_RATIO +
+        #                                (elements_df.fillna(0)['nitrates'] * 1E-6 * N_MOLAR_MASS) / NITRATES_MOLAR_MASS_N_RATIO +
+        #                                (elements_df.fillna(0)['amino_acids'] * 1E-6 * N_MOLAR_MASS) / AMINO_ACIDS_MOLAR_MASS_N_RATIO +
+        #                                (elements_df.fillna(0)['proteins'] * 1E-6 * N_MOLAR_MASS) / AMINO_ACIDS_MOLAR_MASS_N_RATIO +
+        #                                elements_df['mstruct'])
+        # elements_df['C_g'] = ((elements_df.fillna(0)['triosesP'] * 1E-6 * C_MOLAR_MASS) +
+        #                       (elements_df.fillna(0)['sucrose'] * 1E-6 * C_MOLAR_MASS) +
+        #                       (elements_df.fillna(0)['starch'] * 1E-6 * C_MOLAR_MASS) +
+        #                       (elements_df.fillna(0)['fructan'] * 1E-6 * C_MOLAR_MASS) +
+        #                       (elements_df.fillna(0)['amino_acids'] * 1E-6 * N_MOLAR_MASS) * AMINO_ACIDS_MOLAR_MASS_C_RATIO / AMINO_ACIDS_MOLAR_MASS_N_RATIO +
+        #                       (elements_df.fillna(0)['proteins'] * 1E-6 * N_MOLAR_MASS) * AMINO_ACIDS_MOLAR_MASS_C_RATIO / AMINO_ACIDS_MOLAR_MASS_N_RATIO +
+        #                       elements_df['mstruct'] * RATIO_SUCROSE_MSTRUCT)
+        # elements_df['N_g'] = ((elements_df.fillna(0)['nitrates'] * 1E-6 * N_MOLAR_MASS) +
+        #                       (elements_df.fillna(0)['amino_acids'] * 1E-6 * N_MOLAR_MASS) +
+        #                       (elements_df.fillna(0)['proteins'] * 1E-6 * N_MOLAR_MASS) +
+        #                       elements_df['Nstruct'])
+
         grouped = elements_df.groupby('organ')
         for organ_type, parameters_class in \
             (('ear', cnwheat_parameters.CHAFF_ELEMENT_PARAMETERS),
@@ -857,6 +881,7 @@ def generate_graphs(axes_df=None, hiddenzones_df=None, organs_df=None, elements_
     graph_variables_axes = {'mstruct':'Axis mstruct (g)',
                             'C_N_ratio' : u'C/N mass ratio','C_N_ratio_shoot' : u'C/N mass ratio of the shoot',
                             'N_content' : u'N content in the axis (g.g$^{-1}$ DM)','N_content_shoot':u'N content in the shoot (g.g$^{-1}$ DM)',
+                            'N_content_roots': u'N content in the roots (g.g$^{-1}$ DM)',
                             'sum_N_g':u'N mass (g)', 'sum_N_g_shoot':u'N mass in the shoot (g)',
                             'shoot_roots_ratio':u'Shoot/Roots dry mass ratio',
                             'sum_dry_mass':u'Total dry mass (g)','sum_dry_mass_shoot':u'Dry mass of the shoot (g)',

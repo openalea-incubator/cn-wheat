@@ -238,9 +238,9 @@ class HiddenZone(Organ):
         """
         conductance = parameters.HIDDEN_ZONE_PARAMETERS.SIGMA * parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.BETA * self.mstruct**(2/3)  # TODO: choix valeurs param / flux phloem-hgz
         flux = ((sucrose_phloem / mstruct_axis) - (sucrose / self.mstruct)) * conductance * parameters.SECOND_TO_HOUR_RATE_CONVERSION
-        res = 0
-        if flux > 0:
-            res = flux
+        # res = 0
+        # if flux > 0:
+        res = flux
         return res
 
     def calculate_Unloading_Amino_Acids(self, amino_acids, amino_acids_phloem, mstruct_axis): # TODO : ON ne va pas chercher les paramètres au bon endroit
@@ -259,9 +259,9 @@ class HiddenZone(Organ):
         conductance = parameters.HIDDEN_ZONE_PARAMETERS.SIGMA * parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.BETA * self.mstruct**(2/3)
 
         flux =  ((amino_acids_phloem / mstruct_axis) - (amino_acids / self.mstruct)) * conductance * parameters.SECOND_TO_HOUR_RATE_CONVERSION
-        res = 0
-        if flux > 0:
-            res = flux
+        # res = 0
+        # if flux > 0:
+        res = flux
         return res
 
     def calculate_S_proteins(self, amino_acids): # TODO : ON ne va pas chercher les paramètres au bon endroit
@@ -275,7 +275,7 @@ class HiddenZone(Organ):
         :Returns Type:
             :class:`float`
         """
-        return 8*(parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.VMAX_SPROTEINS * max(0, (amino_acids / self.mstruct))) / (parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.K_SPROTEINS +
+        return 3*(parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.VMAX_SPROTEINS * max(0, (amino_acids / self.mstruct))) / (parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.K_SPROTEINS +
                                                                                                                      max(0, (amino_acids / self.mstruct))) * parameters.SECOND_TO_HOUR_RATE_CONVERSION
 
     def calculate_D_Proteins(self, proteins):
@@ -816,7 +816,7 @@ class Roots(Organ):
         if nitrates <= 0 or regul_transpiration <= 0:
             Export_Nitrates = 0
         else:
-            f_nitrates = (nitrates / (self.mstruct * Roots.PARAMETERS.ALPHA)) * Roots.PARAMETERS.K_NITRATE_EXPORT *5          #: :math:`\mu mol` g-1 s-1
+            f_nitrates = (nitrates / (self.mstruct * Roots.PARAMETERS.ALPHA)) * Roots.PARAMETERS.K_NITRATE_EXPORT * 8         #: :math:`\mu mol` g-1 s-1
             Export_Nitrates = f_nitrates * self.mstruct * regul_transpiration * parameters.SECOND_TO_HOUR_RATE_CONVERSION   #: Nitrate export regulation by transpiration (:math:`\mu mol` N)
         return Export_Nitrates
 
@@ -1379,7 +1379,7 @@ class PhotosyntheticOrganElement(object):
         :Returns Type:
             :class:`float`
         """
-        calculate_S_proteins = (((max(0, amino_acids) / (self.mstruct*self.__class__.PARAMETERS.ALPHA)) * PhotosyntheticOrgan.PARAMETERS.VMAX_SPROTEINS) /
+        calculate_S_proteins = (((max(0, amino_acids) / (self.mstruct*self.__class__.PARAMETERS.ALPHA)) * PhotosyntheticOrgan.PARAMETERS.VMAX_SPROTEINS) *2 /
                                 ((max(0, amino_acids) / (self.mstruct*self.__class__.PARAMETERS.ALPHA)) + PhotosyntheticOrgan.PARAMETERS.K_SPROTEINS)) * parameters.SECOND_TO_HOUR_RATE_CONVERSION
         return calculate_S_proteins
 
@@ -1399,7 +1399,7 @@ class PhotosyntheticOrganElement(object):
         conc_cytokinins = max(0, cytokinins / self.mstruct)
         k_proteins = (PhotosyntheticOrgan.PARAMETERS.VMAX_DPROTEINS * PhotosyntheticOrgan.PARAMETERS.K_DPROTEINS**PhotosyntheticOrgan.PARAMETERS.N_DPROTEINS) /\
                      (conc_cytokinins**PhotosyntheticOrgan.PARAMETERS.N_DPROTEINS + PhotosyntheticOrgan.PARAMETERS.K_DPROTEINS**PhotosyntheticOrgan.PARAMETERS.N_DPROTEINS)
-        k_proteins = 3e-07
+        # k_proteins = 1e-07
 
         return k_proteins, max(0, k_proteins * (proteins / (self.mstruct*self.__class__.PARAMETERS.ALPHA))) * parameters.SECOND_TO_HOUR_RATE_CONVERSION
 
