@@ -44,17 +44,17 @@ if sys.version_info < (2, 7):
 if sys.version_info >= (3, 0):
     print('WARNING: CN-Wheat has not been tested with Python 3.')
 
-pkg_resources.require('numpy>=1.11.0', 'pandas>=0.18.0', 'scipy>=0.16.1', 
-                      'matplotlib>=1.5.2rc2', 'sphinx>=1.4.8', 'nose>=1.3.7', 
-                      'coverage>=4.4.1', 'Respi-Wheat')
+pkg_resources.require('numpy>=1.15.1', 'pandas>=0.23.4', 'scipy>=1.1.0',
+                      'matplotlib>=2.2.3', 'sphinx>=1.7.9', 'nose>=1.3.7',
+                      'coverage>=4.5.1', 'Respi-Wheat')
 
 setup(
     name = "CN-Wheat",
     version=cnwheat.__version__,
     packages = find_packages(),
     include_package_data = True,
-    author = "C.Chambon, R.Barillot",
-    author_email = "camille.chambon@inra.fr, romain.barillot@inra.fr",
+    author = "R.Barillot, C.Chambon and B.Andrieu",
+    author_email = "romain.barillot@inra.fr, camille.chambon@inra.fr, bruno.andrieu@inra.fr",
     description = "CN-Wheat is a model of CN distribution for wheat",
     long_description = """CN-Wheat is a Functional-Structural Plant Model which 
 simulates the distribution of carbon and nitrogen into wheat culms in relation 
