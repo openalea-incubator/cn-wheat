@@ -1,39 +1,25 @@
-# CN-Wheat
-
-This is the Read Me file of the model *CN-Wheat*, a model of CN distribution for wheat.
-
-*CN-Wheat* is a Functional-Structural Plant Model which simulates the distribution 
-of carbon and nitrogen into wheat culms in relation to photosynthesis, 
-N uptake, metabolite turnover, root exudation and tissue death. 
-
-This model was first produced as part of the project BreedWheat over the last 
-three years, through the Investment for the Future programme managed by the 
-French Research National Agency (ANR-10-BTBR-03). The aim of the project BreedWheat was 
-to improve the competiveness of the French wheat breeding sector, through the 
-definition/ identification of ideotypes, parameters of interest maximizing grain yield 
-and quality under sustainable agricultural systems and climate scenarios. 
-
-These researches lead to the publication of project report, and two articles:
-
-* Barillot, R., Chambon, C., & Andrieu, B. (2016). CN-Wheat, a functional–structural model 
-  of carbon and nitrogen metabolism in wheat culms after anthesis. I. Model description. 
-  Annals of Botany, 118(5), 997‑1013. https://doi.org/10.1093/aob/mcw143 
-* and Barillot, R., Chambon, C., & Andrieu, B. (2016). CN-Wheat, a functional–structural 
-  model of carbon and nitrogen metabolism in wheat culms after anthesis. II. Model evaluation. 
-  Annals of Botany, 118(5), 1015‑1031. https://doi.org/10.1093/aob/mcw144
-
-## 1. Getting Started
+# Getting Started
 
 These instructions will get you a copy of *CN-Wheat* up and running on your local 
 machine.
 
-### 1.1 Prerequisites
+## Prerequisites
 
 To install and use *CN-Wheat*, you need first to install the dependencies.
 
 *CN-Wheat* has been tested on Windows 10 64 bit and Linux Fedora 24 64 bit.
+
+### Built With
+
+* [Python](http://www.python.org/), [NumPy](http://www.numpy.org/), [SciPy](http://www.scipy.org/), 
+  [Pandas](http://pandas.pydata.org/), [Respi-Wheat](https://sourcesup.renater.fr/projects/respi-wheat): 
+  implementation and deployment of the model,
+* [Matplotlib](http://matplotlib.org/): generation of graphs to help validating the model, 
+* [Sphinx](http://sphinx-doc.org/): building of the documentation, 
+* [Nose](http://nose.readthedocs.org/): run of the automated tests,
+* [Coverage](http://nedbatchelder.com/code/coverage/): coverage of code testing.
  
-#### 1.1.1 Install the dependencies on Windows 10 64 bit
+### Install the dependencies on Windows 10 64 bit
 
 1. Install Python  
 
@@ -141,7 +127,7 @@ On Windows 10 64 bit, *CN-Wheat* has been tested with the following versions of 
 * Nose 1.3.7,
 * Coverage 4.4.1 64 bit.
 
-#### 1.1.2 Install the dependencies on Linux Fedora 24 64 bit
+### Install the dependencies on Linux Fedora 24 64 bit
 
 To install the dependencies on Linux Fedora 24 64 bit:
 
@@ -165,13 +151,13 @@ On Linux Fedora 24 64 bit, *CN-Wheat* has been tested with the following version
 * Coverage 4.4.1 64 bit.
 
 
-### 1.2 Installing
+## Installing
 
 __Note__: We suppose you already installed the dependencies for your operating system. Otherwise follow these [instructions](prerequisites "Prerequisites").
 
 You can install *CN-Wheat* either in "install" or "develop" mode.
 
-#### 1.2.1 Install *CN-Wheat* in "install" mode
+### Install *CN-Wheat* in "install" mode
 
 Install *CN-Wheat* in "install" mode if you're not going to develop, edit or debug 
 it, i.e. you just want to used it as third party package.
@@ -182,7 +168,7 @@ To install *CN-Wheat* in "end-user" mode:
 * go to your local copy of project *CN-Wheat*,
 * run command: `python setup.py install --user`.
 
-#### 1.2.2 Install *CN-Wheat* in "develop" mode
+### Install *CN-Wheat* in "develop" mode
 
 Install *CN-Wheat* in "develop" mode if you want to get *CN-Wheat* installed and then 
 be able to frequently edit the code and not have to re-install *CN-Wheat* to have the 
@@ -194,29 +180,7 @@ To install *CN-Wheat* in "develop" mode:
 * go to your local copy of project *CN-Wheat*,
 * run command: `python setup.py develop --user`.
 
-### 1.3 Running
-
-__Note__: We suppose you already installed the model. Otherwise follow these [instructions](installing "Installing").
-
-To run a simulation example, compute post-processing and generate graphs for validation:
-
-* open a command line interpreter,
-* go to the directory `example/` of your local copy of project *CN-Wheat*,
-* run command: `python main.py`.
-
-See the user guide for a step by step explanation of how to set and run model *CN-Wheat*.
-
-## 2. Reading the docs
-
-To build the user and reference guides:
-
-* install the model (see [Installation of the model](installing "Installing")), 
-* open a command line interpreter,
-* go to the top directory of your local copy of the project,
-* run this command: `python setup.py build_sphinx`,
-* and direct your browser to file `doc/_build/html/index.html`.
-
-## 3. Testing
+## Testing
 
 The automated test permits to verify that the model implementation accurately 
 represents the developer’s conceptual description of the model and its solution.
@@ -243,57 +207,25 @@ to determine the degree to which the model is an accurate representation of the
 real world from the perspective of the intended uses of the model.  
 To help verifying the validity of the model, use the plotting tools implemented 
 in module `cnwheat.tools`.   
-
-## Deployment
-
-*CN-Wheat* can be coupled with other ecophysiological models, to simulate the interaction 
-between CN distribution and (for example) leaves elongation, photosynthesis, growth, 
-senescence, light interception and topology of wheat crops.  
-Please contact <cn-wheat-request@groupes.renater.fr> for more information about the 
-possibility of coupling and integrate *CN-Wheat* with other ecophysiological models. 
-
-## Built With
-
-* [Python](http://www.python.org/), [NumPy](http://www.numpy.org/), [SciPy](http://www.scipy.org/), 
-  [Pandas](http://pandas.pydata.org/), [Respi-Wheat](https://sourcesup.renater.fr/projects/respi-wheat): 
-  implementation and deployment of the model,
-* [Matplotlib](http://matplotlib.org/): generation of graphs to help validating the model, 
-* [Sphinx](http://sphinx-doc.org/): building of the documentation, 
-* [Nose](http://nose.readthedocs.org/): run of the automated tests,
-* [Coverage](http://nedbatchelder.com/code/coverage/): coverage of code testing.
-
-## Contributing
-
-First, send an email to <cn-wheat-request@groupes.renater.fr> to be added to the project.  
-
-Then,
  
-* check for open issues or open a fresh issue to start a discussion around a
-  feature idea or a bug: https://sourcesup.renater.fr/tracker/?group_id=1515.
-* If you feel uncomfortable or uncertain about an issue or your changes, feel
-  free to email <cn-wheat@groupes.renater.fr>.
+## Reading the docs
 
-## Contact
+To build the user and reference guides:
 
-For any question, send an email to <cn-wheat-request@groupes.renater.fr>.
+* install the model (see [Installation of the model](installing "Installing")), 
+* open a command line interpreter,
+* go to the top directory of your local copy of the project,
+* run this command: `python setup.py build_sphinx`,
+* and direct your browser to file `doc/_build/html/index.html`.
 
-## Versioning
+## Running - TODO: to move to user guide
 
-We use an SVN repository on [SourceSup](https://sourcesup.renater.fr) for 
-versioning: https://sourcesup.renater.fr/projects/cn-wheat/.  
-If you need an access to the current in development version of the model, please send 
-an email to <cn-wheat-request@groupes.renater.fr>.
+__Note__: We suppose you already installed the model. Otherwise follow these [instructions](installing "Installing").
 
-## Authors
+To run a simulation example, compute post-processing and generate graphs for validation:
 
-**Romain BARILLOT** and **Camille CHAMBON** - see file [AUTHORS](AUTHORS) for details
+* open a command line interpreter,
+* go to the directory `example/` of your local copy of project *CN-Wheat*,
+* run command: `python main.py`.
 
-## License
-
-This project is licensed under the CeCILL-C License - see file [LICENSE](LICENSE) for details
-
-## Acknowledgments
-
-The research leading these results has received funding through the 
-Investment for the Future programme managed by the Research National Agency 
-(BreedWheat project ANR-10-BTBR-03).
+See the user guide for a step by step explanation of how to set and run model *CN-Wheat*.
