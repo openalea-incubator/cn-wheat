@@ -768,7 +768,7 @@ class Simulation(object):
                             continue
 
                         for element in (organ.exposed_element, organ.enclosed_element):
-                            if element is None or element.green_area <= 0.25E-6:
+                            if element is None or element.green_area <= 0.25E-6 or element.mstruct <= 0.0 :
                                 continue
 
                             element.starch = y[self.initial_conditions_mapping[element]['starch']]
@@ -810,7 +810,7 @@ class Simulation(object):
                             element.S_Proteins = element.calculate_S_proteins(element.amino_acids)
                             element.k_proteins, element.D_Proteins = element.calculate_D_Proteins(element.proteins, element.cytokinins)
                             element.cytokinins_import = element.calculate_cytokinins_import(axis.roots.Export_cytokinins, element.Transpiration, axis.Total_Transpiration)
-                            element.D_cytokinins = element.calculate_D_cytokinins(element.cytokinins)
+                            element.D_cytokinins = element.calculate_D_cytokinins(element.cytokinins, element.Ts)
 
                             # compartments derivatives
                             starch_derivative = element.calculate_starch_derivative(element.S_Starch, element.D_Starch)
@@ -1047,7 +1047,7 @@ class Simulation(object):
                             element.S_Proteins = element.calculate_S_proteins(element.amino_acids)
                             element.k_proteins, element.D_Proteins = element.calculate_D_Proteins(element.proteins, element.cytokinins)
                             element.cytokinins_import = element.calculate_cytokinins_import(axis.roots.Export_cytokinins, element.Transpiration, axis.Total_Transpiration)
-                            element.D_cytokinins = element.calculate_D_cytokinins(element.cytokinins)
+                            element.D_cytokinins = element.calculate_D_cytokinins(element.cytokinins, element.Ts)
 
                             element.R_residual, _ = self.respiration_model.RespirationModel.R_residual(element.sucrose, element.mstruct * element.__class__.PARAMETERS.ALPHA,
                                                                                                        element.Total_Organic_Nitrogen, element.Ts)

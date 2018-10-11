@@ -1245,6 +1245,8 @@ class PhotosyntheticOrganElement(object):
         :Returns Type:
             :class:`float`
         """
+        if self.mstruct == 0 :
+            pass
         conc_sucrose_element = sucrose / (self.mstruct*self.__class__.PARAMETERS.ALPHA)
         conc_sucrose_phloem = sucrose_phloem / (mstruct_axis * parameters.AXIS_PARAMETERS.ALPHA)
         #: Driving compartment (:math:`\mu mol` C g-1 mstruct)
@@ -1468,18 +1470,20 @@ class PhotosyntheticOrganElement(object):
             cytokinins_import = 0
         return cytokinins_import
 
-    def calculate_D_cytokinins(self, cytokinins):
+    def calculate_D_cytokinins(self, cytokinins, Ts):
         """Rate of cytokinins degradation (AU g-1 mstruct h-1).
-        First order kinetic.
+        First order kinetic. Vary with organ temperature.
 
         :Parameters:
             - `cytokinins` (:class:`float`) - Amount of cytokinins (AU)
+            - `Ts` (:class:`float`) - Element temperature calculated by Farqhuar-wheat (°C)
         :Returns:
             Rate of Cytokinin degradation (AU h-1 g-1 mstruct)
         :Returns Type:
             :class:`float`
         """
-        return max(0, PhotosyntheticOrgan.PARAMETERS.DELTA_D_CYTOKININS * (cytokinins/(self.mstruct*self.__class__.PARAMETERS.ALPHA))) * parameters.SECOND_TO_HOUR_RATE_CONVERSION
+        # We consider that DELTA_D_CYTOKININS is the rate at 20°C. The actual rate varies lineraly with organ temperature and is zero at and below zero °C
+        return max(0, PhotosyntheticOrgan.PARAMETERS.DELTA_D_CYTOKININS/20 * max(0, Ts) * (cytokinins/(self.mstruct*self.__class__.PARAMETERS.ALPHA))) * parameters.SECOND_TO_HOUR_RATE_CONVERSION
 
     # COMPARTMENTS
 

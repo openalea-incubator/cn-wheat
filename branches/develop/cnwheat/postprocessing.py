@@ -57,8 +57,7 @@ AXES_INDEXES = cnwheat_simulation.Simulation.AXES_INDEXES
 AXES_T_INDEXES = cnwheat_simulation.Simulation.AXES_T_INDEXES
 #: axes post-processing variables
 AXES_POSTPROCESSING_VARIABLES = ['C_N_ratio','C_N_ratio_shoot','N_content','N_content_shoot','N_content_roots','sum_N_g','sum_N_g_shoot','sum_dry_mass','sum_dry_mass_shoot','sum_dry_mass_roots',
-                                 'dry_mass_phloem',
-                                 'shoot_roots_ratio']
+                                 'dry_mass_phloem', 'shoot_roots_ratio']
 #: concatenation of :attr:`AXES_T_INDEXES`, :attr:`AXES_RUN_VARIABLES <cnwheat.simulation.Simulation.AXES_RUN_VARIABLES>` and :attr:`AXES_POSTPROCESSING_VARIABLES`
 AXES_RUN_POSTPROCESSING_VARIABLES = AXES_T_INDEXES + cnwheat_simulation.Simulation.AXES_RUN_VARIABLES + AXES_POSTPROCESSING_VARIABLES
 
