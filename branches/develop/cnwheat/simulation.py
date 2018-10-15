@@ -152,7 +152,7 @@ class Simulation(object):
     #: concatenation of :attr:`T_INDEX` and :attr:`PLANTS_INDEXES`
     PLANTS_T_INDEXES = T_INDEX + PLANTS_INDEXES
     #: the parameters which define the state of the modeled system at plant scale
-    PLANTS_STATE_PARAMETERS = []
+    PLANTS_STATE_PARAMETERS = ['Tair']
     #: the variables which define the state of the modeled system at plant scale,
     #: formed be the concatenation of :attr:`PLANTS_STATE_PARAMETERS` and the names
     #: of the compartments associated to each plant (see :attr:`MODEL_COMPARTMENTS_NAMES`)
@@ -335,7 +335,7 @@ class Simulation(object):
         self.time_step = self.delta_t / 3600.0  #: time step of the simulation (in hours)
 
         self.culm_density = culm_density  #: culm density (culm m-2)
-        
+
         # set the loggers for compartments and derivatives
         compartments_logger = logging.getLogger('cnwheat.compartments')
         derivatives_logger = logging.getLogger('cnwheat.derivatives')
@@ -691,6 +691,9 @@ class Simulation(object):
         soil.Conc_Nitrates_Soil = soil.calculate_Conc_Nitrates(soil.nitrates)
 
         for plant in self.population.plants:
+
+            plant.T_effect_conductivity = plant.calculate_temperature_effect_on_conductivity(plant.Tair)
+
             for axis in plant.axes:
                 # Phloem
                 phloem_contributors = []
@@ -743,10 +746,10 @@ class Simulation(object):
                         phloem_contributors.append(hiddenzone)
 
                         # Unloading of sucrose from phloem
-                        hiddenzone.Unloading_Sucrose = hiddenzone.calculate_Unloading_Sucrose(hiddenzone.sucrose, axis.phloem.sucrose, axis.mstruct)
+                        hiddenzone.Unloading_Sucrose = hiddenzone.calculate_Unloading_Sucrose(hiddenzone.sucrose, axis.phloem.sucrose, axis.mstruct, plant.T_effect_conductivity)
 
                         # Unloading of AA from phloem
-                        hiddenzone.Unloading_Amino_Acids = hiddenzone.calculate_Unloading_Amino_Acids(hiddenzone.amino_acids, axis.phloem.amino_acids, axis.mstruct)
+                        hiddenzone.Unloading_Amino_Acids = hiddenzone.calculate_Unloading_Amino_Acids(hiddenzone.amino_acids, axis.phloem.amino_acids, axis.mstruct, plant.T_effect_conductivity)
 
                         # Fructan synthesis
                         Regul_Sfructanes = hiddenzone.calculate_Regul_S_Fructan(hiddenzone.Unloading_Sucrose)
@@ -791,8 +794,8 @@ class Simulation(object):
                                 hiddenzone_Loading_Amino_Acids_contribution += element.Loading_Amino_Acids
                             else:  #: Loading of sucrose and amino acids towards the phloem
                                 phloem_contributors.append(element)
-                                element.Loading_Sucrose = element.calculate_Loading_Sucrose(element.sucrose, axis.phloem.sucrose, axis.mstruct)
-                                element.Loading_Amino_Acids = element.calculate_Loading_Amino_Acids(element.amino_acids, axis.phloem.amino_acids, axis.mstruct)
+                                element.Loading_Sucrose = element.calculate_Loading_Sucrose(element.sucrose, axis.phloem.sucrose, axis.mstruct, plant.T_effect_conductivity)
+                                element.Loading_Amino_Acids = element.calculate_Loading_Amino_Acids(element.amino_acids, axis.phloem.amino_acids, axis.mstruct, plant.T_effect_conductivity)
 
                             element.S_Starch = element.calculate_S_Starch(element.triosesP)
                             element.D_Starch = element.calculate_D_Starch(element.starch)
@@ -876,7 +879,7 @@ class Simulation(object):
 
                 # compute the derivative of each compartment of roots
                 # flows
-                axis.roots.Unloading_Sucrose = axis.roots.calculate_Unloading_Sucrose(axis.phloem.sucrose, axis.mstruct)
+                axis.roots.Unloading_Sucrose = axis.roots.calculate_Unloading_Sucrose(axis.phloem.sucrose, axis.mstruct, plant.T_effect_conductivity)
                 axis.roots.Unloading_Amino_Acids = axis.roots.calculate_Unloading_Amino_Acids(axis.roots.Unloading_Sucrose, axis.phloem.sucrose, axis.phloem.amino_acids)
                 axis.roots.S_Amino_Acids = axis.roots.calculate_S_amino_acids(axis.roots.nitrates, axis.roots.sucrose)
                 axis.roots.R_Nnit_red, axis.roots.S_Amino_Acids = self.respiration_model.RespirationModel.R_Nnit_red(axis.roots.S_Amino_Acids, axis.roots.sucrose,
@@ -981,10 +984,10 @@ class Simulation(object):
                         phloem_contributors.append(hiddenzone)
 
                         # Unloading of sucrose from phloem
-                        hiddenzone.Unloading_Sucrose = hiddenzone.calculate_Unloading_Sucrose(hiddenzone.sucrose, axis.phloem.sucrose, axis.mstruct)
+                        hiddenzone.Unloading_Sucrose = hiddenzone.calculate_Unloading_Sucrose(hiddenzone.sucrose, axis.phloem.sucrose, axis.mstruct, plant.T_effect_conductivity)
 
                         # Unloading of AA from phloem
-                        hiddenzone.Unloading_Amino_Acids = hiddenzone.calculate_Unloading_Amino_Acids(hiddenzone.amino_acids, axis.phloem.amino_acids, axis.mstruct)
+                        hiddenzone.Unloading_Amino_Acids = hiddenzone.calculate_Unloading_Amino_Acids(hiddenzone.amino_acids, axis.phloem.amino_acids, axis.mstruct, plant.T_effect_conductivity)
 
                         # Fructan synthesis
                         Regul_Sfructanes = hiddenzone.calculate_Regul_S_Fructan(hiddenzone.Unloading_Sucrose)
@@ -1028,8 +1031,8 @@ class Simulation(object):
                                 element.Loading_Amino_Acids = element.calculate_Export_Amino_Acids(element.amino_acids, hiddenzone.amino_acids, hiddenzone.mstruct)
                             else:  #: Loading of sucrose and amino acids towards the phloem
                                 phloem_contributors.append(element)
-                                element.Loading_Sucrose = element.calculate_Loading_Sucrose(element.sucrose, axis.phloem.sucrose, axis.mstruct)
-                                element.Loading_Amino_Acids = element.calculate_Loading_Amino_Acids(element.amino_acids, axis.phloem.amino_acids, axis.mstruct)
+                                element.Loading_Sucrose = element.calculate_Loading_Sucrose(element.sucrose, axis.phloem.sucrose, axis.mstruct, plant.T_effect_conductivity)
+                                element.Loading_Amino_Acids = element.calculate_Loading_Amino_Acids(element.amino_acids, axis.phloem.amino_acids, axis.mstruct, plant.T_effect_conductivity)
 
                             element.S_Starch = element.calculate_S_Starch(element.triosesP)
                             element.D_Starch = element.calculate_D_Starch(element.starch)
@@ -1078,7 +1081,7 @@ class Simulation(object):
 
                 # roots
                 # flows
-                axis.roots.Unloading_Sucrose = axis.roots.calculate_Unloading_Sucrose(axis.phloem.sucrose, axis.mstruct)
+                axis.roots.Unloading_Sucrose = axis.roots.calculate_Unloading_Sucrose(axis.phloem.sucrose, axis.mstruct, plant.T_effect_conductivity)
                 axis.roots.Unloading_Amino_Acids = axis.roots.calculate_Unloading_Amino_Acids(axis.roots.Unloading_Sucrose, axis.phloem.sucrose, axis.phloem.amino_acids)
                 axis.roots.S_Amino_Acids = axis.roots.calculate_S_amino_acids(axis.roots.nitrates, axis.roots.sucrose)
                 axis.roots.R_Nnit_red, axis.roots.S_Amino_Acids = self.respiration_model.RespirationModel.R_Nnit_red(axis.roots.S_Amino_Acids, axis.roots.sucrose,

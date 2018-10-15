@@ -91,6 +91,20 @@ class Plant(object):
         for axis in self.axes:
             axis.calculate_integrative_variables()
 
+    def calculate_temperature_effect_on_conductivity(self, Tair):
+        """Effect of the temperature on phloeme translocation conductivity (Bancal 2002)
+        Should multiply the rate at 20°C
+
+        :Parameters:
+            - `Tair` (:class:`float`) - Air temperature (°C)
+        :Returns:
+            Correction to apply to conductivity coefficients.
+        :Returns Type:
+            :class:`float`
+        """
+        T = max(0,Tair)
+        return -1.208*10**-5*T**3 + 1.432*10**-3*T**2 - 0.07318*T + 2.07
+
 
 class Axis(object):
     """
@@ -223,7 +237,7 @@ class HiddenZone(Organ):
 
     # FLUXES
 
-    def calculate_Unloading_Sucrose(self, sucrose, sucrose_phloem, mstruct_axis):
+    def calculate_Unloading_Sucrose(self, sucrose, sucrose_phloem, mstruct_axis, T_effect_conductivity):
         """Rate of sucrose Unloading from phloem to the hidden zone (:math:`\mu mol` C sucrose unloaded g-1 mstruct h-1).
         Transport-resistance equation
 
@@ -231,19 +245,20 @@ class HiddenZone(Organ):
             - `sucrose` (:class:`float`) - Sucrose amount in the hidden zone (:math:`\mu mol` C)
             - `sucrose_phloem` (:class:`float`) - Sucrose amount in phloem (:math:`\mu mol` C)
             - `mstruct_axis` (:class:`float`) -The structural dry mass of the axis (g)
+            - `T_effect_conductivity` (:class:`float`) - Effect of the temperature on the conductivity rate at 20°C (AU)
         :Returns:
             Rate of Sucrose Unloading (:math:`\mu mol` C h-1)
         :Returns Type:
             :class:`float`
         """
-        conductance = parameters.HIDDEN_ZONE_PARAMETERS.SIGMA * parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.BETA * self.mstruct**(2/3)  # TODO: choix valeurs param / flux phloem-hgz
+        conductance = parameters.HIDDEN_ZONE_PARAMETERS.SIGMA * parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.BETA * self.mstruct**(2/3) * T_effect_conductivity  # TODO: choix valeurs param / flux phloem-hgz
         flux = ((sucrose_phloem / mstruct_axis) - (sucrose / self.mstruct)) * conductance * parameters.SECOND_TO_HOUR_RATE_CONVERSION
         # res = 0
         # if flux > 0:
         res = flux
         return res
 
-    def calculate_Unloading_Amino_Acids(self, amino_acids, amino_acids_phloem, mstruct_axis): # TODO : ON ne va pas chercher les paramètres au bon endroit
+    def calculate_Unloading_Amino_Acids(self, amino_acids, amino_acids_phloem, mstruct_axis, T_effect_conductivity): # TODO : ON ne va pas chercher les paramètres au bon endroit
         """Rate of amino acids Unloading from phloem to the hidden zone (:math:`\mu mol` N amino acids unloaded g-1 mstruct h-1).
         Transport-resistance equation
 
@@ -251,12 +266,13 @@ class HiddenZone(Organ):
             - `amino_acids` (:class:`float`) - Amino_acids amount in the hidden zone (:math:`\mu mol` N)
             - `amino_acids_phloem` (:class:`float`) - Amino_acids amount in phloem (:math:`\mu mol` N)
             - `mstruct_axis` (:class:`float`) -The structural dry mass of the axis (g)
+            - `T_effect_conductivity` (:class:`float`) - Effect of the temperature on the conductivity rate at 20°C (AU)
         :Returns:
             Rate of Amino_acids Unloading (:math:`\mu mol` N h-1)
         :Returns Type:
             :class:`float`
         """
-        conductance = parameters.HIDDEN_ZONE_PARAMETERS.SIGMA * parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.BETA * self.mstruct**(2/3)
+        conductance = parameters.HIDDEN_ZONE_PARAMETERS.SIGMA * parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.BETA * self.mstruct**(2/3) * T_effect_conductivity
 
         flux =  ((amino_acids_phloem / mstruct_axis) - (amino_acids / self.mstruct)) * conductance * parameters.SECOND_TO_HOUR_RATE_CONVERSION
         # res = 0
@@ -718,19 +734,20 @@ class Roots(Organ):
 
     # FLUXES
 
-    def calculate_Unloading_Sucrose(self, sucrose_phloem, mstruct_axis):
+    def calculate_Unloading_Sucrose(self, sucrose_phloem, mstruct_axis, T_effect_conductivity):
         """Rate of sucrose Unloading from phloem to roots (:math:`\mu mol` C sucrose unloaded g-1 mstruct h-1).
         Michaelis-Menten function of the sucrose concentration in phloem.
 
         :Parameters:
             - `sucrose_phloem` (:class:`float`) - Sucrose concentration in phloem (:math:`\mu mol` C g-1 mstruct)
             - `mstruct_axis` (:class:`float`) -The structural dry mass of the axis (g)
+            - `T_effect_conductivity` (:class:`float`) - Effect of the temperature on the conductivity rate at 20°C (AU)
         :Returns:
             Rate of Sucrose Unloading (:math:`\mu mol` C g-1 mstruct h-1)
         :Returns Type:
             :class:`float`
         """
-        return (((max(0, sucrose_phloem)/(mstruct_axis * Axis.PARAMETERS.ALPHA)) * Roots.PARAMETERS.VMAX_SUCROSE_UNLOADING) /
+        return (((max(0, sucrose_phloem)/(mstruct_axis * Axis.PARAMETERS.ALPHA)) * Roots.PARAMETERS.VMAX_SUCROSE_UNLOADING * T_effect_conductivity ) /
                 ((max(0, sucrose_phloem)/(mstruct_axis * Axis.PARAMETERS.ALPHA)) + Roots.PARAMETERS.K_SUCROSE_UNLOADING)) * parameters.SECOND_TO_HOUR_RATE_CONVERSION
 
     def calculate_Unloading_Amino_Acids(self, Unloading_Sucrose, sucrose_phloem, amino_acids_phloem):
@@ -816,7 +833,7 @@ class Roots(Organ):
         if nitrates <= 0 or regul_transpiration <= 0:
             Export_Nitrates = 0
         else:
-            f_nitrates = (nitrates / (self.mstruct * Roots.PARAMETERS.ALPHA)) * Roots.PARAMETERS.K_NITRATE_EXPORT * 8         #: :math:`\mu mol` g-1 s-1
+            f_nitrates = (nitrates / (self.mstruct * Roots.PARAMETERS.ALPHA)) * Roots.PARAMETERS.K_NITRATE_EXPORT * 1.5         #: :math:`\mu mol` g-1 s-1
             Export_Nitrates = f_nitrates * self.mstruct * regul_transpiration * parameters.SECOND_TO_HOUR_RATE_CONVERSION   #: Nitrate export regulation by transpiration (:math:`\mu mol` N)
         return Export_Nitrates
 
@@ -1232,7 +1249,7 @@ class PhotosyntheticOrganElement(object):
         return (((max(0, triosesP)/(self.mstruct*self.__class__.PARAMETERS.ALPHA)) * PhotosyntheticOrgan.PARAMETERS.VMAX_SUCROSE) /
                 ((max(0, triosesP)/(self.mstruct*self.__class__.PARAMETERS.ALPHA)) + PhotosyntheticOrgan.PARAMETERS.K_SUCROSE)) * parameters.SECOND_TO_HOUR_RATE_CONVERSION
 
-    def calculate_Loading_Sucrose(self, sucrose, sucrose_phloem, mstruct_axis):
+    def calculate_Loading_Sucrose(self, sucrose, sucrose_phloem, mstruct_axis, T_effect_conductivity):
         """Rate of sucrose loading to phloem (:math:`\mu mol` C sucrose h-1).
         Transport-resistance model.
 
@@ -1240,13 +1257,13 @@ class PhotosyntheticOrganElement(object):
             - `sucrose` (:class:`float`) - Amount of sucrose in the element (:math:`\mu mol` C)
             - `sucrose_phloem` (:class:`float`) - Amount of sucrose in the phloem (:math:`\mu mol` C)
             - `mstruct_axis` (:class:`float`) - Structural dry mass of the axis (g)
+            - `T_effect_conductivity` (:class:`float`) - Effect of the temperature on the conductivity rate at 20°C (AU)
+
         :Returns:
             Rate of Sucrose loading (:math:`\mu mol` C h-1)
         :Returns Type:
             :class:`float`
         """
-        if self.mstruct == 0 :
-            pass
         conc_sucrose_element = sucrose / (self.mstruct*self.__class__.PARAMETERS.ALPHA)
         conc_sucrose_phloem = sucrose_phloem / (mstruct_axis * parameters.AXIS_PARAMETERS.ALPHA)
         #: Driving compartment (:math:`\mu mol` C g-1 mstruct)
@@ -1254,7 +1271,7 @@ class PhotosyntheticOrganElement(object):
         #: Gradient of sucrose between the element and the phloem (:math:`\mu mol` C g-1 mstruct)
         diff_sucrose = conc_sucrose_element - conc_sucrose_phloem
         #: Conductance depending on mstruct (g2 :math:`\mu mol`-1 s-1)
-        conductance = PhotosyntheticOrgan.PARAMETERS.SIGMA_SUCROSE * PhotosyntheticOrgan.PARAMETERS.BETA * self.mstruct**(2/3)
+        conductance = PhotosyntheticOrgan.PARAMETERS.SIGMA_SUCROSE * PhotosyntheticOrgan.PARAMETERS.BETA * self.mstruct**(2/3) * T_effect_conductivity
 
         return driving_sucrose_compartment * diff_sucrose * conductance * parameters.SECOND_TO_HOUR_RATE_CONVERSION
 
@@ -1381,7 +1398,7 @@ class PhotosyntheticOrganElement(object):
         :Returns Type:
             :class:`float`
         """
-        calculate_S_proteins = (((max(0, amino_acids) / (self.mstruct*self.__class__.PARAMETERS.ALPHA)) * PhotosyntheticOrgan.PARAMETERS.VMAX_SPROTEINS) *2 /
+        calculate_S_proteins = (((max(0, amino_acids) / (self.mstruct*self.__class__.PARAMETERS.ALPHA)) * PhotosyntheticOrgan.PARAMETERS.VMAX_SPROTEINS) /
                                 ((max(0, amino_acids) / (self.mstruct*self.__class__.PARAMETERS.ALPHA)) + PhotosyntheticOrgan.PARAMETERS.K_SPROTEINS)) * parameters.SECOND_TO_HOUR_RATE_CONVERSION
         return calculate_S_proteins
 
@@ -1405,7 +1422,7 @@ class PhotosyntheticOrganElement(object):
 
         return k_proteins, max(0, k_proteins * (proteins / (self.mstruct*self.__class__.PARAMETERS.ALPHA))) * parameters.SECOND_TO_HOUR_RATE_CONVERSION
 
-    def calculate_Loading_Amino_Acids(self, amino_acids, amino_acids_phloem, mstruct_axis):
+    def calculate_Loading_Amino_Acids(self, amino_acids, amino_acids_phloem, mstruct_axis, T_effect_conductivity):
         """Rate of amino acids loading to phloem (:math:`\mu mol` N amino acids h-1).
         Transport-resistance model.
 
@@ -1413,6 +1430,7 @@ class PhotosyntheticOrganElement(object):
             - `amino_acids` (:class:`float`) - Amount of amino acids in the element (:math:`\mu mol` N)
             - `amino_acids_phloem` (:class:`float`) - Amount of amino acids in the phloem (:math:`\mu mol` N)
             - `mstruct_axis` (:class:`float`) - Structural dry mass of the axis (g)
+            - `T_effect_conductivity` (:class:`float`) - Effect of the temperature on the conductivity rate at 20°C (AU)
         :Returns:
             Amino acids loading (:math:`\mu mol` N h-1)
         :Returns Type:
@@ -1425,7 +1443,7 @@ class PhotosyntheticOrganElement(object):
         #: Gradient of amino acids between the element and the phloem (:math:`\mu mol` N g-1 mstruct)
         diff_amino_acids = Conc_Amino_Acids_element - Conc_Amino_Acids_phloem
         #: Conductance depending on mstruct (g2 :math:`\mu mol`-1 s-1)
-        conductance = PhotosyntheticOrgan.PARAMETERS.SIGMA_AMINO_ACIDS * PhotosyntheticOrgan.PARAMETERS.BETA * self.mstruct**(2/3)
+        conductance = PhotosyntheticOrgan.PARAMETERS.SIGMA_AMINO_ACIDS * PhotosyntheticOrgan.PARAMETERS.BETA * self.mstruct**(2/3) * T_effect_conductivity
 
         return driving_amino_acids_compartment * diff_amino_acids * conductance * parameters.SECOND_TO_HOUR_RATE_CONVERSION
 

@@ -214,7 +214,7 @@ class RootsParameters(object):
     def __init__(self):
         self.ALPHA = 1                       #: Proportion of structural mass containing substrate
 
-        self.VMAX_SUCROSE_UNLOADING = 0.03*1.5#: Maximal rate of sucrose unloading from phloem to roots (:math:`\mu` mol C sucrose s-1 g-1 MS)
+        self.VMAX_SUCROSE_UNLOADING = 0.03*1.5  #: Maximal rate of sucrose unloading from phloem to roots (:math:`\mu` mol C sucrose s-1 g-1 MS)
         self.K_SUCROSE_UNLOADING = 1000      #: Affinity coefficient of sucrose unloading from phloem to roots (:math:`\mu` mol C sucrose g-1 MS)
 
         # Regulation function by transpiration of nitrate uptake
@@ -225,6 +225,7 @@ class RootsParameters(object):
 
         # Nitrate uptake
         self.NET_INFLUX_UPTAKE_RATIO = 0.6   #: ratio (net uptake : nitrate influx)
+        # TODO : temperature effect on Vmax ?
         self.A_VMAX_HATS = 0.1333            #: Parameter for estimating the maximal rate of nitrates uptake at saturating soil N concentration;HATS (:math:`\mu` mol g-1 s-1)
         self.LAMBDA_VMAX_HATS = 0.0025       #: Parameter for estimating the maximal rate of nitrates uptake at saturating soil N concentration;HATS (g :math:`\mu` mol-1)
         self.A_K_HATS = 211812               #: Parameter for estimating the affinity coefficient of nitrates uptake at saturating soil N concentration;HATS (:math:`\mu` mol m-3)
