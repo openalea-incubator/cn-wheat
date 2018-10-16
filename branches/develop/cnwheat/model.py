@@ -92,7 +92,7 @@ class Plant(object):
             axis.calculate_integrative_variables()
 
     def calculate_temperature_effect_on_conductivity(self, Tair):
-        """Effect of the temperature on phloeme translocation conductivity (Bancal 2002)
+        """Effect of the temperature on phloeme translocation conductivity (Farrar 1988)
         Should multiply the rate at 20°C
 
         :Parameters:
@@ -102,8 +102,11 @@ class Plant(object):
         :Returns Type:
             :class:`float`
         """
-        T = max(0,Tair)
-        return -1.208*10**-5*T**3 + 1.432*10**-3*T**2 - 0.07318*T + 2.07
+        Q10 = 1.3
+        Tref = 20
+        # 1/(-1.208*10**-5*T**3 + 1.432*10**-3*T**2 - 0.07318*T + 2.07) # (Bancal 2002)
+
+        return Q10**((Tair-Tref)/10)
 
 
 class Axis(object):
@@ -833,7 +836,7 @@ class Roots(Organ):
         if nitrates <= 0 or regul_transpiration <= 0:
             Export_Nitrates = 0
         else:
-            f_nitrates = (nitrates / (self.mstruct * Roots.PARAMETERS.ALPHA)) * Roots.PARAMETERS.K_NITRATE_EXPORT * 1.5         #: :math:`\mu mol` g-1 s-1
+            f_nitrates = (nitrates / (self.mstruct * Roots.PARAMETERS.ALPHA)) * Roots.PARAMETERS.K_NITRATE_EXPORT * 2       #: :math:`\mu mol` g-1 s-1
             Export_Nitrates = f_nitrates * self.mstruct * regul_transpiration * parameters.SECOND_TO_HOUR_RATE_CONVERSION   #: Nitrate export regulation by transpiration (:math:`\mu mol` N)
         return Export_Nitrates
 
@@ -1501,7 +1504,8 @@ class PhotosyntheticOrganElement(object):
             :class:`float`
         """
         # We consider that DELTA_D_CYTOKININS is the rate at 20°C. The actual rate varies lineraly with organ temperature and is zero at and below zero °C
-        return max(0, PhotosyntheticOrgan.PARAMETERS.DELTA_D_CYTOKININS/20 * max(0, Ts) * (cytokinins/(self.mstruct*self.__class__.PARAMETERS.ALPHA))) * parameters.SECOND_TO_HOUR_RATE_CONVERSION
+        return max(0, PhotosyntheticOrgan.PARAMETERS.DELTA_D_CYTOKININS * 1.5 /20 * max(0, Ts) * (cytokinins/(self.mstruct*self.__class__.PARAMETERS.ALPHA))) * \
+               parameters.SECOND_TO_HOUR_RATE_CONVERSION
 
     # COMPARTMENTS
 
