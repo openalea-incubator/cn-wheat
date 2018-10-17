@@ -836,7 +836,7 @@ class Roots(Organ):
         if nitrates <= 0 or regul_transpiration <= 0:
             Export_Nitrates = 0
         else:
-            f_nitrates = (nitrates / (self.mstruct * Roots.PARAMETERS.ALPHA)) * Roots.PARAMETERS.K_NITRATE_EXPORT * 2       #: :math:`\mu mol` g-1 s-1
+            f_nitrates = (nitrates / (self.mstruct * Roots.PARAMETERS.ALPHA)) * Roots.PARAMETERS.K_NITRATE_EXPORT * 1       #: :math:`\mu mol` g-1 s-1
             Export_Nitrates = f_nitrates * self.mstruct * regul_transpiration * parameters.SECOND_TO_HOUR_RATE_CONVERSION   #: Nitrate export regulation by transpiration (:math:`\mu mol` N)
         return Export_Nitrates
 
@@ -1503,8 +1503,9 @@ class PhotosyntheticOrganElement(object):
         :Returns Type:
             :class:`float`
         """
-        # We consider that DELTA_D_CYTOKININS is the rate at 20°C. The actual rate varies lineraly with organ temperature and is zero at and below zero °C
-        return max(0, PhotosyntheticOrgan.PARAMETERS.DELTA_D_CYTOKININS * 1.5 /20 * max(0, Ts) * (cytokinins/(self.mstruct*self.__class__.PARAMETERS.ALPHA))) * \
+        # We consider that DELTA_D_CYTOKININS is the rate at 20°C. The actual rate varies lineraly with organ temperature and is 0.59  at and below zero °C
+        # 0.59 is the regulation of phloem translocation at 0°C
+        return max(0, PhotosyntheticOrgan.PARAMETERS.DELTA_D_CYTOKININS * ((1-0.59)/20*max(0,Ts) + 0.59) * (cytokinins/(self.mstruct*self.__class__.PARAMETERS.ALPHA))) * \
                parameters.SECOND_TO_HOUR_RATE_CONVERSION
 
     # COMPARTMENTS
