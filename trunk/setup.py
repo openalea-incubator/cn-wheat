@@ -45,14 +45,13 @@ if sys.version_info >= (3, 0):
     print('WARNING: CN-Wheat has not been tested with Python 3.')
 
 pkg_resources.require('numpy>=1.15.1', 'pandas>=0.23.4', 'scipy>=1.1.0',
-                      'matplotlib>=2.2.3', 'sphinx>=1.7.9', 'nose>=1.3.7',
-                      'coverage>=4.5.1', 'Respi-Wheat')
+                      'Respi-Wheat')
 
 setup(
     name = "CN-Wheat",
     version=cnwheat.__version__,
     packages = find_packages(),
-    include_package_data = True,
+    include_package_data=True,
     author = "R.Barillot, C.Chambon and B.Andrieu",
     author_email = "romain.barillot@inra.fr, camille.chambon@inra.fr, bruno.andrieu@inra.fr",
     description = "CN-Wheat is a model of CN distribution for wheat",
