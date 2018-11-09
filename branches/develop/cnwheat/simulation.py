@@ -221,7 +221,7 @@ class Simulation(object):
     #: of the compartments associated to each organ (see :attr:`MODEL_COMPARTMENTS_NAMES`)
     ORGANS_STATE = ORGANS_STATE_PARAMETERS + MODEL_COMPARTMENTS_NAMES.get(model.Organ, [])
     #: the variables that we need to compute in order to compute fluxes and/or compartments values at organ scale
-    ORGANS_INTERMEDIATE_VARIABLES = ['C_exudation', 'HATS_LATS', 'N_exudation', 'RGR_Structure', 'R_Nnit_red', 'R_Nnit_upt',
+    ORGANS_INTERMEDIATE_VARIABLES = ['C_exudation', 'HATS_LATS', 'N_exudation', 'RGR_Structure', 'R_Nnit_red', 'R_Nnit_upt', 'Respi_growth',
                                      'R_grain_growth_starch', 'R_grain_growth_struct', 'R_residual', 'regul_transpiration', 'sum_respi']
     #: the fluxes exchanged between the compartments at organ scale
     ORGANS_FLUXES = ['Export_Amino_Acids', 'Export_Nitrates', 'Export_cytokinins', 'S_Amino_Acids', 'S_cytokinins', 'S_grain_starch',

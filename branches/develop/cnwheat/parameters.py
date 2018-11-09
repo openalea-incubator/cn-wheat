@@ -214,7 +214,7 @@ class RootsParameters(object):
     def __init__(self):
         self.ALPHA = 1                       #: Proportion of structural mass containing substrate
 
-        self.VMAX_SUCROSE_UNLOADING = 0.03   #: Maximal rate of sucrose unloading from phloem to roots (:math:`\mu` mol C sucrose s-1 g-1 MS)
+        self.VMAX_SUCROSE_UNLOADING = 0.03 * 1.8   #: Maximal rate of sucrose unloading from phloem to roots (:math:`\mu` mol C sucrose s-1 g-1 MS)
         self.K_SUCROSE_UNLOADING = 1000      #: Affinity coefficient of sucrose unloading from phloem to roots (:math:`\mu` mol C sucrose g-1 MS)
 
         # Regulation function by transpiration of nitrate uptake
@@ -243,7 +243,7 @@ class RootsParameters(object):
         self.K_AMINO_ACIDS_EXPORT = 3E-5     #: Relative rate of amino acids export from roots (s-1)
 
         # Exudation
-        self.C_EXUDATION = 0.20              #: Proportion of C exudated from C sucrose unloaded to roots (Keith et al., 1986)
+        self.C_EXUDATION = 0.20 * 1.75              #: Proportion of C exudated from C sucrose unloaded to roots (Keith et al., 1986)
 
         # Cytokinins
         self.VMAX_S_CYTOKININS = 4.5E-04     #: Maximal rate of cytokinins synthesis (UA g-1 mstruct s-1)

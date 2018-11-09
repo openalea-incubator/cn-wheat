@@ -58,7 +58,7 @@ AXES_T_INDEXES = cnwheat_simulation.Simulation.AXES_T_INDEXES
 #: axes post-processing variables
 AXES_POSTPROCESSING_VARIABLES = ['C_N_ratio','C_N_ratio_shoot','N_content','N_content_shoot','N_content_roots','N_content_mstruct','N_content_mstruct_shoot','N_content_mstruct_roots',
                                  'sum_N_g','sum_N_g_shoot','sum_dry_mass','sum_dry_mass_shoot','sum_dry_mass_roots',
-                                 'dry_mass_phloem', 'shoot_roots_ratio','shoot_roots_mstruct_ratio']
+                                 'dry_mass_phloem', 'shoot_roots_ratio','shoot_roots_mstruct_ratio','Total_Photosynthesis']
 #: concatenation of :attr:`AXES_T_INDEXES`, :attr:`AXES_RUN_VARIABLES <cnwheat.simulation.Simulation.AXES_RUN_VARIABLES>` and :attr:`AXES_POSTPROCESSING_VARIABLES`
 AXES_RUN_POSTPROCESSING_VARIABLES = AXES_T_INDEXES + cnwheat_simulation.Simulation.AXES_RUN_VARIABLES + AXES_POSTPROCESSING_VARIABLES
 
@@ -77,7 +77,7 @@ ORGANS_INDEXES = cnwheat_simulation.Simulation.ORGANS_INDEXES
 ORGANS_T_INDEXES = cnwheat_simulation.Simulation.ORGANS_T_INDEXES
 #: organs post-processing variables
 ORGANS_POSTPROCESSING_VARIABLES = ['Conc_Amino_Acids', 'Conc_Nitrates', 'Conc_Sucrose', 'Conc_cytokinins', 'Dry_Mass', 'Proteins_N_Mass', 'R_maintenance']
-ORGANS_RUN_VARIABLES_ADDITIONAL = ['amino_acids', 'sucrose']
+ORGANS_RUN_VARIABLES_ADDITIONAL = ['sucrose_consumption_mstruct','AA_consumption_mstruct']
 #: concatenation of :attr:`ORGANS_T_INDEXES`, :attr:`ORGANS_RUN_VARIABLES <cnwheat.simulation.Simulation.ORGANS_RUN_VARIABLES>` and :attr:`ORGANS_POSTPROCESSING_VARIABLES`
 ORGANS_RUN_POSTPROCESSING_VARIABLES = ORGANS_T_INDEXES + cnwheat_simulation.Simulation.ORGANS_RUN_VARIABLES + ORGANS_POSTPROCESSING_VARIABLES + ORGANS_RUN_VARIABLES_ADDITIONAL
 
@@ -590,7 +590,15 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
             # Roots
             dry_mass_roots = organs_df[(organs_df['organ'] == 'roots')].groupby(['t', 'plant', 'axis'])['sum_dry_mass'].agg('sum')
 
+            # Total mstruct shoot and root
+            sum_mstruct_shoot = hiddenzones_df.groupby(['t', 'plant', 'axis'])['mstruct'].agg('sum') + \
+                                 elements_df.groupby(['t', 'plant', 'axis'])['mstruct'].agg('sum')
+            sum_mstruct_roots = organs_df[(organs_df['organ'] == 'roots')].groupby(['t', 'plant', 'axis'])['mstruct'].agg('sum')
+
+            shoot_roots_mstruct_ratio = sum_mstruct_shoot / sum_mstruct_roots
+
             # Phloem
+            phloem_shoot_root = 1/(1+1/shoot_roots_mstruct_ratio)
             sum_dry_mass_phloem = organs_df[(organs_df['organ'] == 'phloem')].groupby(['t', 'plant', 'axis'])['sum_dry_mass'].agg('sum')
             sum_dry_mass_phloem_shoot = sum_dry_mass_phloem * phloem_shoot_root
             sum_dry_mass_phloem_roots = sum_dry_mass_phloem * (1 - phloem_shoot_root)
@@ -601,11 +609,6 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
             sum_dry_mass_shoot = sum_dry_mass_phloem_shoot + \
                                  hiddenzones_df.groupby(['t', 'plant', 'axis'])['sum_dry_mass'].agg('sum') + \
                                  elements_df.groupby(['t', 'plant', 'axis'])['sum_dry_mass'].agg('sum')
-
-            # Total mstruct shoot and root
-            sum_mstruct_shoot = hiddenzones_df.groupby(['t', 'plant', 'axis'])['mstruct'].agg('sum') + \
-                                 elements_df.groupby(['t', 'plant', 'axis'])['mstruct'].agg('sum')
-            sum_mstruct_roots = organs_df[(organs_df['organ'] == 'roots')].groupby(['t', 'plant', 'axis'])['mstruct'].agg('sum')
 
             # Total root
             sum_dry_mass_roots = sum_dry_mass_phloem_roots + dry_mass_roots
@@ -630,9 +633,6 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
             N_content_roots = (N_content*sum_dry_mass - N_content_shoot*sum_dry_mass_shoot)/sum_dry_mass_roots
             N_content_mstruct_roots = (N_content_mstruct*sum_mstruct - N_content_mstruct_shoot*sum_mstruct_shoot) / sum_mstruct_roots
 
-            # shoot_roots_mstruct_ratio
-            shoot_roots_mstruct_ratio = sum_mstruct_shoot / sum_mstruct_roots
-
             # C/N ratio
             sum_C_g = (organs_df.groupby(['t', 'plant', 'axis'])['C_g'].agg('sum') +
                        hiddenzones_df.groupby(['t', 'plant', 'axis'])['C_g'].agg('sum') +
@@ -643,6 +643,9 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
 
             C_N_ratio = sum_C_g / sum_N_g
             C_N_ratio_shoot = sum_C_g_shoot / sum_N_g_shoot
+
+            # Photosyntheses
+            tot_photosynthesis = elements_df.groupby(['t', 'plant', 'axis'])['Photosynthesis'].agg('sum')
 
             # Add to axes df
             pp_axes_df = pp_axes_df.sort_values(['t', 'plant', 'axis']) # Make sure axes_df is sorted
@@ -662,6 +665,7 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
             pp_axes_df.loc[:, 'dry_mass_phloem'] = sum_dry_mass_phloem.values[1:len(sum_dry_mass_phloem)]
             pp_axes_df.loc[:, 'shoot_roots_ratio'] = pp_axes_df['sum_dry_mass_shoot'] / pp_axes_df['sum_dry_mass_roots']
             pp_axes_df.loc[:, 'shoot_roots_mstruct_ratio'] = shoot_roots_mstruct_ratio.values[1:len(shoot_roots_mstruct_ratio)]
+            pp_axes_df.loc[:, 'Total_Photosynthesis'] = tot_photosynthesis.values[1:len(tot_photosynthesis)]
 
         pp_axes_df = pp_axes_df.reindex(AXES_RUN_POSTPROCESSING_VARIABLES, axis=1, copy=False)
         pp_axes_df['plant'] = pp_axes_df['plant'].astype(int)

@@ -900,7 +900,7 @@ class Roots(Organ):
         conc_Nitrates = max(0, (nitrates_roots/self.mstruct))
         f_sucrose = conc_sucrose**Roots.PARAMETERS.N_SUC_CYTOKININS/(conc_sucrose**Roots.PARAMETERS.N_SUC_CYTOKININS + Roots.PARAMETERS.K_SUCROSE_CYTOKININS**Roots.PARAMETERS.N_SUC_CYTOKININS)
         f_nitrates = conc_Nitrates**Roots.PARAMETERS.N_NIT_CYTOKININS/(conc_Nitrates**Roots.PARAMETERS.N_NIT_CYTOKININS + Roots.PARAMETERS.K_NITRATES_CYTOKININS**Roots.PARAMETERS.N_NIT_CYTOKININS)
-        S_cytokinins = Roots.PARAMETERS.VMAX_S_CYTOKININS * f_sucrose * f_nitrates * parameters.SECOND_TO_HOUR_RATE_CONVERSION
+        S_cytokinins = Roots.PARAMETERS.VMAX_S_CYTOKININS * f_sucrose * f_nitrates * parameters.SECOND_TO_HOUR_RATE_CONVERSION * 0.5
         return S_cytokinins
 
     def calculate_Export_cytokinins(self, cytokinins, regul_transpiration):
@@ -1159,7 +1159,7 @@ class PhotosyntheticOrganElement(object):
         :Returns Type:
             :class:`float`
         """
-        return Ag * green_area * parameters.SECOND_TO_HOUR_RATE_CONVERSION
+        return Ag * green_area * parameters.SECOND_TO_HOUR_RATE_CONVERSION # * 0.70
 
     def calculate_Total_Transpiration(self, Tr, green_area):
         """Surfacic transpiration rate of an element
@@ -1505,7 +1505,8 @@ class PhotosyntheticOrganElement(object):
         """
         # We consider that DELTA_D_CYTOKININS is the rate at 20°C. The actual rate varies lineraly with organ temperature and is 0.59  at and below zero °C
         # 0.59 is the regulation of phloem translocation at 0°C
-        return max(0, PhotosyntheticOrgan.PARAMETERS.DELTA_D_CYTOKININS * ((1-0.59)/20*max(0,Ts) + 0.59) * (cytokinins/(self.mstruct*self.__class__.PARAMETERS.ALPHA))) * \
+        # 0.98 pour corriger la différence entre regulation de la transpiration par Tair, et régulation D_cyto par Ts (pas même équation non plus)
+        return max(0, PhotosyntheticOrgan.PARAMETERS.DELTA_D_CYTOKININS * ((1-0.1)/20*max(0,Ts) + 0.1) * (cytokinins/(self.mstruct*self.__class__.PARAMETERS.ALPHA))) * \
                parameters.SECOND_TO_HOUR_RATE_CONVERSION
 
     # COMPARTMENTS
