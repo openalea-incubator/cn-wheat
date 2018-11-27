@@ -58,7 +58,7 @@ AXES_T_INDEXES = cnwheat_simulation.Simulation.AXES_T_INDEXES
 #: axes post-processing variables
 AXES_POSTPROCESSING_VARIABLES = ['C_N_ratio','C_N_ratio_shoot','N_content','N_content_shoot','N_content_roots','N_content_mstruct','N_content_mstruct_shoot','N_content_mstruct_roots',
                                  'sum_N_g','sum_N_g_shoot','sum_dry_mass','sum_dry_mass_shoot','sum_dry_mass_roots',
-                                 'dry_mass_phloem', 'shoot_roots_ratio','shoot_roots_mstruct_ratio','Total_Photosynthesis']
+                                 'dry_mass_phloem', 'shoot_roots_ratio','shoot_roots_mstruct_ratio','Total_Photosynthesis','NNI','NS','NS_shoot','NS_roots','mstruct_shoot']
 #: concatenation of :attr:`AXES_T_INDEXES`, :attr:`AXES_RUN_VARIABLES <cnwheat.simulation.Simulation.AXES_RUN_VARIABLES>` and :attr:`AXES_POSTPROCESSING_VARIABLES`
 AXES_RUN_POSTPROCESSING_VARIABLES = AXES_T_INDEXES + cnwheat_simulation.Simulation.AXES_RUN_VARIABLES + AXES_POSTPROCESSING_VARIABLES
 
@@ -97,8 +97,8 @@ ELEMENTS_INDEXES = cnwheat_simulation.Simulation.ELEMENTS_INDEXES
 ELEMENTS_T_INDEXES = cnwheat_simulation.Simulation.ELEMENTS_T_INDEXES
 #: elements post-processing variables
 ELEMENTS_POSTPROCESSING_VARIABLES = ['Conc_Amino_Acids', 'Conc_Fructan', 'Conc_Nitrates', 'Conc_Proteins', 'Conc_Starch', 'Conc_Sucrose', 'Conc_TriosesP',
-                                     'Conc_cytokinins', 'R_maintenance', 'Surfacic N']
-ELEMENTS_RUN_VARIABLES_ADDITIONAL = ['length']
+                                     'Conc_cytokinins', 'R_maintenance', 'Surfacic N','Surfacic_NS','NS']
+ELEMENTS_RUN_VARIABLES_ADDITIONAL = ['length','PARa']
 #: concatenation of :attr:`ELEMENTS_T_INDEXES`, :attr:`ELEMENTS_RUN_VARIABLES <cnwheat.simulation.Simulation.ELEMENTS_RUN_VARIABLES>` and :attr:`ELEMENTS_POSTPROCESSING_VARIABLES`
 ELEMENTS_RUN_POSTPROCESSING_VARIABLES = ELEMENTS_T_INDEXES + cnwheat_simulation.Simulation.ELEMENTS_RUN_VARIABLES + ELEMENTS_RUN_VARIABLES_ADDITIONAL + ELEMENTS_POSTPROCESSING_VARIABLES
 
@@ -253,6 +253,71 @@ class HiddenZone:
     Post-processing to apply on HiddenZone outputs.
     """
     @staticmethod
+    def calculate_dry_mass( sucrose, starch, fructan,  amino_acids, proteins, mstruct):
+        """Dry mass
+
+        :Parameters:
+            - `triosesP` (:class:`float`) - Amount of triose phosphates (:math:`\mu mol` C)
+            - ...
+        :Returns:
+            Dry mass (g)
+        :Returns Type:
+            :class:`float`
+        """
+        C_MOLAR_MASS = cnwheat_model.EcophysiologicalConstants.C_MOLAR_MASS
+        N_MOLAR_MASS = cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS
+        res = ((sucrose * 1E-6 * C_MOLAR_MASS) / cnwheat_model.EcophysiologicalConstants.HEXOSE_MOLAR_MASS_C_RATIO +
+               (starch * 1E-6 * C_MOLAR_MASS) / cnwheat_model.EcophysiologicalConstants.HEXOSE_MOLAR_MASS_C_RATIO +
+               (fructan * 1E-6 * C_MOLAR_MASS) / cnwheat_model.EcophysiologicalConstants.HEXOSE_MOLAR_MASS_C_RATIO +
+               (amino_acids * 1E-6 * N_MOLAR_MASS) / cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_N_RATIO +
+               (proteins * 1E-6 * N_MOLAR_MASS) / cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_N_RATIO +
+               mstruct)
+
+        return res
+
+    @staticmethod
+    def calculate_C_g( sucrose, starch, fructan, amino_acids, proteins, mstruct):
+        """Dry mass
+
+        :Parameters:
+            - `triosesP` (:class:`float`) - Amount of triose phosphates (:math:`\mu mol` C)
+            - ...
+        :Returns:
+            Dry mass (g)
+        :Returns Type:
+            :class:`float`
+        """
+        C_MOLAR_MASS = cnwheat_model.EcophysiologicalConstants.C_MOLAR_MASS
+        N_MOLAR_MASS = cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS
+        res = ((sucrose * 1E-6 * C_MOLAR_MASS) +
+               (starch * 1E-6 * C_MOLAR_MASS) +
+               (fructan * 1E-6 * C_MOLAR_MASS) +
+               (amino_acids * 1E-6 * N_MOLAR_MASS) * cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_C_RATIO / cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_N_RATIO +
+               (proteins * 1E-6 * N_MOLAR_MASS) * cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_C_RATIO / cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_N_RATIO +
+               mstruct * cnwheat_model.EcophysiologicalConstants.RATIO_C_mstruct)
+
+        return res
+
+    @staticmethod
+    def calculate_N_g( amino_acids, proteins, Nstruct):
+        """Dry mass
+
+        :Parameters:
+            - `triosesP` (:class:`float`) - Amount of triose phosphates (:math:`\mu mol` C)
+            - ...
+        :Returns:
+            Dry mass (g)
+        :Returns Type:
+            :class:`float`
+        """
+        N_MOLAR_MASS = cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS
+        res = ((amino_acids * 1E-6 * N_MOLAR_MASS) +
+               (proteins * 1E-6 * N_MOLAR_MASS) +
+               Nstruct)
+
+        return res
+
+    @staticmethod
     def calculate_Conc_Amino_Acids(amino_acids, mstruct):
         """Amino acid concentration.
 
@@ -327,6 +392,75 @@ class Element:
     """
     Post-processing to apply on Element outputs.
     """
+    @staticmethod
+    def calculate_dry_mass(triosesP, sucrose, starch, fructan, nitrates, amino_acids, proteins, mstruct):
+        """Dry mass
+
+        :Parameters:
+            - `triosesP` (:class:`float`) - Amount of triose phosphates (:math:`\mu mol` C)
+            - ...
+        :Returns:
+            Dry mass (g)
+        :Returns Type:
+            :class:`float`
+        """
+        C_MOLAR_MASS = cnwheat_model.EcophysiologicalConstants.C_MOLAR_MASS
+        N_MOLAR_MASS = cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS
+        res = ((triosesP * 1E-6 * C_MOLAR_MASS) / cnwheat_model.EcophysiologicalConstants.TRIOSESP_MOLAR_MASS_C_RATIO +
+               (sucrose * 1E-6 * C_MOLAR_MASS) / cnwheat_model.EcophysiologicalConstants.HEXOSE_MOLAR_MASS_C_RATIO +
+               (starch * 1E-6 * C_MOLAR_MASS) / cnwheat_model.EcophysiologicalConstants.HEXOSE_MOLAR_MASS_C_RATIO +
+               (fructan * 1E-6 * C_MOLAR_MASS) / cnwheat_model.EcophysiologicalConstants.HEXOSE_MOLAR_MASS_C_RATIO +
+               (nitrates * 1E-6 * N_MOLAR_MASS) / cnwheat_model.EcophysiologicalConstants.NITRATES_MOLAR_MASS_N_RATIO +
+               (amino_acids * 1E-6 * N_MOLAR_MASS) / cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_N_RATIO +
+               (proteins * 1E-6 * N_MOLAR_MASS) / cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_N_RATIO +
+               mstruct)
+
+        return res
+
+    @staticmethod
+    def calculate_C_g(triosesP, sucrose, starch, fructan, amino_acids, proteins, mstruct):
+        """Dry mass
+
+        :Parameters:
+            - `triosesP` (:class:`float`) - Amount of triose phosphates (:math:`\mu mol` C)
+            - ...
+        :Returns:
+            Dry mass (g)
+        :Returns Type:
+            :class:`float`
+        """
+        C_MOLAR_MASS = cnwheat_model.EcophysiologicalConstants.C_MOLAR_MASS
+        N_MOLAR_MASS = cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS
+        res = ((triosesP * 1E-6 * C_MOLAR_MASS) +
+                          (sucrose * 1E-6 * C_MOLAR_MASS) +
+                          (starch * 1E-6 * C_MOLAR_MASS) +
+                          (fructan * 1E-6 * C_MOLAR_MASS) +
+                          (amino_acids * 1E-6 * N_MOLAR_MASS) * cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_C_RATIO / cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_N_RATIO +
+                          (proteins * 1E-6 * N_MOLAR_MASS) * cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_C_RATIO / cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_N_RATIO +
+               mstruct * cnwheat_model.EcophysiologicalConstants.RATIO_C_mstruct)
+
+        return res
+
+    @staticmethod
+    def calculate_N_g( nitrates, amino_acids, proteins, Nstruct):
+        """Dry mass
+
+        :Parameters:
+            - `triosesP` (:class:`float`) - Amount of triose phosphates (:math:`\mu mol` C)
+            - ...
+        :Returns:
+            Dry mass (g)
+        :Returns Type:
+            :class:`float`
+        """
+        N_MOLAR_MASS = cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS
+        res = ((nitrates * 1E-6 * N_MOLAR_MASS) +
+                          (amino_acids * 1E-6 * N_MOLAR_MASS) +
+                          (proteins * 1E-6 * N_MOLAR_MASS) +
+               Nstruct)
+
+        return res
+
     @staticmethod
     def calculate_conc_triosesP(triosesP, mstruct):
         """Triose Phosphates concentration.
@@ -454,6 +588,39 @@ class Element:
 
         return mass_N_tot / green_area
 
+    @staticmethod
+    def calculate_surfacic_non_structural(dry_mass,mstruct, green_area):
+        """Surfacic content of nitrogen
+
+        : Parameters:
+            - `dry_mass` (:class:`float`) - Dry mass (g)
+            - `mstruct` (:class:`float`) - structural mass (g)
+            - `green_area` (:class:`float`) - green area (m-2)
+
+        : Returns:
+            Surfacic non structural mass (g m-2)
+
+        :Returns Type:
+            :class:`float`
+        """
+        return (dry_mass - mstruct)+ green_area
+
+    @staticmethod
+    def calculate_ratio_non_structural(dry_mass,mstruct):
+        """Surfacic content of nitrogen
+
+        : Parameters:
+            - `dry_mass` (:class:`float`) - Dry mass (g)
+            - `mstruct` (:class:`float`) - structural mass (g)
+
+        : Returns:
+            Surfacic non structural mass (g m-2)
+
+        :Returns Type:
+            :class:`float`
+        """
+        return (1 - mstruct/dry_mass)*100
+
 ###############################################################################
 ####################### POST-PROCESSING FRONT-END #############################
 # PLEASE USE THIS FUNCTION TO APPLY POST-PROCESSING ON THE OUTPUT OF CN-WHEAT #
@@ -521,71 +688,71 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
             C_MOLAR_MASS = 12
             N_MOLAR_MASS = 14
             TRIOSESP_MOLAR_MASS_C_RATIO = 0.21  # ok
-            SUCROSE_MOLAR_MASS_C_RATIO = 0.42  # 0.45
+            SUCROSE_MOLAR_MASS_C_RATIO = 0.42
             HEXOSE_MOLAR_MASS_C_RATIO = 0.4  # 0.44 pour amidon
             NITRATES_MOLAR_MASS_N_RATIO = 0.23
-            AMINO_ACIDS_MOLAR_MASS_N_RATIO = 0.145  # 0.134
+            AMINO_ACIDS_MOLAR_MASS_N_RATIO = 0.135
             AMINO_ACIDS_MOLAR_MASS_C_RATIO = 0.38  # (Penning De Vries 1989)
-            PROTEINS_MOLAR_MASS_N_RATIO = 0.136  # 0.151 (Penning De Vries 1989)
+            PROTEINS_MOLAR_MASS_N_RATIO = 0.151 # (Penning De Vries 1989)
             PROTEINS_MOLAR_MASS_C_RATIO = 0.38  # MG (idem AA)
             RATIO_SUCROSE_MSTRUCT = 0.384  #: Mass of C (under carbohydrate form, g) in 1 g of mstruct (Penning de Vries, Witlage and Kremer, 1978) (growthwheat.parameters) 0.44 si que cellulose
             phloem_shoot_root = 0.75
 
             # Photosynthetic elements
-            elements_df['sum_dry_mass'] = ((elements_df.fillna(0)['triosesP'] * 1E-6 * C_MOLAR_MASS) / TRIOSESP_MOLAR_MASS_C_RATIO +
-                                           (elements_df.fillna(0)['sucrose'] * 1E-6 * C_MOLAR_MASS) / SUCROSE_MOLAR_MASS_C_RATIO +
-                                           (elements_df.fillna(0)['starch'] * 1E-6 * C_MOLAR_MASS) / HEXOSE_MOLAR_MASS_C_RATIO +
-                                           (elements_df.fillna(0)['fructan'] * 1E-6 * C_MOLAR_MASS) / HEXOSE_MOLAR_MASS_C_RATIO +
-                                           (elements_df.fillna(0)['nitrates'] * 1E-6 * N_MOLAR_MASS) / NITRATES_MOLAR_MASS_N_RATIO +
-                                           (elements_df.fillna(0)['amino_acids'] * 1E-6 * N_MOLAR_MASS) / AMINO_ACIDS_MOLAR_MASS_N_RATIO +
-                                           (elements_df.fillna(0)['proteins'] * 1E-6 * N_MOLAR_MASS) / AMINO_ACIDS_MOLAR_MASS_N_RATIO +
-                                           elements_df['mstruct'])
-            elements_df['C_g'] = ((elements_df.fillna(0)['triosesP'] * 1E-6 * C_MOLAR_MASS) +
-                                  (elements_df.fillna(0)['sucrose'] * 1E-6 * C_MOLAR_MASS) +
-                                  (elements_df.fillna(0)['starch'] * 1E-6 * C_MOLAR_MASS) +
-                                  (elements_df.fillna(0)['fructan'] * 1E-6 * C_MOLAR_MASS) +
-                                  (elements_df.fillna(0)['amino_acids'] * 1E-6 * N_MOLAR_MASS) * AMINO_ACIDS_MOLAR_MASS_C_RATIO / AMINO_ACIDS_MOLAR_MASS_N_RATIO +
-                                  (elements_df.fillna(0)['proteins'] * 1E-6 * N_MOLAR_MASS) * AMINO_ACIDS_MOLAR_MASS_C_RATIO / AMINO_ACIDS_MOLAR_MASS_N_RATIO +
-                                  elements_df['mstruct'] * RATIO_SUCROSE_MSTRUCT)
-            elements_df['N_g'] = ((elements_df.fillna(0)['nitrates'] * 1E-6 * N_MOLAR_MASS) +
-                                  (elements_df.fillna(0)['amino_acids'] * 1E-6 * N_MOLAR_MASS) +
-                                  (elements_df.fillna(0)['proteins'] * 1E-6 * N_MOLAR_MASS) +
-                                  elements_df['Nstruct'])
+            elements_df['sum_dry_mass'] = Element.calculate_dry_mass( elements_df.fillna(0)['triosesP'],
+                                                                      elements_df.fillna(0)['sucrose'],
+                                                                      elements_df.fillna(0)['starch'],
+                                                                      elements_df.fillna(0)['fructan'],
+                                                                      elements_df.fillna(0)['nitrates'],
+                                                                      elements_df.fillna(0)['amino_acids'],
+                                                                      elements_df.fillna(0)['proteins'],
+                                                                      elements_df['mstruct'])
+            elements_df['C_g'] = Element.calculate_C_g( elements_df.fillna(0)['triosesP'],
+                                                        elements_df.fillna(0)['sucrose'],
+                                                        elements_df.fillna(0)['starch'],
+                                                        elements_df.fillna(0)['fructan'],
+                                                        elements_df.fillna(0)['amino_acids'],
+                                                        elements_df.fillna(0)['proteins'],
+                                                        elements_df['mstruct'])
+            elements_df['N_g'] = Element.calculate_N_g(elements_df.fillna(0)['nitrates'],
+                                                       elements_df.fillna(0)['amino_acids'],
+                                                       elements_df.fillna(0)['proteins'],
+                                                       elements_df['Nstruct'])
 
             # Organs
             organs_df['sum_dry_mass'] = (((organs_df.fillna(0)['structure'] + organs_df.fillna(0)['starch']) * 1E-6 * C_MOLAR_MASS / HEXOSE_MOLAR_MASS_C_RATIO) +
-                                          (organs_df.fillna(0)['sucrose'] * 1E-6 * C_MOLAR_MASS) / SUCROSE_MOLAR_MASS_C_RATIO +
-                                          (organs_df.fillna(0)['starch'] * 1E-6 * C_MOLAR_MASS) / HEXOSE_MOLAR_MASS_C_RATIO +
-                                          (organs_df.fillna(0)['nitrates'] * 1E-6 * N_MOLAR_MASS) / NITRATES_MOLAR_MASS_N_RATIO +
-                                          (organs_df.fillna(0)['amino_acids'] * 1E-6 * N_MOLAR_MASS) / AMINO_ACIDS_MOLAR_MASS_N_RATIO +
-                                          (organs_df.fillna(0)['proteins'] * 1E-6 * N_MOLAR_MASS) / AMINO_ACIDS_MOLAR_MASS_N_RATIO +
-                                          organs_df.fillna(0)['mstruct'])
+                                         (organs_df.fillna(0)['sucrose'] * 1E-6 * C_MOLAR_MASS) / SUCROSE_MOLAR_MASS_C_RATIO +
+                                         (organs_df.fillna(0)['starch'] * 1E-6 * C_MOLAR_MASS) / HEXOSE_MOLAR_MASS_C_RATIO +
+                                         (organs_df.fillna(0)['nitrates'] * 1E-6 * N_MOLAR_MASS) / NITRATES_MOLAR_MASS_N_RATIO +
+                                         (organs_df.fillna(0)['amino_acids'] * 1E-6 * N_MOLAR_MASS) / AMINO_ACIDS_MOLAR_MASS_N_RATIO +
+                                         (organs_df.fillna(0)['proteins'] * 1E-6 * N_MOLAR_MASS) / AMINO_ACIDS_MOLAR_MASS_N_RATIO +
+                                         organs_df.fillna(0)['mstruct'])
             organs_df['C_g'] = ((organs_df.fillna(0)['sucrose'] * 1E-6 * C_MOLAR_MASS) +
-                                 (organs_df.fillna(0)['starch'] * 1E-6 * C_MOLAR_MASS) +
-                                 (organs_df.fillna(0)['amino_acids'] * 1E-6 * N_MOLAR_MASS) * AMINO_ACIDS_MOLAR_MASS_C_RATIO / AMINO_ACIDS_MOLAR_MASS_N_RATIO +
-                                 (organs_df.fillna(0)['proteins'] * 1E-6 * N_MOLAR_MASS) * AMINO_ACIDS_MOLAR_MASS_C_RATIO / AMINO_ACIDS_MOLAR_MASS_N_RATIO +
-                                 organs_df.fillna(0)['mstruct'] * RATIO_SUCROSE_MSTRUCT)
+                                (organs_df.fillna(0)['starch'] * 1E-6 * C_MOLAR_MASS) +
+                                (organs_df.fillna(0)['amino_acids'] * 1E-6 * N_MOLAR_MASS) * AMINO_ACIDS_MOLAR_MASS_C_RATIO / AMINO_ACIDS_MOLAR_MASS_N_RATIO +
+                                (organs_df.fillna(0)['proteins'] * 1E-6 * N_MOLAR_MASS) * AMINO_ACIDS_MOLAR_MASS_C_RATIO / AMINO_ACIDS_MOLAR_MASS_N_RATIO +
+                                organs_df.fillna(0)['mstruct'] * RATIO_SUCROSE_MSTRUCT)
             organs_df['N_g'] = ((organs_df.fillna(0)['nitrates'] * 1E-6 * N_MOLAR_MASS) +
-                                 (organs_df.fillna(0)['amino_acids'] * 1E-6 * N_MOLAR_MASS) +
-                                 (organs_df.fillna(0)['proteins'] * 1E-6 * N_MOLAR_MASS) +
-                                 organs_df.fillna(0)['Nstruct'])
+                                (organs_df.fillna(0)['amino_acids'] * 1E-6 * N_MOLAR_MASS) +
+                                (organs_df.fillna(0)['proteins'] * 1E-6 * N_MOLAR_MASS) +
+                                organs_df.fillna(0)['Nstruct'])
 
             # Hiddenzones
-            hiddenzones_df['sum_dry_mass'] = ((hiddenzones_df.fillna(0)['sucrose'] * 1E-6 * C_MOLAR_MASS) / SUCROSE_MOLAR_MASS_C_RATIO +
-                                              (hiddenzones_df.fillna(0)['fructan'] * 1E-6 * C_MOLAR_MASS) / HEXOSE_MOLAR_MASS_C_RATIO +
-                                              (hiddenzones_df.fillna(0)['amino_acids'] * 1E-6 * N_MOLAR_MASS) / AMINO_ACIDS_MOLAR_MASS_N_RATIO +
-                                              (hiddenzones_df.fillna(0)['proteins'] * 1E-6 * N_MOLAR_MASS) / AMINO_ACIDS_MOLAR_MASS_N_RATIO +
-                                              hiddenzones_df['mstruct'])
-            hiddenzones_df['C_g'] = ((hiddenzones_df.fillna(0)['sucrose'] * 1E-6 * C_MOLAR_MASS) +
-                                     (hiddenzones_df.fillna(0)['fructan'] * 1E-6 * C_MOLAR_MASS) +
-                                     (hiddenzones_df.fillna(0)['amino_acids'] * 1E-6 * N_MOLAR_MASS) * AMINO_ACIDS_MOLAR_MASS_C_RATIO / AMINO_ACIDS_MOLAR_MASS_N_RATIO +
-                                     (hiddenzones_df.fillna(0)['proteins'] * 1E-6 * N_MOLAR_MASS) * AMINO_ACIDS_MOLAR_MASS_C_RATIO / AMINO_ACIDS_MOLAR_MASS_N_RATIO +
-                                     hiddenzones_df['mstruct'] * RATIO_SUCROSE_MSTRUCT)
-            hiddenzones_df['N_g'] = ((hiddenzones_df.fillna(0)['amino_acids'] * 1E-6 * N_MOLAR_MASS) +
-                                     (hiddenzones_df.fillna(0)['proteins'] * 1E-6 * N_MOLAR_MASS) +
-                                     hiddenzones_df['leaf_enclosed_Nstruct'] + hiddenzones_df['internode_enclosed_Nstruct'])
-
-
+            hiddenzones_df['sum_dry_mass'] = HiddenZone.calculate_dry_mass( hiddenzones_df.fillna(0)['sucrose'],
+                                                                            0,#hiddenzones_df.fillna(0)['starch'],
+                                                                            hiddenzones_df.fillna(0)['fructan'],
+                                                                            hiddenzones_df.fillna(0)['amino_acids'],
+                                                                            hiddenzones_df.fillna(0)['proteins'],
+                                                                            hiddenzones_df['mstruct'])
+            hiddenzones_df['C_g'] = HiddenZone.calculate_C_g( hiddenzones_df.fillna(0)['sucrose'] ,
+                                                              0,#hiddenzones_df.fillna(0)['starch'],
+                                                              hiddenzones_df.fillna(0)['fructan'],
+                                                              hiddenzones_df.fillna(0)['amino_acids'],
+                                                              hiddenzones_df.fillna(0)['proteins'],
+                                                              hiddenzones_df['mstruct'] )
+            hiddenzones_df['N_g'] = HiddenZone.calculate_N_g( hiddenzones_df.fillna(0)['amino_acids'],
+                                                              hiddenzones_df.fillna(0)['proteins'] ,
+                                                              hiddenzones_df['leaf_enclosed_Nstruct'] + hiddenzones_df['internode_enclosed_Nstruct'])
 
             # Roots
             dry_mass_roots = organs_df[(organs_df['organ'] == 'roots')].groupby(['t', 'plant', 'axis'])['sum_dry_mass'].agg('sum')
@@ -647,6 +814,16 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
             # Photosyntheses
             tot_photosynthesis = elements_df.groupby(['t', 'plant', 'axis'])['Photosynthesis'].agg('sum')
 
+            # INN
+            DM_t_ha = sum_dry_mass_shoot * 250 * 10**-2 # convert from g.plant-1 to t.ha-1
+            N_content_critical = np.where(DM_t_ha < 1.55, 4.4, 5.35 * DM_t_ha ** -0.442 ) # from Justes 1994 : valid at field scale from Feekes 3 i.e. mid tillering
+            NNI = N_content_shoot / N_content_critical
+
+            # Ratio Non Structural Mass
+            NS_shoot = (1 - sum_mstruct_shoot /sum_dry_mass_shoot)*100
+            NS_roots = (1 - sum_mstruct_roots /sum_dry_mass_roots)*100
+            NS = (1 - sum_mstruct /sum_dry_mass)*100
+
             # Add to axes df
             pp_axes_df = pp_axes_df.sort_values(['t', 'plant', 'axis']) # Make sure axes_df is sorted
             pp_axes_df.loc[:, 'C_N_ratio'] = C_N_ratio.values[1:len(C_N_ratio)]
@@ -666,6 +843,11 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
             pp_axes_df.loc[:, 'shoot_roots_ratio'] = pp_axes_df['sum_dry_mass_shoot'] / pp_axes_df['sum_dry_mass_roots']
             pp_axes_df.loc[:, 'shoot_roots_mstruct_ratio'] = shoot_roots_mstruct_ratio.values[1:len(shoot_roots_mstruct_ratio)]
             pp_axes_df.loc[:, 'Total_Photosynthesis'] = tot_photosynthesis.values[1:len(tot_photosynthesis)]
+            pp_axes_df.loc[:, 'NNI'] = NNI.values[1:len(NNI)]
+            pp_axes_df.loc[:, 'NS_roots'] = NS_roots.values[1:len(NS_roots)]
+            pp_axes_df.loc[:, 'NS_shoot'] = NS_shoot.values[1:len(NS_shoot)]
+            pp_axes_df.loc[:, 'NS'] = NS.values[1:len(NS)]
+            pp_axes_df.loc[:, 'mstruct_shoot'] = sum_mstruct_shoot.values[1:len(sum_mstruct_shoot)]
 
         pp_axes_df = pp_axes_df.reindex(AXES_RUN_POSTPROCESSING_VARIABLES, axis=1, copy=False)
         pp_axes_df['plant'] = pp_axes_df['plant'].astype(int)
@@ -737,25 +919,10 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
         pp_elements_df.loc[:, 'Surfacic N'] = Element.calculate_surfacic_nitrogen(elements_df['nitrates'],
                                                                                    elements_df['amino_acids'], elements_df['proteins'],
                                                                                    elements_df['Nstruct'], elements_df['green_area'])
-        # elements_df['sum_dry_mass'] = ((elements_df.fillna(0)['triosesP'] * 1E-6 * C_MOLAR_MASS) / TRIOSESP_MOLAR_MASS_C_RATIO +
-        #                                (elements_df.fillna(0)['sucrose'] * 1E-6 * C_MOLAR_MASS) / SUCROSE_MOLAR_MASS_C_RATIO +
-        #                                (elements_df.fillna(0)['starch'] * 1E-6 * C_MOLAR_MASS) / HEXOSE_MOLAR_MASS_C_RATIO +
-        #                                (elements_df.fillna(0)['fructan'] * 1E-6 * C_MOLAR_MASS) / HEXOSE_MOLAR_MASS_C_RATIO +
-        #                                (elements_df.fillna(0)['nitrates'] * 1E-6 * N_MOLAR_MASS) / NITRATES_MOLAR_MASS_N_RATIO +
-        #                                (elements_df.fillna(0)['amino_acids'] * 1E-6 * N_MOLAR_MASS) / AMINO_ACIDS_MOLAR_MASS_N_RATIO +
-        #                                (elements_df.fillna(0)['proteins'] * 1E-6 * N_MOLAR_MASS) / AMINO_ACIDS_MOLAR_MASS_N_RATIO +
-        #                                elements_df['mstruct'])
-        # elements_df['C_g'] = ((elements_df.fillna(0)['triosesP'] * 1E-6 * C_MOLAR_MASS) +
-        #                       (elements_df.fillna(0)['sucrose'] * 1E-6 * C_MOLAR_MASS) +
-        #                       (elements_df.fillna(0)['starch'] * 1E-6 * C_MOLAR_MASS) +
-        #                       (elements_df.fillna(0)['fructan'] * 1E-6 * C_MOLAR_MASS) +
-        #                       (elements_df.fillna(0)['amino_acids'] * 1E-6 * N_MOLAR_MASS) * AMINO_ACIDS_MOLAR_MASS_C_RATIO / AMINO_ACIDS_MOLAR_MASS_N_RATIO +
-        #                       (elements_df.fillna(0)['proteins'] * 1E-6 * N_MOLAR_MASS) * AMINO_ACIDS_MOLAR_MASS_C_RATIO / AMINO_ACIDS_MOLAR_MASS_N_RATIO +
-        #                       elements_df['mstruct'] * RATIO_SUCROSE_MSTRUCT)
-        # elements_df['N_g'] = ((elements_df.fillna(0)['nitrates'] * 1E-6 * N_MOLAR_MASS) +
-        #                       (elements_df.fillna(0)['amino_acids'] * 1E-6 * N_MOLAR_MASS) +
-        #                       (elements_df.fillna(0)['proteins'] * 1E-6 * N_MOLAR_MASS) +
-        #                       elements_df['Nstruct'])
+        pp_elements_df.loc[:, 'Surfacic_NS'] = Element.calculate_surfacic_non_structural(elements_df['sum_dry_mass'],
+                                                                                   elements_df['mstruct'], elements_df['green_area'])
+        pp_elements_df.loc[:, 'NS'] = Element.calculate_ratio_non_structural(elements_df['sum_dry_mass'],
+                                                                                         elements_df['mstruct'])
 
         grouped = elements_df.groupby('organ')
         for organ_type, parameters_class in \
@@ -824,7 +991,9 @@ def generate_graphs(axes_df=None, hiddenzones_df=None, organs_df=None, elements_
                                        'green_area': u'Green area (m$^{2}$)', 'R_phloem_loading': u'Respiration phloem loading (µmol C h$^{-1}$)', 'R_Nnit_red': u'Respiration nitrate reduction (µmol C h$^{-1}$)',
                                        'R_residual': u'Respiration residual (µmol C h$^{-1}$)', 'mstruct': u'Structural mass (g)', 'Nstruct': u'Structural N mass (g)',
                                        'Conc_cytokinins': u'[cytokinins] (UA g$^{-1}$ mstruct)', 'D_cytokinins':u'Cytokinin degradation (UA g$^{-1}$ mstruct)',
-                                       'cytokinins_import': u'Cytokinin import (UA)', 'Surfacic N': u'Surfacic N (g m$^{-2}$)', 'length': 'Length (m)'}
+                                       'cytokinins_import': u'Cytokinin import (UA)', 'Surfacic N': u'Surfacic N (g m$^{-2}$)',
+                                       'Surfacic_NS': u'Surfacic Non Structural mass (g m$^{-2}$)', 'NS': u'Ratio of Non Structural mass',
+                                        'length': 'Length (m)'}
     
         for org_ph in (['blade'], ['sheath'], ['internode'], ['peduncle', 'ear']):
             for variable_name, variable_label in graph_variables_ph_elements.items():
@@ -908,7 +1077,12 @@ def generate_graphs(axes_df=None, hiddenzones_df=None, organs_df=None, elements_
                             'shoot_roots_ratio':u'Shoot/Roots dry mass ratio',
                             'shoot_roots_mstruct_ratio':u'Shoot/Roots mstruct ratio',
                             'sum_dry_mass':u'Total dry mass (g)','sum_dry_mass_shoot':u'Dry mass of the shoot (g)',
-                            'sum_dry_mass_roots':u'Dry mass of the roots (g)','dry_mass_phloem':u'Dry mass of the phloem (g)'}
+                            'sum_dry_mass_roots':u'Dry mass of the roots (g)','dry_mass_phloem':u'Dry mass of the phloem (g)',
+                            'NNI':u'Nitrogen Nutrition Index',
+                            'NS_shoot':u'Ratio of Non Structural Mass in the shoot','NS_roots':u'Ratio of Non Structural Mass in the roots',
+                            'NS': u'Ratio of Non Structural Mass for the plant',
+                            'mstruct_shoot':u'Structural Mass of the shoot (g)'}
+
     for variable_name, variable_label in graph_variables_axes.items():
         graph_name = variable_name + '_axis' + '.PNG'
         cnwheat_tools.plot_cnwheat_ouputs(axes_df,
