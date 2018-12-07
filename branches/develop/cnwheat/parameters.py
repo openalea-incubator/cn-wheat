@@ -285,7 +285,7 @@ class PhotosyntheticOrganParameters(object):
         self.K_SUCROSE = 0.66                #: Affinity coefficient of sucrose synthesis (:math:`\mu` mol C g-1 MS)
 
         # Starch
-        self.VMAX_STARCH = 2                 #: Maximal rate of starch synthesis (:math:`\mu` mol C s-1 g-1 MS)
+        self.VMAX_STARCH = 2 *4                 #: Maximal rate of starch synthesis (:math:`\mu` mol C s-1 g-1 MS)
         self.K_STARCH = 20                   #: Affinity coefficient of starch synthesis (:math:`\mu` mol C g-1 MS)
         self.DELTA_DSTARCH = 0.0001          #: Relative rate of starch degradation (s-1)
 
@@ -303,7 +303,7 @@ class PhotosyntheticOrganParameters(object):
         self.BETA = 1                        #: Kind of volumetric mass density at power -2/3 ((g m-3)**(-2/3))
 
         # Amino acids
-        self.VMAX_AMINO_ACIDS = 1            #: Maximal rate of amino acid synthesis (:math:`\mu` mol N s-1 g-1 MS)
+        self.VMAX_AMINO_ACIDS = 1 *4            #: Maximal rate of amino acid synthesis (:math:`\mu` mol N s-1 g-1 MS)
         self.K_AMINO_ACIDS_NITRATES = 3      #: Affinity coefficient of amino acid synthesis from nitrates (:math:`\mu` mol N g-1 MS)
         self.K_AMINO_ACIDS_TRIOSESP = 0.2    #: Affinity coefficient of amino acid synthesis from triosesP (:math:`\mu` mol C g-1 MS)
 
@@ -415,7 +415,6 @@ class PhotosyntheticOrganElementInitCompartments(object):
         self.is_growing = False  #: initial value of is_growing (Flag indicating if the element is growing or not (:class:`bool`)
         self.Tr = 0              #: initial value of Tr (Transpiration rate (mmol m-2 s-1)
         self.Ag = 0              #: initial value of Ag (Gross assimilation (:math:`\mu` mol m-2 s-1)
-        self.Ts = 15             #: initial value of Ts (Organ temperature (degree Celsius)
 
 
 #: The instance of class :class:`cnwheat.parameters.PhotosyntheticOrganElementInitCompartments` for current process

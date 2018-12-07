@@ -87,7 +87,7 @@ HIDDENZONE_INDEXES = cnwheat_simulation.Simulation.HIDDENZONE_INDEXES
 HIDDENZONE_T_INDEXES = cnwheat_simulation.Simulation.HIDDENZONE_T_INDEXES
 #: hidden zones post-processing variables
 HIDDENZONE_POSTPROCESSING_VARIABLES = ['Conc_Amino_Acids', 'Conc_Fructan', 'Conc_Proteins', 'Conc_Sucrose', 'RER']
-HIDDENZONE_RUN_VARIABLES_ADDITIONAL = ['leaf_L', 'delta_leaf_L', 'internode_L', 'leaf_pseudostem_length', 'leaf_is_emerged']
+HIDDENZONE_RUN_VARIABLES_ADDITIONAL = ['leaf_L', 'delta_leaf_L', 'internode_L', 'leaf_pseudostem_length', 'leaf_is_emerged','Respi_growth']
 #: concatenation of :attr:`HIDDENZONE_T_INDEXES`, :attr:`HIDDENZONE_RUN_VARIABLES <cnwheat.simulation.Simulation.HIDDENZONE_RUN_VARIABLES>` and :attr:`HIDDENZONE_POSTPROCESSING_VARIABLES`
 HIDDENZONE_RUN_POSTPROCESSING_VARIABLES = HIDDENZONE_T_INDEXES + cnwheat_simulation.Simulation.HIDDENZONE_RUN_VARIABLES + HIDDENZONE_RUN_VARIABLES_ADDITIONAL +HIDDENZONE_POSTPROCESSING_VARIABLES
 
@@ -685,18 +685,6 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
         pp_axes_df = pd.concat([axes_df, pd.DataFrame(columns=AXES_POSTPROCESSING_VARIABLES)],sort=False)
         # Integrated variables TODO : Homogeneiser la structure de ce bout de code
         if (hiddenzones_df is not None) and (organs_df is not None) and (elements_df is not None):
-            C_MOLAR_MASS = 12
-            N_MOLAR_MASS = 14
-            TRIOSESP_MOLAR_MASS_C_RATIO = 0.21  # ok
-            SUCROSE_MOLAR_MASS_C_RATIO = 0.42
-            HEXOSE_MOLAR_MASS_C_RATIO = 0.4  # 0.44 pour amidon
-            NITRATES_MOLAR_MASS_N_RATIO = 0.23
-            AMINO_ACIDS_MOLAR_MASS_N_RATIO = 0.135
-            AMINO_ACIDS_MOLAR_MASS_C_RATIO = 0.38  # (Penning De Vries 1989)
-            PROTEINS_MOLAR_MASS_N_RATIO = 0.151 # (Penning De Vries 1989)
-            PROTEINS_MOLAR_MASS_C_RATIO = 0.38  # MG (idem AA)
-            RATIO_SUCROSE_MSTRUCT = 0.384  #: Mass of C (under carbohydrate form, g) in 1 g of mstruct (Penning de Vries, Witlage and Kremer, 1978) (growthwheat.parameters) 0.44 si que cellulose
-            phloem_shoot_root = 0.75
 
             # Photosynthetic elements
             elements_df['sum_dry_mass'] = Element.calculate_dry_mass( elements_df.fillna(0)['triosesP'],
@@ -720,21 +708,21 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
                                                        elements_df['Nstruct'])
 
             # Organs
-            organs_df['sum_dry_mass'] = (((organs_df.fillna(0)['structure'] + organs_df.fillna(0)['starch']) * 1E-6 * C_MOLAR_MASS / HEXOSE_MOLAR_MASS_C_RATIO) +
-                                         (organs_df.fillna(0)['sucrose'] * 1E-6 * C_MOLAR_MASS) / SUCROSE_MOLAR_MASS_C_RATIO +
-                                         (organs_df.fillna(0)['starch'] * 1E-6 * C_MOLAR_MASS) / HEXOSE_MOLAR_MASS_C_RATIO +
-                                         (organs_df.fillna(0)['nitrates'] * 1E-6 * N_MOLAR_MASS) / NITRATES_MOLAR_MASS_N_RATIO +
-                                         (organs_df.fillna(0)['amino_acids'] * 1E-6 * N_MOLAR_MASS) / AMINO_ACIDS_MOLAR_MASS_N_RATIO +
-                                         (organs_df.fillna(0)['proteins'] * 1E-6 * N_MOLAR_MASS) / AMINO_ACIDS_MOLAR_MASS_N_RATIO +
+            organs_df['sum_dry_mass'] = (((organs_df.fillna(0)['structure'] + organs_df.fillna(0)['starch']) * 1E-6 * cnwheat_model.EcophysiologicalConstants.C_MOLAR_MASS / cnwheat_model.EcophysiologicalConstants.HEXOSE_MOLAR_MASS_C_RATIO) +
+                                         (organs_df.fillna(0)['sucrose'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.C_MOLAR_MASS) / cnwheat_model.EcophysiologicalConstants.HEXOSE_MOLAR_MASS_C_RATIO +
+                                         (organs_df.fillna(0)['starch'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.C_MOLAR_MASS) / cnwheat_model.EcophysiologicalConstants.HEXOSE_MOLAR_MASS_C_RATIO +
+                                         (organs_df.fillna(0)['nitrates'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS) / cnwheat_model.EcophysiologicalConstants.NITRATES_MOLAR_MASS_N_RATIO +
+                                         (organs_df.fillna(0)['amino_acids'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS) / cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_N_RATIO +
+                                         (organs_df.fillna(0)['proteins'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS) / cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_N_RATIO +
                                          organs_df.fillna(0)['mstruct'])
-            organs_df['C_g'] = ((organs_df.fillna(0)['sucrose'] * 1E-6 * C_MOLAR_MASS) +
-                                (organs_df.fillna(0)['starch'] * 1E-6 * C_MOLAR_MASS) +
-                                (organs_df.fillna(0)['amino_acids'] * 1E-6 * N_MOLAR_MASS) * AMINO_ACIDS_MOLAR_MASS_C_RATIO / AMINO_ACIDS_MOLAR_MASS_N_RATIO +
-                                (organs_df.fillna(0)['proteins'] * 1E-6 * N_MOLAR_MASS) * AMINO_ACIDS_MOLAR_MASS_C_RATIO / AMINO_ACIDS_MOLAR_MASS_N_RATIO +
-                                organs_df.fillna(0)['mstruct'] * RATIO_SUCROSE_MSTRUCT)
-            organs_df['N_g'] = ((organs_df.fillna(0)['nitrates'] * 1E-6 * N_MOLAR_MASS) +
-                                (organs_df.fillna(0)['amino_acids'] * 1E-6 * N_MOLAR_MASS) +
-                                (organs_df.fillna(0)['proteins'] * 1E-6 * N_MOLAR_MASS) +
+            organs_df['C_g'] = ((organs_df.fillna(0)['sucrose'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.C_MOLAR_MASS) +
+                                (organs_df.fillna(0)['starch'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.C_MOLAR_MASS) +
+                                (organs_df.fillna(0)['amino_acids'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS) * cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_C_RATIO / cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_N_RATIO +
+                                (organs_df.fillna(0)['proteins'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS) * cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_C_RATIO / cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_N_RATIO +
+                                organs_df.fillna(0)['mstruct'] * cnwheat_model.EcophysiologicalConstants.RATIO_C_mstruct)
+            organs_df['N_g'] = ((organs_df.fillna(0)['nitrates'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS) +
+                                (organs_df.fillna(0)['amino_acids'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS) +
+                                (organs_df.fillna(0)['proteins'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS) +
                                 organs_df.fillna(0)['Nstruct'])
 
             # Hiddenzones

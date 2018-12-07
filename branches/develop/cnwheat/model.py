@@ -365,7 +365,8 @@ class HiddenZone(Organ):
         :Returns Type:
             :class:`float`
         """
-        return ((max(0, sucrose)/self.mstruct) * Regul_S_Fructan)/((max(0, sucrose)/self.mstruct) + PhotosyntheticOrgan.PARAMETERS.K_SFRUCTAN) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
+        return ((max(0, sucrose)/self.mstruct) * Regul_S_Fructan)/((max(0, sucrose)/self.mstruct) + PhotosyntheticOrgan.PARAMETERS.K_SFRUCTAN) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * \
+               T_effect_Vmax * 1.5
 
     def calculate_D_Fructan(self, sucrose, fructan, T_effect_Vmax): # TODO : ON ne va pas chercher les paramètres au bon endroit
         """Rate of fructan degradation (:math:`\mu mol` C fructan g-1 mstruct h-1).
@@ -1518,7 +1519,7 @@ class PhotosyntheticOrganElement(object):
             cytokinins_import = 0
         return cytokinins_import
 
-    def calculate_D_cytokinins(self, cytokinins, Ts, T_effect_Vmax):
+    def calculate_D_cytokinins(self, cytokinins, T_effect_Vmax):
         """Rate of cytokinins degradation (AU g-1 mstruct h-1).
         First order kinetic. Vary with organ temperature.
 

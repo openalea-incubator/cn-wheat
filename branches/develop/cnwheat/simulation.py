@@ -819,7 +819,7 @@ class Simulation(object):
                             element.S_Proteins = element.calculate_S_proteins(element.amino_acids, plant.T_effect_Vmax)
                             element.k_proteins, element.D_Proteins = element.calculate_D_Proteins(element.proteins, element.cytokinins, plant.T_effect_Vmax)
                             element.cytokinins_import = element.calculate_cytokinins_import(axis.roots.Export_cytokinins, element.Transpiration, axis.Total_Transpiration)
-                            element.D_cytokinins = element.calculate_D_cytokinins(element.cytokinins, element.Ts, plant.T_effect_Vmax)
+                            element.D_cytokinins = element.calculate_D_cytokinins(element.cytokinins, plant.T_effect_Vmax)
 
                             # compartments derivatives
                             starch_derivative = element.calculate_starch_derivative(element.S_Starch, element.D_Starch)
@@ -1066,7 +1066,7 @@ class Simulation(object):
                             element.S_Proteins = element.calculate_S_proteins(element.amino_acids, plant.T_effect_Vmax)
                             element.k_proteins, element.D_Proteins = element.calculate_D_Proteins(element.proteins, element.cytokinins, plant.T_effect_Vmax)
                             element.cytokinins_import = element.calculate_cytokinins_import(axis.roots.Export_cytokinins, element.Transpiration, axis.Total_Transpiration)
-                            element.D_cytokinins = element.calculate_D_cytokinins(element.cytokinins, element.Ts, plant.T_effect_Vmax)
+                            element.D_cytokinins = element.calculate_D_cytokinins(element.cytokinins, plant.T_effect_Vmax)
 
                             element.R_residual, _ = self.respiration_model.RespirationModel.R_residual(element.sucrose, element.mstruct * element.__class__.PARAMETERS.ALPHA,
                                                                                                        element.Total_Organic_Nitrogen, element.Ts)
