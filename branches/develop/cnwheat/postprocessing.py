@@ -58,7 +58,8 @@ AXES_T_INDEXES = cnwheat_simulation.Simulation.AXES_T_INDEXES
 #: axes post-processing variables
 AXES_POSTPROCESSING_VARIABLES = ['C_N_ratio','C_N_ratio_shoot','N_content','N_content_shoot','N_content_roots','N_content_mstruct','N_content_mstruct_shoot','N_content_mstruct_roots',
                                  'sum_N_g','sum_N_g_shoot','sum_dry_mass','sum_dry_mass_shoot','sum_dry_mass_roots',
-                                 'dry_mass_phloem', 'shoot_roots_ratio','shoot_roots_mstruct_ratio','Total_Photosynthesis','NNI','NS','NS_shoot','NS_roots','mstruct_shoot']
+                                 'dry_mass_phloem', 'shoot_roots_ratio','shoot_roots_mstruct_ratio','Total_Photosynthesis','Tillers_Photosynthesis','Tillers_Photosynthesis_An',
+                                 'NNI','NS','NS_shoot','NS_roots','mstruct_shoot']
 #: concatenation of :attr:`AXES_T_INDEXES`, :attr:`AXES_RUN_VARIABLES <cnwheat.simulation.Simulation.AXES_RUN_VARIABLES>` and :attr:`AXES_POSTPROCESSING_VARIABLES`
 AXES_RUN_POSTPROCESSING_VARIABLES = AXES_T_INDEXES + cnwheat_simulation.Simulation.AXES_RUN_VARIABLES + AXES_POSTPROCESSING_VARIABLES
 
@@ -86,7 +87,7 @@ HIDDENZONE_INDEXES = cnwheat_simulation.Simulation.HIDDENZONE_INDEXES
 #: concatenation of :attr:`T_INDEX` and :attr:`HIDDENZONE_INDEXES`
 HIDDENZONE_T_INDEXES = cnwheat_simulation.Simulation.HIDDENZONE_T_INDEXES
 #: hidden zones post-processing variables
-HIDDENZONE_POSTPROCESSING_VARIABLES = ['Conc_Amino_Acids', 'Conc_Fructan', 'Conc_Proteins', 'Conc_Sucrose', 'RER']
+HIDDENZONE_POSTPROCESSING_VARIABLES = ['Conc_Amino_Acids', 'Conc_Fructan', 'Conc_Proteins', 'Conc_Sucrose', 'RER','nb_replications']
 HIDDENZONE_RUN_VARIABLES_ADDITIONAL = ['leaf_L', 'delta_leaf_L', 'internode_L', 'leaf_pseudostem_length', 'leaf_is_emerged','Respi_growth']
 #: concatenation of :attr:`HIDDENZONE_T_INDEXES`, :attr:`HIDDENZONE_RUN_VARIABLES <cnwheat.simulation.Simulation.HIDDENZONE_RUN_VARIABLES>` and :attr:`HIDDENZONE_POSTPROCESSING_VARIABLES`
 HIDDENZONE_RUN_POSTPROCESSING_VARIABLES = HIDDENZONE_T_INDEXES + cnwheat_simulation.Simulation.HIDDENZONE_RUN_VARIABLES + HIDDENZONE_RUN_VARIABLES_ADDITIONAL +HIDDENZONE_POSTPROCESSING_VARIABLES
@@ -97,7 +98,7 @@ ELEMENTS_INDEXES = cnwheat_simulation.Simulation.ELEMENTS_INDEXES
 ELEMENTS_T_INDEXES = cnwheat_simulation.Simulation.ELEMENTS_T_INDEXES
 #: elements post-processing variables
 ELEMENTS_POSTPROCESSING_VARIABLES = ['Conc_Amino_Acids', 'Conc_Fructan', 'Conc_Nitrates', 'Conc_Proteins', 'Conc_Starch', 'Conc_Sucrose', 'Conc_TriosesP',
-                                     'Conc_cytokinins', 'R_maintenance', 'Surfacic N','Surfacic_NS','NS']
+                                     'Conc_cytokinins', 'R_maintenance', 'Surfacic N','Surfacic_NS','NS','nb_replications']
 ELEMENTS_RUN_VARIABLES_ADDITIONAL = ['length','PARa']
 #: concatenation of :attr:`ELEMENTS_T_INDEXES`, :attr:`ELEMENTS_RUN_VARIABLES <cnwheat.simulation.Simulation.ELEMENTS_RUN_VARIABLES>` and :attr:`ELEMENTS_POSTPROCESSING_VARIABLES`
 ELEMENTS_RUN_POSTPROCESSING_VARIABLES = ELEMENTS_T_INDEXES + cnwheat_simulation.Simulation.ELEMENTS_RUN_VARIABLES + ELEMENTS_RUN_VARIABLES_ADDITIONAL + ELEMENTS_POSTPROCESSING_VARIABLES
@@ -686,6 +687,11 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
         # Integrated variables TODO : Homogeneiser la structure de ce bout de code
         if (hiddenzones_df is not None) and (organs_df is not None) and (elements_df is not None):
 
+            nb_replications_df = pd.DataFrame( data = { 'metamer' : [1,2,3,4,5,6,7,8,9,10,11],
+                                         'nb_replications' : [1,1,1,2,3,4,5,5,5,5,5] } )
+            elements_df = elements_df.merge(nb_replications_df, on = 'metamer')
+            hiddenzones_df = hiddenzones_df.merge(nb_replications_df, on='metamer')
+
             # Photosynthetic elements
             elements_df['sum_dry_mass'] = Element.calculate_dry_mass( elements_df.fillna(0)['triosesP'],
                                                                       elements_df.fillna(0)['sucrose'],
@@ -746,8 +752,12 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
             dry_mass_roots = organs_df[(organs_df['organ'] == 'roots')].groupby(['t', 'plant', 'axis'])['sum_dry_mass'].agg('sum')
 
             # Total mstruct shoot and root
-            sum_mstruct_shoot = hiddenzones_df.groupby(['t', 'plant', 'axis'])['mstruct'].agg('sum') + \
-                                 elements_df.groupby(['t', 'plant', 'axis'])['mstruct'].agg('sum')
+            hz_df_MS = hiddenzones_df[hiddenzones_df['axis'] == 'MS']
+            elt_df_MS = elements_df[elements_df['axis'] == 'MS']
+            hz_df_MS['mstruct_tillers'] = hz_df_MS['mstruct'] * hz_df_MS['nb_replications']
+            elt_df_MS['mstruct_tillers'] = elt_df_MS['mstruct'] * elt_df_MS['nb_replications']
+            sum_mstruct_shoot = hz_df_MS.groupby(['t', 'plant', 'axis'])['mstruct_tillers'].agg('sum') + \
+                                elt_df_MS.groupby(['t', 'plant', 'axis'])['mstruct_tillers'].agg('sum')
             sum_mstruct_roots = organs_df[(organs_df['organ'] == 'roots')].groupby(['t', 'plant', 'axis'])['mstruct'].agg('sum')
 
             shoot_roots_mstruct_ratio = sum_mstruct_shoot / sum_mstruct_roots
@@ -761,9 +771,11 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
             sum_C_g_phloem_shoot = organs_df[(organs_df['organ'] == 'phloem')].groupby(['t', 'plant', 'axis'])['C_g'].agg('sum') * phloem_shoot_root
 
             # Total shoot
+            hz_df_MS['sum_dry_mass_tillers'] = hz_df_MS['sum_dry_mass'] * hz_df_MS['nb_replications']
+            elt_df_MS['sum_dry_mass_tillers'] = elt_df_MS['sum_dry_mass'] * elt_df_MS['nb_replications']
             sum_dry_mass_shoot = sum_dry_mass_phloem_shoot + \
-                                 hiddenzones_df.groupby(['t', 'plant', 'axis'])['sum_dry_mass'].agg('sum') + \
-                                 elements_df.groupby(['t', 'plant', 'axis'])['sum_dry_mass'].agg('sum')
+                                 hz_df_MS.groupby(['t', 'plant', 'axis'])['sum_dry_mass_tillers'].agg('sum') + \
+                                 elt_df_MS.groupby(['t', 'plant', 'axis'])['sum_dry_mass_tillers'].agg('sum')
 
             # Total root
             sum_dry_mass_roots = sum_dry_mass_phloem_roots + dry_mass_roots
@@ -773,15 +785,17 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
             sum_mstruct = sum_mstruct_roots + sum_mstruct_shoot
 
             # N content
-            sum_N_g = (organs_df.groupby(['t', 'plant', 'axis'])['N_g'].agg('sum') +
-                       hiddenzones_df.groupby(['t', 'plant', 'axis'])['N_g'].agg('sum') +
-                       elements_df.groupby(['t', 'plant', 'axis'])['N_g'].agg('sum'))
+            hz_df_MS['N_g_tillers'] = hz_df_MS['N_g'] * hz_df_MS['nb_replications']
+            elt_df_MS['N_g_tillers'] = elt_df_MS['N_g'] * elt_df_MS['nb_replications']
+            sum_N_g = (organs_df[organs_df['axis'] == 'MS'].groupby(['t', 'plant', 'axis'])['N_g'].agg('sum') +
+                       hz_df_MS.groupby(['t', 'plant', 'axis'])['N_g_tillers'].agg('sum') +
+                       elt_df_MS.groupby(['t', 'plant', 'axis'])['N_g_tillers'].agg('sum'))
             N_content = sum_N_g / sum_dry_mass * 100
             N_content_mstruct = sum_N_g / sum_mstruct * 100
 
             sum_N_g_shoot = (sum_N_g_phloem_shoot +
-                             hiddenzones_df.groupby(['t', 'plant', 'axis'])['N_g'].agg('sum') +
-                             elements_df.groupby(['t', 'plant', 'axis'])['N_g'].agg('sum'))
+                             hz_df_MS.groupby(['t', 'plant', 'axis'])['N_g_tillers'].agg('sum') +
+                             elt_df_MS.groupby(['t', 'plant', 'axis'])['N_g_tillers'].agg('sum'))
             N_content_shoot = sum_N_g_shoot / sum_dry_mass_shoot * 100
             N_content_mstruct_shoot = sum_N_g_shoot / sum_mstruct_shoot * 100
 
@@ -789,18 +803,25 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
             N_content_mstruct_roots = (N_content_mstruct*sum_mstruct - N_content_mstruct_shoot*sum_mstruct_shoot) / sum_mstruct_roots
 
             # C/N ratio
-            sum_C_g = (organs_df.groupby(['t', 'plant', 'axis'])['C_g'].agg('sum') +
-                       hiddenzones_df.groupby(['t', 'plant', 'axis'])['C_g'].agg('sum') +
-                       elements_df.groupby(['t', 'plant', 'axis'])['C_g'].agg('sum'))
+            hz_df_MS['C_g_tillers'] = hz_df_MS['C_g'] * hz_df_MS['nb_replications']
+            elt_df_MS['C_g_tillers'] = elt_df_MS['C_g'] * elt_df_MS['nb_replications']
+
+            sum_C_g = (organs_df[organs_df['axis'] == 'MS'].groupby(['t', 'plant', 'axis'])['C_g'].agg('sum') +
+                       hz_df_MS.groupby(['t', 'plant', 'axis'])['C_g_tillers'].agg('sum') +
+                       elt_df_MS.groupby(['t', 'plant', 'axis'])['C_g_tillers'].agg('sum'))
             sum_C_g_shoot = (sum_C_g_phloem_shoot +
-                             hiddenzones_df.groupby(['t', 'plant', 'axis'])['C_g'].agg('sum') +
-                             elements_df.groupby(['t', 'plant', 'axis'])['C_g'].agg('sum'))
+                             hz_df_MS.groupby(['t', 'plant', 'axis'])['C_g_tillers'].agg('sum') +
+                             elt_df_MS.groupby(['t', 'plant', 'axis'])['C_g_tillers'].agg('sum'))
 
             C_N_ratio = sum_C_g / sum_N_g
             C_N_ratio_shoot = sum_C_g_shoot / sum_N_g_shoot
 
             # Photosyntheses
-            tot_photosynthesis = elements_df.groupby(['t', 'plant', 'axis'])['Photosynthesis'].agg('sum')
+            elements_df['Tillers_Photosynthesis'] = elements_df['Photosynthesis'] * elements_df['nb_replications']
+            elements_df['Tillers_Photosynthesis_An'] = elements_df['An'] * elements_df['green_area'] * 3600 * elements_df['nb_replications']
+            tillers_photosynthesis = elements_df[elements_df['axis'] == 'MS'].groupby(['t', 'plant', 'axis'])['Tillers_Photosynthesis'].agg('sum') # TEMPORARY : porter au niveau de la plante
+            tillers_photosynthesis_An = elements_df[elements_df['axis'] == 'MS'].groupby(['t', 'plant', 'axis'])['Tillers_Photosynthesis_An'].agg('sum')
+            tot_photosynthesis = elements_df[elements_df['axis'] == 'MS'].groupby(['t', 'plant', 'axis'])['Photosynthesis'].agg('sum')
 
             # INN
             DM_t_ha = sum_dry_mass_shoot * 250 * 10**-2 # convert from g.plant-1 to t.ha-1
@@ -831,6 +852,8 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
             pp_axes_df.loc[:, 'shoot_roots_ratio'] = pp_axes_df['sum_dry_mass_shoot'] / pp_axes_df['sum_dry_mass_roots']
             pp_axes_df.loc[:, 'shoot_roots_mstruct_ratio'] = shoot_roots_mstruct_ratio.values[1:len(shoot_roots_mstruct_ratio)]
             pp_axes_df.loc[:, 'Total_Photosynthesis'] = tot_photosynthesis.values[1:len(tot_photosynthesis)]
+            pp_axes_df.loc[:, 'Tillers_Photosynthesis'] = tillers_photosynthesis.values[1:len(tillers_photosynthesis)]
+            pp_axes_df.loc[:, 'Tillers_Photosynthesis_An'] = tillers_photosynthesis_An.values[1:len(tillers_photosynthesis_An)]
             pp_axes_df.loc[:, 'NNI'] = NNI.values[1:len(NNI)]
             pp_axes_df.loc[:, 'NS_roots'] = NS_roots.values[1:len(NS_roots)]
             pp_axes_df.loc[:, 'NS_shoot'] = NS_shoot.values[1:len(NS_shoot)]

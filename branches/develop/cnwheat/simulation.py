@@ -265,7 +265,7 @@ class Simulation(object):
     #: of the compartments associated to each element (see :attr:`MODEL_COMPARTMENTS_NAMES`)
     ELEMENTS_STATE = ELEMENTS_STATE_PARAMETERS + MODEL_COMPARTMENTS_NAMES.get(model.PhotosyntheticOrganElement, [])
     #: the variables that we need to compute in order to compute fluxes and/or compartments values at element scale
-    ELEMENTS_INTERMEDIATE_VARIABLES = ['Photosynthesis', 'R_Nnit_red', 'R_phloem_loading', 'R_residual', 'Transpiration', 'sum_respi']
+    ELEMENTS_INTERMEDIATE_VARIABLES = ['Photosynthesis', 'R_Nnit_red', 'R_phloem_loading', 'R_residual','R_maintenance', 'Transpiration', 'sum_respi']
     #: the fluxes exchanged between the compartments at element scale
     ELEMENTS_FLUXES = ['Amino_Acids_import', 'D_Fructan', 'D_Proteins', 'D_Starch', 'D_cytokinins', 'Loading_Amino_Acids', 'Loading_Sucrose',
                        'Nitrates_import', 'Regul_S_Fructan', 'S_Fructan', 'S_Starch', 'S_Sucrose', 'S_Amino_Acids', 'S_Proteins',
@@ -374,7 +374,7 @@ class Simulation(object):
         
         self.nfe_total = 0 #: cumulative number of RHS function evaluations
 
-    def initialize(self, population, soils):
+    def initialize(self, population, soils, Tair=12, Tsoil=12):
         """
         Initialize:
 
@@ -474,6 +474,12 @@ class Simulation(object):
             logger.exception(message)
             raise SimulationInitializationError(message)
 
+        # Update soil and air temperature using weater data
+        for soil_id, soil_inputs in self.soils.iteritems():
+            self.soils[soil_id].Tsoil = Tsoil
+        for plant in self.population.plants:
+            plant.Tair = Tair
+
         # initialize initial conditions
         def _init_initial_conditions(model_object, i):
             class_ = model_object.__class__
@@ -567,6 +573,7 @@ class Simulation(object):
     def _update_initial_conditions(self):
         """Update the compartments values in :attr:`initial_conditions` from the compartments values of :attr:`population` and :attr:`soils`.
         """
+        # Update the compartments values
         for model_object, compartments in self.initial_conditions_mapping.items():
             for compartment_name, compartment_index in compartments.items():
                 self.initial_conditions[compartment_index] = getattr(model_object, compartment_name)
@@ -718,8 +725,8 @@ class Simulation(object):
                             for element in (organ.exposed_element, organ.enclosed_element):
                                 if element is not None and element.green_area > 0:
                                     element.Transpiration = element.calculate_Total_Transpiration(element.Tr, element.green_area)
-                                    axis.Total_Transpiration += element.Transpiration
-                                    total_green_area += element.green_area
+                                    axis.Total_Transpiration += element.Transpiration * element.nb_replications
+                                    total_green_area += element.green_area * element.nb_replications
 
                 if total_green_area == 0.0:
                     total_surfacic_transpiration = 0.0
@@ -823,7 +830,7 @@ class Simulation(object):
 
                             # compartments derivatives
                             starch_derivative = element.calculate_starch_derivative(element.S_Starch, element.D_Starch)
-                            element.R_residual, _ = self.respiration_model.RespirationModel.R_residual(element.sucrose, element.mstruct * element.__class__.PARAMETERS.ALPHA,
+                            element.R_residual, element.R_maintenance = self.respiration_model.RespirationModel.R_residual(element.sucrose, element.mstruct * element.__class__.PARAMETERS.ALPHA,
                                                                                                        element.Total_Organic_Nitrogen, element.Ts)
                             element.sum_respi = element.R_phloem_loading + element.R_Nnit_red + element.R_residual
                             sucrose_derivative = element.calculate_sucrose_derivative(element.S_Sucrose, element.D_Starch, element.Loading_Sucrose, element.S_Fructan,

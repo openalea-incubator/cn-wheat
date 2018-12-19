@@ -91,6 +91,7 @@ def from_dataframes(organs_inputs=None, hiddenzones_inputs=None, elements_inputs
     convert_dataframe_to_soils_dict = soils_inputs is not None
 
     if convert_dataframes_to_population:
+
         population = model.Population()
 
         for plant_index in organs_inputs.plant.unique():

@@ -88,6 +88,7 @@ class Plant(object):
         if axes is None:
             axes = []
         self.axes = axes  #: the list of axes
+        self.cohorts = [] #: list of cohort values - Hack to treat tillering cases : TEMPORARY
 
     def calculate_integrative_variables(self):
         """Calculate the integrative variables of the plant recursively.
@@ -175,7 +176,7 @@ class Axis(object):
             self.mstruct += self.grains.structural_dry_mass
         for phytomer in self.phytomers:
             phytomer.calculate_integrative_variables()
-            self.mstruct += phytomer.mstruct
+            self.mstruct += phytomer.mstruct * phytomer.nb_replications
 
 
 class Phytomer(object):
@@ -191,7 +192,7 @@ class Phytomer(object):
 
     PARAMETERS = parameters.PHYTOMER_PARAMETERS  #: the internal parameters of the phytomers
 
-    def __init__(self, index=None, chaff=None, peduncle=None, lamina=None, internode=None, sheath=None, hiddenzone=None):
+    def __init__(self, index=None, chaff=None, peduncle=None, lamina=None, internode=None, sheath=None, hiddenzone=None, cohorts=[]):
         self.index = index  #: the index of the phytomer
         self.chaff = chaff  #: the chaff
         self.peduncle = peduncle  #: the peduncle
@@ -200,6 +201,7 @@ class Phytomer(object):
         self.sheath = sheath  #: the sheath
         self.hiddenzone = hiddenzone  #: the hidden zone
         self.mstruct = None  #: the structural mass of the phytomer (g)
+        self.cohorts = cohorts  #: list of cohort values - Hack to treat tillering cases : TEMPORARY. Devrait être porté à l'échelle de la plante uniquement mais je ne vois pas comment faire mieux
 
     def calculate_integrative_variables(self):
         """Calculate the integrative variables of the phytomer recursively.
@@ -209,6 +211,11 @@ class Phytomer(object):
             if organ_ is not None:
                 organ_.calculate_integrative_variables()
                 self.mstruct += organ_.mstruct
+
+    @property
+    def nb_replications(self):
+        return sum(v <= self.index for v in self.cohorts) + 1
+
 
 
 class Organ(object):
@@ -240,10 +247,13 @@ class HiddenZone(Organ):
     PARAMETERS = parameters.HIDDEN_ZONE_PARAMETERS                #: the internal parameters of the hidden zone
     INIT_COMPARTMENTS = parameters.HIDDEN_ZONE_INIT_COMPARTMENTS  #: the initial values of compartments and state parameters
 
-    def __init__(self, label='hiddenzone', mstruct=INIT_COMPARTMENTS.mstruct, Nstruct=INIT_COMPARTMENTS.Nstruct,
-                 sucrose=INIT_COMPARTMENTS.sucrose, fructan=INIT_COMPARTMENTS.fructan, amino_acids=INIT_COMPARTMENTS.amino_acids, proteins=INIT_COMPARTMENTS.proteins):
+    def __init__(self, label='hiddenzone',  mstruct=INIT_COMPARTMENTS.mstruct, Nstruct=INIT_COMPARTMENTS.Nstruct,
+                 sucrose=INIT_COMPARTMENTS.sucrose, fructan=INIT_COMPARTMENTS.fructan, amino_acids=INIT_COMPARTMENTS.amino_acids, proteins=INIT_COMPARTMENTS.proteins,cohorts=[], index = None):
 
         super(HiddenZone, self).__init__(label)
+
+        self.cohorts = cohorts  #: list of cohort values - Hack to treat tillering cases : TEMPORARY. Devrait être porté à l'échelle de la plante uniquement mais je ne vois pas comment faire mieux
+        self.index = index #: the index of the phytomer TEMPORARY
 
         # state parameters
         self.mstruct = mstruct                      #: g
@@ -264,6 +274,10 @@ class HiddenZone(Organ):
         self.S_Fructan = None                       #: fructan synthesis (:math:`\mu mol` C g-1 mstruct)
         self.D_Fructan = None                       #: fructan degradation (:math:`\mu mol` C g-1 mstruct)
         self.D_Proteins = None                      #: protein degradation (:math:`\mu mol` N g-1 mstruct)
+
+    @property
+    def nb_replications(self):
+        return sum(v <= self.index for v in self.cohorts) + 1
 
     # FLUXES
 
@@ -475,13 +489,13 @@ class Phloem(Organ):
         sucrose_derivative = 0
         for contributor in contributors:
             if isinstance(contributor, PhotosyntheticOrganElement):
-                sucrose_derivative += contributor.Loading_Sucrose
+                sucrose_derivative += contributor.Loading_Sucrose * contributor.nb_replications
             elif isinstance(contributor, Grains):
                 sucrose_derivative -= contributor.S_grain_structure + (contributor.S_grain_starch * contributor.structural_dry_mass)
             elif isinstance(contributor, Roots):
                 sucrose_derivative -= contributor.Unloading_Sucrose * contributor.mstruct * contributor.__class__.PARAMETERS.ALPHA
             elif isinstance(contributor, HiddenZone):
-                sucrose_derivative -= contributor.Unloading_Sucrose
+                sucrose_derivative -= contributor.Unloading_Sucrose * contributor.nb_replications
 
         return sucrose_derivative
 
@@ -498,13 +512,13 @@ class Phloem(Organ):
         amino_acids_derivative = 0
         for contributor in contributors:
             if isinstance(contributor, PhotosyntheticOrganElement):
-                amino_acids_derivative += contributor.Loading_Amino_Acids
+                amino_acids_derivative += contributor.Loading_Amino_Acids * contributor.nb_replications
             elif isinstance(contributor, Grains):
                 amino_acids_derivative -= contributor.S_Proteins
             elif isinstance(contributor, Roots):
                 amino_acids_derivative -= contributor.Unloading_Amino_Acids * contributor.mstruct * contributor.__class__.PARAMETERS.ALPHA
             elif isinstance(contributor, HiddenZone):
-                amino_acids_derivative -= contributor.Unloading_Amino_Acids
+                amino_acids_derivative -= contributor.Unloading_Amino_Acids * contributor.nb_replications
 
         return amino_acids_derivative
 
@@ -1114,9 +1128,11 @@ class PhotosyntheticOrganElement(object):
     def __init__(self, label=None, green_area=INIT_COMPARTMENTS.green_area, mstruct=INIT_COMPARTMENTS.mstruct, Nstruct=INIT_COMPARTMENTS.Nstruct,
                        triosesP=INIT_COMPARTMENTS.triosesP, starch=INIT_COMPARTMENTS.starch, sucrose=INIT_COMPARTMENTS.sucrose, fructan=INIT_COMPARTMENTS.fructan,
                        nitrates=INIT_COMPARTMENTS.nitrates, amino_acids=INIT_COMPARTMENTS.amino_acids, proteins=INIT_COMPARTMENTS.proteins, cytokinins=INIT_COMPARTMENTS.cytokinins,
-                       Tr=INIT_COMPARTMENTS.Tr, Ag=INIT_COMPARTMENTS.Ag, Ts=INIT_COMPARTMENTS.Ts, is_growing=INIT_COMPARTMENTS.is_growing):
+                       Tr=INIT_COMPARTMENTS.Tr, Ag=INIT_COMPARTMENTS.Ag, Ts=INIT_COMPARTMENTS.Ts, is_growing=INIT_COMPARTMENTS.is_growing, cohorts = [], index = None):
 
         self.label = label                   #: the label of the element
+        self.cohorts = cohorts  #: list of cohort values - Hack to treat tillering cases : TEMPORARY. Devrait être porté à l'échelle de la plante uniquement mais je ne vois pas comment faire mieux
+        self.index = index #: the index of the phytomer TEMPORARY
 
         # state parameters
         self.mstruct = mstruct               #: Structural dry mass (g)
@@ -1167,6 +1183,10 @@ class PhotosyntheticOrganElement(object):
         self.R_phloem_loading = None        #: Phloem loading respiration (:math:`\mu mol` C respired)
         self.Photosynthesis = None          #: Total Photosynthesis of an element integrated over a delta t (:math:`\mu mol` C)
         self.sum_respi = None               #: Sum of respirations for the element i.e. related to C loading to phloem, amino acids synthesis and residual (:math:`\mu mol` C)
+
+    @property
+    def nb_replications(self):
+        return sum(v <= self.index for v in self.cohorts) + 1
 
     def calculate_integrative_variables(self):
         """Calculate the integrative variables of the element.

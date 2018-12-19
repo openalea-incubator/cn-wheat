@@ -117,7 +117,7 @@ def test_run():
                                                           inputs_dataframes[SOILS_INPUTS_FILENAME])
 
     # initialize the simulation from the population and the soils
-    simulation_.initialize(population, soils)
+    simulation_.initialize(population, soils,Tair=15, Tsoil=15)
 
     # get photosynthesis data
     photosynthesis_elements_data_filepath = os.path.join(INPUTS_DIRPATH, PHOTOSYNTHESIS_ELEMENTS_DATA_FILENAME)

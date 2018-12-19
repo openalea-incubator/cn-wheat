@@ -48,6 +48,7 @@ ORGANS_INPUTS_FILENAME = 'organs_inputs.csv'
 HIDDENZONES_INPUTS_FILENAME = 'hiddenzones_inputs.csv'
 ELEMENTS_INPUTS_FILENAME = 'elements_inputs.csv'
 SOILS_INPUTS_FILENAME = 'soils_inputs.csv'
+METEO_INPUTS_FILENAME = 'meteo_test.csv'
 
 # the file names of the data used to force photosynthesis and senescence parameters
 PHOTOSYNTHESIS_ELEMENTS_DATA_FILENAME = 'photosynthesis_elements_data.csv'
@@ -136,7 +137,9 @@ def main(stop_time, run_simu=True, run_postprocessing=True, generate_graphs=True
         inputs_dataframes = {}
         for inputs_filename in (ORGANS_INPUTS_FILENAME, HIDDENZONES_INPUTS_FILENAME, ELEMENTS_INPUTS_FILENAME, SOILS_INPUTS_FILENAME):
             inputs_dataframes[inputs_filename] = pd.read_csv(os.path.join(INPUTS_DIRPATH, inputs_filename))
-        
+
+        meteo = pd.read_csv(os.path.join(INPUTS_DIRPATH, METEO_INPUTS_FILENAME), index_col='t')
+
         # convert inputs to a population of plants and a dictionary of soils
         population, soils = cnwheat_converter.from_dataframes(inputs_dataframes[ORGANS_INPUTS_FILENAME],
                                                               inputs_dataframes[HIDDENZONES_INPUTS_FILENAME],
@@ -175,7 +178,8 @@ def main(stop_time, run_simu=True, run_postprocessing=True, generate_graphs=True
         force_senescence_and_photosynthesis(0, population, senescence_roots_data_grouped, senescence_elements_data_grouped, photosynthesis_elements_data_grouped)
     
         # reinitialize the simulation from forced population and soils
-        simulation_.initialize(population, soils)
+        Tair, Tsoil = meteo.loc[ time_grid[0], ['air_temperature', 'soil_temperature']]
+        simulation_.initialize(population, soils, Tair = Tair, Tsoil = Tsoil)
         
         print 'Prepare the simulation... DONE!'
         
@@ -186,6 +190,7 @@ def main(stop_time, run_simu=True, run_postprocessing=True, generate_graphs=True
         for t in time_grid:
             
             if t > 0:
+
                 # run the model of CN exchanges ; the population is internally updated by the model
                 print '\tt =', t
                 simulation_.run()
@@ -205,7 +210,8 @@ def main(stop_time, run_simu=True, run_postprocessing=True, generate_graphs=True
                 # force the senescence and photosynthesis of the population
                 force_senescence_and_photosynthesis(t, population, senescence_roots_data_grouped, senescence_elements_data_grouped, photosynthesis_elements_data_grouped)
                 # reinitialize the simulation from forced population and soils
-                simulation_.initialize(population, soils)
+                Tair, Tsoil = meteo.loc[t, ['air_temperature', 'soil_temperature']]
+                simulation_.initialize(population, soils, Tair=Tair, Tsoil=Tsoil)
             
         print 'Run the simulation... DONE!'
 

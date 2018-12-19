@@ -214,7 +214,7 @@ class RootsParameters(object):
     def __init__(self):
         self.ALPHA = 1                       #: Proportion of structural mass containing substrate
 
-        self.VMAX_SUCROSE_UNLOADING = 0.03   #: Maximal rate of sucrose unloading from phloem to roots (:math:`\mu` mol C sucrose s-1 g-1 MS)
+        self.VMAX_SUCROSE_UNLOADING = 0.03 * 1.2  #: Maximal rate of sucrose unloading from phloem to roots (:math:`\mu` mol C sucrose s-1 g-1 MS)
         self.K_SUCROSE_UNLOADING = 1000      #: Affinity coefficient of sucrose unloading from phloem to roots (:math:`\mu` mol C sucrose g-1 MS)
 
         # Regulation function by transpiration of nitrate uptake
@@ -414,6 +414,7 @@ class PhotosyntheticOrganElementInitCompartments(object):
 
         self.is_growing = False  #: initial value of is_growing (Flag indicating if the element is growing or not (:class:`bool`)
         self.Tr = 0              #: initial value of Tr (Transpiration rate (mmol m-2 s-1)
+        self.Ts = 12             #: initial value of Ts (Organ temperature)
         self.Ag = 0              #: initial value of Ag (Gross assimilation (:math:`\mu` mol m-2 s-1)
 
 
