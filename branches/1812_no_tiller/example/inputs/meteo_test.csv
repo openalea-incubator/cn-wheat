@@ -2119,28 +2119,3 @@ t,air_temperature,soil_temperature,humidity,ambient_CO2,Wind,PARi
 2117,20,20,0.75,360,2.2,0
 2118,20,20,0.75,360,2.2,0
 2119,20,20,0.75,360,2.2,0
-
-<script type="text/javascript">//<![CDATA[
-		function toggle_ffErrors() {
-			var errorsblock = document.getElementById("ffErrorsBlock");
-			var errorsgroup = document.getElementById("ffErrors");
-			if (errorsblock.style.display == "none") {
-				errorsblock.style.display = "block";
-				errorsgroup.style.right = "10px";
-			} else {
-				errorsblock.style.display = "none";
-				errorsgroup.style.right = "300px";
-			}
-		}
-//]]></script>
-<div id="ffErrors">
-<a href="javascript:toggle_ffErrors();">Click to toggle</a>
-<div id="ffErrorsBlock">
-	<div class="error">does not end with &lt;/html&gt; tag</div>
-	<div class="error">does not end with &lt;/body&gt; tag</div>
-	<div class="info">The output has ended thus: 0,20,0.75,360,2.2,0
-2117,20,20,0.75,360,2.2,0
-2118,20,20,0.75,360,2.2,0
-2119,20,20,0.75,360,2.2,0</div>
-</div></div>
-</body></html>
