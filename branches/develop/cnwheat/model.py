@@ -762,7 +762,7 @@ class Roots(Organ):
         """
         return amino_acids + (Nstruct / EcophysiologicalConstants.N_MOLAR_MASS)*1E6
 
-    def calculate_regul_transpiration(self, total_surfacic_transpiration):
+    def calculate_regul_transpiration(self, total_surfacic_transpiration, total_transpiration):
         """A function to regulate metabolite exports from roots by shoot transpiration
 
         :Parameters:
@@ -772,7 +772,9 @@ class Roots(Organ):
         :Returns Type:
             :class:`float`
         """
-        return total_surfacic_transpiration / (total_surfacic_transpiration + Roots.PARAMETERS.K_TRANSPIRATION)
+        # total_surfacic_transpiration / (total_surfacic_transpiration + Roots.PARAMETERS.K_TRANSPIRATION)
+        return total_transpiration * 0.0152 / (total_transpiration + Roots.PARAMETERS.K_TRANSPIRATION * 0.0152)
+
 
     # FLUXES
 
@@ -858,7 +860,7 @@ class Roots(Organ):
         :Returns Type:
             :class:`float`
         """
-        return T_effect_Vmax *Roots.PARAMETERS.VMAX_AMINO_ACIDS / ((1 + Roots.PARAMETERS.K_AMINO_ACIDS_NITRATES/(nitrates/(self.mstruct*Roots.PARAMETERS.ALPHA))) *
+        return T_effect_Vmax * Roots.PARAMETERS.VMAX_AMINO_ACIDS / ((1 + Roots.PARAMETERS.K_AMINO_ACIDS_NITRATES/(nitrates/(self.mstruct*Roots.PARAMETERS.ALPHA))) *
                                                     (1 + Roots.PARAMETERS.K_AMINO_ACIDS_SUCROSE/(sucrose/(self.mstruct*Roots.PARAMETERS.ALPHA)))) * parameters.SECOND_TO_HOUR_RATE_CONVERSION
 
     def calculate_Export_Nitrates(self, nitrates, regul_transpiration):
@@ -897,8 +899,7 @@ class Roots(Organ):
             Export_Amino_Acids = 0
         else:
             f_amino_acids = (amino_acids/(self.mstruct * Roots.PARAMETERS.ALPHA)) * Roots.PARAMETERS.K_AMINO_ACIDS_EXPORT
-            Export_Amino_Acids = f_amino_acids * 2 * self.mstruct * regul_transpiration * parameters.SECOND_TO_HOUR_RATE_CONVERSION  #: Amino acids export regulation by plant transpiration (:math:`\mu
-            #  mol` N)
+            Export_Amino_Acids = f_amino_acids * self.mstruct * regul_transpiration * parameters.SECOND_TO_HOUR_RATE_CONVERSION  #: Amino acids export regulation by plant transpiration (:math:`\mu  mol` N)
 
         return Export_Amino_Acids
 
