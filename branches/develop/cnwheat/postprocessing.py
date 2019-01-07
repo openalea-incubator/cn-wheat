@@ -680,6 +680,188 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
         pp_plants_df = pp_plants_df.reindex(PLANTS_RUN_POSTPROCESSING_VARIABLES, axis=1, copy=False)
         pp_plants_df['plant'] = pp_plants_df['plant'].astype(int)
         returned_dataframes.append(pp_plants_df)
+    else:
+        returned_dataframes.append(pd.DataFrame({'A' : []}))
+
+    # metamers
+    if metamers_df is not None:
+        pp_metamers_df = pd.concat([metamers_df, pd.DataFrame(columns=PHYTOMERS_POSTPROCESSING_VARIABLES)],sort=False)
+        pp_metamers_df = pp_metamers_df.reindex(PHYTOMERS_RUN_POSTPROCESSING_VARIABLES, axis=1, copy=False)
+        pp_metamers_df[['plant', 'metamer']] = pp_metamers_df[['plant', 'metamer']].astype(int)
+        returned_dataframes.append(pp_metamers_df)
+    else:
+        returned_dataframes.append(pd.DataFrame({'A' : []}))
+
+    # organs
+    if organs_df is not None:
+        pp_organs_df = pd.concat([organs_df, pd.DataFrame(columns=ORGANS_POSTPROCESSING_VARIABLES)],sort=False)
+
+        organs_df['sum_dry_mass'] = (((organs_df.fillna(0)['structure'] + organs_df.fillna(0)[
+            'starch']) * 1E-6 * cnwheat_model.EcophysiologicalConstants.C_MOLAR_MASS / cnwheat_model.EcophysiologicalConstants.HEXOSE_MOLAR_MASS_C_RATIO) +
+                                     (organs_df.fillna(0)[
+                                          'sucrose'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.C_MOLAR_MASS) / cnwheat_model.EcophysiologicalConstants.HEXOSE_MOLAR_MASS_C_RATIO +
+                                     (organs_df.fillna(0)['starch'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.C_MOLAR_MASS) / cnwheat_model.EcophysiologicalConstants.HEXOSE_MOLAR_MASS_C_RATIO +
+                                     (organs_df.fillna(0)[
+                                          'nitrates'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS) / cnwheat_model.EcophysiologicalConstants.NITRATES_MOLAR_MASS_N_RATIO +
+                                     (organs_df.fillna(0)[
+                                          'amino_acids'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS) / cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_N_RATIO +
+                                     (organs_df.fillna(0)[
+                                          'proteins'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS) / cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_N_RATIO +
+                                     organs_df.fillna(0)['mstruct'])
+        organs_df['C_g'] = ((organs_df.fillna(0)['sucrose'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.C_MOLAR_MASS) +
+                            (organs_df.fillna(0)['starch'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.C_MOLAR_MASS) +
+                            (organs_df.fillna(0)[
+                                 'amino_acids'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS) * cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_C_RATIO / cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_N_RATIO +
+                            (organs_df.fillna(0)[
+                                 'proteins'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS) * cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_C_RATIO / cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_N_RATIO +
+                            organs_df.fillna(0)['mstruct'] * cnwheat_model.EcophysiologicalConstants.RATIO_C_mstruct)
+        organs_df['N_g'] = ((organs_df.fillna(0)['nitrates'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS) +
+                            (organs_df.fillna(0)['amino_acids'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS) +
+                            (organs_df.fillna(0)['proteins'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS) +
+                            organs_df.fillna(0)['Nstruct'])
+        # roots
+        roots_df = organs_df.loc[organs_df.organ == 'roots']
+        pp_organs_df.loc[pp_organs_df.organ == 'roots', 'Conc_Nitrates'] = Roots.calculate_Conc_Nitrates(roots_df['nitrates'], roots_df['mstruct'])
+        pp_organs_df.loc[pp_organs_df.organ == 'roots', 'Conc_Amino_Acids'] = Roots.calculate_Conc_Amino_Acids(roots_df['amino_acids'], roots_df['mstruct'])
+        pp_organs_df.loc[pp_organs_df.organ == 'roots', 'Conc_Sucrose'] = Roots.calculate_conc_sucrose(roots_df['sucrose'], roots_df['mstruct'])
+        pp_organs_df.loc[pp_organs_df.organ == 'roots', 'Conc_cytokinins'] = Roots.calculate_conc_cytokinins(roots_df['cytokinins'], roots_df['mstruct'])
+        pp_organs_df.loc[pp_organs_df.organ == 'roots', 'Conc_cytokinins'] = Roots.calculate_conc_cytokinins(roots_df['cytokinins'], roots_df['mstruct'])
+        R_residual = np.array(map(respiwheat_model.RespirationModel.R_residual, roots_df['sucrose'], roots_df['mstruct']*cnwheat_model.Roots.PARAMETERS.ALPHA, roots_df['Total_Organic_Nitrogen'],
+                                  soils_df['Tsoil']))
+        pp_organs_df.loc[pp_organs_df.organ == 'roots', 'R_maintenance'] = R_residual[:, 1]
+        # phloem
+        phloems_df = organs_df.loc[organs_df.organ == 'phloem']
+        if len(phloems_df) != len(axes_df):
+            # this is temporary, to make fpsm-wheat work ; but there is no reason for axes_df not having the same length as phloems_df. So: this problem should be fixed as soon as possible in fspm-wheat.
+            pp_organs_df.loc[pp_organs_df.organ == 'phloem', 'Conc_Amino_Acids'] = Phloem.calculate_conc_amino_acids(phloems_df['amino_acids'], axes_df.set_index(phloems_df.index[1:])['mstruct'])
+            pp_organs_df.loc[pp_organs_df.organ == 'phloem', 'Conc_Sucrose'] = Phloem.calculate_conc_sucrose(phloems_df['sucrose'], axes_df.set_index(phloems_df.index[1:])['mstruct'])
+        else:
+            pp_organs_df.loc[pp_organs_df.organ == 'phloem', 'Conc_Amino_Acids'] = Phloem.calculate_conc_amino_acids(phloems_df['amino_acids'], axes_df.set_index(phloems_df.index)['mstruct'])
+            pp_organs_df.loc[pp_organs_df.organ == 'phloem', 'Conc_Sucrose'] = Phloem.calculate_conc_sucrose(phloems_df['sucrose'], axes_df.set_index(phloems_df.index)['mstruct'])
+
+        # grains
+        grains_df = organs_df.loc[organs_df.organ == 'grain']
+        pp_organs_df.loc[pp_organs_df.organ == 'grain', 'Dry_Mass'] = Grains.calculate_dry_mass(grains_df['structure'], grains_df['starch'], grains_df['proteins'])
+        pp_organs_df.loc[pp_organs_df.organ == 'grain', 'Proteins_N_Mass'] = Grains.calculate_protein_N_mass(grains_df['proteins'])
+        pp_organs_df = pp_organs_df.reindex(columns=ORGANS_RUN_POSTPROCESSING_VARIABLES, copy=False)
+        pp_organs_df['plant'] = pp_organs_df['plant'].astype(int)
+        returned_dataframes.append(pp_organs_df)
+    else:
+        returned_dataframes.append(pd.DataFrame({'A' : []}))
+
+    # elements
+    if elements_df is not None:
+
+        titi = []
+        titi.append(elements_df['axis'])
+        if hiddenzones_df is not None:
+            titi.append(hiddenzones_df['axis'])
+        tillers = [ i for i in list(np.unique(np.array(titi))) if i != 'MS']
+        nb_tillers = len(tillers)
+        last_metamer = max(elements_df['metamer'])
+        nb_replications_df = pd.DataFrame(data={'metamer': range(1,last_metamer+1)})
+        nb_replications_df['nb_replications'] = 1
+        if nb_tillers > 0:
+            tiller_ranks = [ int(i[1:]) for i in tillers ]
+            for i in nb_replications_df.metamer :
+                nb_replications_df.loc[ nb_replications_df['metamer']==i ,'nb_replications'] += sum([ 1 for j in tiller_ranks if j+3<= i ])
+
+        elements_df = elements_df.merge(nb_replications_df, on='metamer')
+
+        elements_df['sum_dry_mass'] = Element.calculate_dry_mass(elements_df.fillna(0)['triosesP'],
+                                                                 elements_df.fillna(0)['sucrose'],
+                                                                 elements_df.fillna(0)['starch'],
+                                                                 elements_df.fillna(0)['fructan'],
+                                                                 elements_df.fillna(0)['nitrates'],
+                                                                 elements_df.fillna(0)['amino_acids'],
+                                                                 elements_df.fillna(0)['proteins'],
+                                                                 elements_df['mstruct'])
+        elements_df['C_g'] = Element.calculate_C_g(elements_df.fillna(0)['triosesP'],
+                                                   elements_df.fillna(0)['sucrose'],
+                                                   elements_df.fillna(0)['starch'],
+                                                   elements_df.fillna(0)['fructan'],
+                                                   elements_df.fillna(0)['amino_acids'],
+                                                   elements_df.fillna(0)['proteins'],
+                                                   elements_df['mstruct'])
+        elements_df['N_g'] = Element.calculate_N_g(elements_df.fillna(0)['nitrates'],
+                                                   elements_df.fillna(0)['amino_acids'],
+                                                   elements_df.fillna(0)['proteins'],
+                                                   elements_df['Nstruct'])
+
+        pp_elements_df = pd.concat([elements_df, pd.DataFrame(columns=ELEMENTS_POSTPROCESSING_VARIABLES)],sort=False)
+        pp_elements_df.loc[:, 'Conc_TriosesP'] = Element.calculate_conc_triosesP(elements_df['triosesP'], elements_df['mstruct'])
+        pp_elements_df.loc[:, 'Conc_Starch'] = Element.calculate_conc_starch(elements_df['starch'], elements_df['mstruct'])
+        pp_elements_df.loc[:, 'Conc_Sucrose'] = Element.calculate_conc_sucrose(elements_df['sucrose'], elements_df['mstruct'])
+        pp_elements_df.loc[:, 'Conc_Fructan'] = Element.calculate_conc_fructan(elements_df['fructan'], elements_df['mstruct'])
+        pp_elements_df.loc[:, 'Conc_Nitrates'] = Element.calculate_Conc_Nitrates(elements_df['nitrates'], elements_df['mstruct'])
+        pp_elements_df.loc[:, 'Conc_Amino_Acids'] = Element.calculate_Conc_Amino_Acids(elements_df['amino_acids'], elements_df['mstruct'])
+        pp_elements_df.loc[:, 'Conc_Proteins'] = Element.calculate_conc_proteins(elements_df['proteins'], elements_df['mstruct'])
+        pp_elements_df.loc[:, 'Conc_cytokinins'] = Element.calculate_conc_cytokinins(elements_df['cytokinins'], elements_df['mstruct'])
+        pp_elements_df.loc[:, 'Surfacic N'] = Element.calculate_surfacic_nitrogen(elements_df['nitrates'],
+                                                                                   elements_df['amino_acids'], elements_df['proteins'],
+                                                                                   elements_df['Nstruct'], elements_df['green_area'])
+        pp_elements_df.loc[:, 'Surfacic_NS'] = Element.calculate_surfacic_non_structural(elements_df['sum_dry_mass'],
+                                                                                   elements_df['mstruct'], elements_df['green_area'])
+        pp_elements_df.loc[:, 'NS'] = Element.calculate_ratio_non_structural(elements_df['sum_dry_mass'],
+                                                                                         elements_df['mstruct'])
+
+        grouped = elements_df.groupby('organ')
+        for organ_type, parameters_class in \
+            (('ear', cnwheat_parameters.CHAFF_ELEMENT_PARAMETERS),
+             ('blade', cnwheat_parameters.LAMINA_ELEMENT_PARAMETERS),
+             ('internode', cnwheat_parameters.INTERNODE_ELEMENT_PARAMETERS),
+             ('peduncle', cnwheat_parameters.PEDUNCLE_ELEMENT_PARAMETERS),
+             ('sheath', cnwheat_parameters.SHEATH_ELEMENT_PARAMETERS)):
+            if organ_type not in grouped.groups:
+                continue
+            group = grouped.get_group(organ_type)
+            if len(group) == 0:  # TODO: faire mm tri que dans simulation de cnwheat (surface nulle)
+                continue
+            curr_organ_elements_df = elements_df.loc[group.index]
+            pp_curr_organ_elements_df = pp_elements_df.loc[group.index]
+            R_residual = np.array(respiwheat_model.RespirationModel.R_residual(curr_organ_elements_df['sucrose'], curr_organ_elements_df['mstruct'] * parameters_class.ALPHA,
+                                                                               curr_organ_elements_df['Total_Organic_Nitrogen'], curr_organ_elements_df['Ts']))
+            pp_curr_organ_elements_df.loc[:, 'R_maintenance'] = R_residual[0]
+        pp_elements_df = pp_elements_df.reindex(columns=ELEMENTS_RUN_POSTPROCESSING_VARIABLES, copy=False)
+        pp_elements_df[['plant', 'metamer']] = pp_elements_df[['plant', 'metamer']].astype(int)
+        returned_dataframes.append(pp_elements_df)
+    else:
+        returned_dataframes.append(pd.DataFrame({'A' : []}))
+
+    # hidden zones
+    if hiddenzones_df is not None:
+
+        hiddenzones_df = hiddenzones_df.merge(nb_replications_df, on='metamer')
+
+        hiddenzones_df['sum_dry_mass'] = HiddenZone.calculate_dry_mass(hiddenzones_df.fillna(0)['sucrose'],
+                                                                       0,  # hiddenzones_df.fillna(0)['starch'],
+                                                                       hiddenzones_df.fillna(0)['fructan'],
+                                                                       hiddenzones_df.fillna(0)['amino_acids'],
+                                                                       hiddenzones_df.fillna(0)['proteins'],
+                                                                       hiddenzones_df['mstruct'])
+        hiddenzones_df['C_g'] = HiddenZone.calculate_C_g(hiddenzones_df.fillna(0)['sucrose'],
+                                                         0,  # hiddenzones_df.fillna(0)['starch'],
+                                                         hiddenzones_df.fillna(0)['fructan'],
+                                                         hiddenzones_df.fillna(0)['amino_acids'],
+                                                         hiddenzones_df.fillna(0)['proteins'],
+                                                         hiddenzones_df['mstruct'])
+        hiddenzones_df['N_g'] = HiddenZone.calculate_N_g(hiddenzones_df.fillna(0)['amino_acids'],
+                                                         hiddenzones_df.fillna(0)['proteins'],
+                                                         hiddenzones_df['leaf_enclosed_Nstruct'] + hiddenzones_df['internode_enclosed_Nstruct'])
+
+        pp_hiddenzones_df = pd.concat([hiddenzones_df, pd.DataFrame(columns=HIDDENZONE_POSTPROCESSING_VARIABLES)],sort=False)
+        pp_hiddenzones_df.loc[:, 'Conc_Amino_Acids'] = HiddenZone.calculate_Conc_Amino_Acids(hiddenzones_df['amino_acids'], hiddenzones_df['mstruct'])
+        pp_hiddenzones_df.loc[:, 'Conc_Fructan'] = HiddenZone.calculate_conc_fructan(hiddenzones_df['fructan'], hiddenzones_df['mstruct'])
+        pp_hiddenzones_df.loc[:, 'Conc_Proteins'] = HiddenZone.calculate_conc_protein(hiddenzones_df['proteins'], hiddenzones_df['mstruct'])
+        pp_hiddenzones_df.loc[:, 'Conc_Sucrose'] = HiddenZone.calculate_conc_sucrose(hiddenzones_df['sucrose'], hiddenzones_df['mstruct'])
+        if set(hiddenzones_df.columns).issuperset(['delta_leaf_L', 'leaf_L']):
+            # this is temporary: those post-processing should be done in model "elong-wheat"
+            pp_hiddenzones_df.loc[:, 'RER'] = HiddenZone.calculate_RER(hiddenzones_df['delta_leaf_L'], hiddenzones_df['leaf_L'], delta_t)
+        pp_hiddenzones_df = pp_hiddenzones_df.reindex(columns=HIDDENZONE_RUN_POSTPROCESSING_VARIABLES, copy=False)
+        pp_hiddenzones_df[['plant', 'metamer']] = pp_hiddenzones_df[['plant', 'metamer']].astype(int)
+        returned_dataframes.append(pp_hiddenzones_df)
+    else:
+        returned_dataframes.append(pd.DataFrame({'A' : []}))
 
     # axes
     if axes_df is not None:
@@ -687,66 +869,11 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
         # Integrated variables TODO : Homogeneiser la structure de ce bout de code
         if (hiddenzones_df is not None) and (organs_df is not None) and (elements_df is not None):
 
-            nb_replications_df = pd.DataFrame( data = { 'metamer' : [1,2,3,4,5,6,7,8,9,10,11],
-                                         'nb_replications' : [1,1,1,2,3,4,5,5,5,5,5] } )
-            elements_df = elements_df.merge(nb_replications_df, on = 'metamer')
-            hiddenzones_df = hiddenzones_df.merge(nb_replications_df, on='metamer')
-
             # Photosynthetic elements
-            elements_df['sum_dry_mass'] = Element.calculate_dry_mass( elements_df.fillna(0)['triosesP'],
-                                                                      elements_df.fillna(0)['sucrose'],
-                                                                      elements_df.fillna(0)['starch'],
-                                                                      elements_df.fillna(0)['fructan'],
-                                                                      elements_df.fillna(0)['nitrates'],
-                                                                      elements_df.fillna(0)['amino_acids'],
-                                                                      elements_df.fillna(0)['proteins'],
-                                                                      elements_df['mstruct'])
-            elements_df['C_g'] = Element.calculate_C_g( elements_df.fillna(0)['triosesP'],
-                                                        elements_df.fillna(0)['sucrose'],
-                                                        elements_df.fillna(0)['starch'],
-                                                        elements_df.fillna(0)['fructan'],
-                                                        elements_df.fillna(0)['amino_acids'],
-                                                        elements_df.fillna(0)['proteins'],
-                                                        elements_df['mstruct'])
-            elements_df['N_g'] = Element.calculate_N_g(elements_df.fillna(0)['nitrates'],
-                                                       elements_df.fillna(0)['amino_acids'],
-                                                       elements_df.fillna(0)['proteins'],
-                                                       elements_df['Nstruct'])
 
             # Organs
-            organs_df['sum_dry_mass'] = (((organs_df.fillna(0)['structure'] + organs_df.fillna(0)['starch']) * 1E-6 * cnwheat_model.EcophysiologicalConstants.C_MOLAR_MASS / cnwheat_model.EcophysiologicalConstants.HEXOSE_MOLAR_MASS_C_RATIO) +
-                                         (organs_df.fillna(0)['sucrose'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.C_MOLAR_MASS) / cnwheat_model.EcophysiologicalConstants.HEXOSE_MOLAR_MASS_C_RATIO +
-                                         (organs_df.fillna(0)['starch'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.C_MOLAR_MASS) / cnwheat_model.EcophysiologicalConstants.HEXOSE_MOLAR_MASS_C_RATIO +
-                                         (organs_df.fillna(0)['nitrates'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS) / cnwheat_model.EcophysiologicalConstants.NITRATES_MOLAR_MASS_N_RATIO +
-                                         (organs_df.fillna(0)['amino_acids'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS) / cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_N_RATIO +
-                                         (organs_df.fillna(0)['proteins'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS) / cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_N_RATIO +
-                                         organs_df.fillna(0)['mstruct'])
-            organs_df['C_g'] = ((organs_df.fillna(0)['sucrose'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.C_MOLAR_MASS) +
-                                (organs_df.fillna(0)['starch'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.C_MOLAR_MASS) +
-                                (organs_df.fillna(0)['amino_acids'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS) * cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_C_RATIO / cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_N_RATIO +
-                                (organs_df.fillna(0)['proteins'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS) * cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_C_RATIO / cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_N_RATIO +
-                                organs_df.fillna(0)['mstruct'] * cnwheat_model.EcophysiologicalConstants.RATIO_C_mstruct)
-            organs_df['N_g'] = ((organs_df.fillna(0)['nitrates'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS) +
-                                (organs_df.fillna(0)['amino_acids'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS) +
-                                (organs_df.fillna(0)['proteins'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS) +
-                                organs_df.fillna(0)['Nstruct'])
 
             # Hiddenzones
-            hiddenzones_df['sum_dry_mass'] = HiddenZone.calculate_dry_mass( hiddenzones_df.fillna(0)['sucrose'],
-                                                                            0,#hiddenzones_df.fillna(0)['starch'],
-                                                                            hiddenzones_df.fillna(0)['fructan'],
-                                                                            hiddenzones_df.fillna(0)['amino_acids'],
-                                                                            hiddenzones_df.fillna(0)['proteins'],
-                                                                            hiddenzones_df['mstruct'])
-            hiddenzones_df['C_g'] = HiddenZone.calculate_C_g( hiddenzones_df.fillna(0)['sucrose'] ,
-                                                              0,#hiddenzones_df.fillna(0)['starch'],
-                                                              hiddenzones_df.fillna(0)['fructan'],
-                                                              hiddenzones_df.fillna(0)['amino_acids'],
-                                                              hiddenzones_df.fillna(0)['proteins'],
-                                                              hiddenzones_df['mstruct'] )
-            hiddenzones_df['N_g'] = HiddenZone.calculate_N_g( hiddenzones_df.fillna(0)['amino_acids'],
-                                                              hiddenzones_df.fillna(0)['proteins'] ,
-                                                              hiddenzones_df['leaf_enclosed_Nstruct'] + hiddenzones_df['internode_enclosed_Nstruct'])
 
             # Roots
             dry_mass_roots = organs_df[(organs_df['organ'] == 'roots')].groupby(['t', 'plant', 'axis'])['sum_dry_mass'].agg('sum')
@@ -863,99 +990,8 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
         pp_axes_df = pp_axes_df.reindex(AXES_RUN_POSTPROCESSING_VARIABLES, axis=1, copy=False)
         pp_axes_df['plant'] = pp_axes_df['plant'].astype(int)
         returned_dataframes.append(pp_axes_df)
-
-    # metamers
-    if metamers_df is not None:
-        pp_metamers_df = pd.concat([metamers_df, pd.DataFrame(columns=PHYTOMERS_POSTPROCESSING_VARIABLES)],sort=False)
-        pp_metamers_df = pp_metamers_df.reindex(PHYTOMERS_RUN_POSTPROCESSING_VARIABLES, axis=1, copy=False)
-        pp_metamers_df[['plant', 'metamer']] = pp_metamers_df[['plant', 'metamer']].astype(int)
-        returned_dataframes.append(pp_metamers_df)
-
-    # hidden zones
-    if hiddenzones_df is not None:
-        pp_hiddenzones_df = pd.concat([hiddenzones_df, pd.DataFrame(columns=HIDDENZONE_POSTPROCESSING_VARIABLES)],sort=False)
-        pp_hiddenzones_df.loc[:, 'Conc_Amino_Acids'] = HiddenZone.calculate_Conc_Amino_Acids(hiddenzones_df['amino_acids'], hiddenzones_df['mstruct'])
-        pp_hiddenzones_df.loc[:, 'Conc_Fructan'] = HiddenZone.calculate_conc_fructan(hiddenzones_df['fructan'], hiddenzones_df['mstruct'])
-        pp_hiddenzones_df.loc[:, 'Conc_Proteins'] = HiddenZone.calculate_conc_protein(hiddenzones_df['proteins'], hiddenzones_df['mstruct'])
-        pp_hiddenzones_df.loc[:, 'Conc_Sucrose'] = HiddenZone.calculate_conc_sucrose(hiddenzones_df['sucrose'], hiddenzones_df['mstruct'])
-        if set(hiddenzones_df.columns).issuperset(['delta_leaf_L', 'leaf_L']):
-            # this is temporary: those post-processing should be done in model "elong-wheat" 
-            pp_hiddenzones_df.loc[:, 'RER'] = HiddenZone.calculate_RER(hiddenzones_df['delta_leaf_L'], hiddenzones_df['leaf_L'], delta_t)
-        pp_hiddenzones_df = pp_hiddenzones_df.reindex(columns=HIDDENZONE_RUN_POSTPROCESSING_VARIABLES, copy=False)
-        pp_hiddenzones_df[['plant', 'metamer']] = pp_hiddenzones_df[['plant', 'metamer']].astype(int)
-        returned_dataframes.append(pp_hiddenzones_df)
-
-    # organs
-    if organs_df is not None:
-        pp_organs_df = pd.concat([organs_df, pd.DataFrame(columns=ORGANS_POSTPROCESSING_VARIABLES)],sort=False)
-        # roots
-        roots_df = organs_df.loc[organs_df.organ == 'roots']
-        pp_organs_df.loc[pp_organs_df.organ == 'roots', 'Conc_Nitrates'] = Roots.calculate_Conc_Nitrates(roots_df['nitrates'], roots_df['mstruct'])
-        pp_organs_df.loc[pp_organs_df.organ == 'roots', 'Conc_Amino_Acids'] = Roots.calculate_Conc_Amino_Acids(roots_df['amino_acids'], roots_df['mstruct'])
-        pp_organs_df.loc[pp_organs_df.organ == 'roots', 'Conc_Sucrose'] = Roots.calculate_conc_sucrose(roots_df['sucrose'], roots_df['mstruct'])
-        pp_organs_df.loc[pp_organs_df.organ == 'roots', 'Conc_cytokinins'] = Roots.calculate_conc_cytokinins(roots_df['cytokinins'], roots_df['mstruct'])
-        pp_organs_df.loc[pp_organs_df.organ == 'roots', 'Conc_cytokinins'] = Roots.calculate_conc_cytokinins(roots_df['cytokinins'], roots_df['mstruct'])
-        R_residual = np.array(map(respiwheat_model.RespirationModel.R_residual, roots_df['sucrose'], roots_df['mstruct']*cnwheat_model.Roots.PARAMETERS.ALPHA, roots_df['Total_Organic_Nitrogen'],
-                                  soils_df['Tsoil']))
-        pp_organs_df.loc[pp_organs_df.organ == 'roots', 'R_maintenance'] = R_residual[:, 1]
-        # phloem
-        phloems_df = organs_df.loc[organs_df.organ == 'phloem']
-        if len(phloems_df) != len(axes_df):
-            # this is temporary, to make fpsm-wheat work ; but there is no reason for axes_df not having the same length as phloems_df. So: this problem should be fixed as soon as possible in fspm-wheat.   
-            pp_organs_df.loc[pp_organs_df.organ == 'phloem', 'Conc_Amino_Acids'] = Phloem.calculate_conc_amino_acids(phloems_df['amino_acids'], axes_df.set_index(phloems_df.index[1:])['mstruct'])
-            pp_organs_df.loc[pp_organs_df.organ == 'phloem', 'Conc_Sucrose'] = Phloem.calculate_conc_sucrose(phloems_df['sucrose'], axes_df.set_index(phloems_df.index[1:])['mstruct'])
-        else:
-            pp_organs_df.loc[pp_organs_df.organ == 'phloem', 'Conc_Amino_Acids'] = Phloem.calculate_conc_amino_acids(phloems_df['amino_acids'], axes_df.set_index(phloems_df.index)['mstruct'])
-            pp_organs_df.loc[pp_organs_df.organ == 'phloem', 'Conc_Sucrose'] = Phloem.calculate_conc_sucrose(phloems_df['sucrose'], axes_df.set_index(phloems_df.index)['mstruct'])
-
-        # grains
-        grains_df = organs_df.loc[organs_df.organ == 'grain']
-        pp_organs_df.loc[pp_organs_df.organ == 'grain', 'Dry_Mass'] = Grains.calculate_dry_mass(grains_df['structure'], grains_df['starch'], grains_df['proteins'])
-        pp_organs_df.loc[pp_organs_df.organ == 'grain', 'Proteins_N_Mass'] = Grains.calculate_protein_N_mass(grains_df['proteins'])
-        pp_organs_df = pp_organs_df.reindex(columns=ORGANS_RUN_POSTPROCESSING_VARIABLES, copy=False)
-        pp_organs_df['plant'] = pp_organs_df['plant'].astype(int)
-        returned_dataframes.append(pp_organs_df)
-
-    # elements
-    if elements_df is not None:
-        pp_elements_df = pd.concat([elements_df, pd.DataFrame(columns=ELEMENTS_POSTPROCESSING_VARIABLES)],sort=False)
-        pp_elements_df.loc[:, 'Conc_TriosesP'] = Element.calculate_conc_triosesP(elements_df['triosesP'], elements_df['mstruct'])
-        pp_elements_df.loc[:, 'Conc_Starch'] = Element.calculate_conc_starch(elements_df['starch'], elements_df['mstruct'])
-        pp_elements_df.loc[:, 'Conc_Sucrose'] = Element.calculate_conc_sucrose(elements_df['sucrose'], elements_df['mstruct'])
-        pp_elements_df.loc[:, 'Conc_Fructan'] = Element.calculate_conc_fructan(elements_df['fructan'], elements_df['mstruct'])
-        pp_elements_df.loc[:, 'Conc_Nitrates'] = Element.calculate_Conc_Nitrates(elements_df['nitrates'], elements_df['mstruct'])
-        pp_elements_df.loc[:, 'Conc_Amino_Acids'] = Element.calculate_Conc_Amino_Acids(elements_df['amino_acids'], elements_df['mstruct'])
-        pp_elements_df.loc[:, 'Conc_Proteins'] = Element.calculate_conc_proteins(elements_df['proteins'], elements_df['mstruct'])
-        pp_elements_df.loc[:, 'Conc_cytokinins'] = Element.calculate_conc_cytokinins(elements_df['cytokinins'], elements_df['mstruct'])
-        pp_elements_df.loc[:, 'Surfacic N'] = Element.calculate_surfacic_nitrogen(elements_df['nitrates'],
-                                                                                   elements_df['amino_acids'], elements_df['proteins'],
-                                                                                   elements_df['Nstruct'], elements_df['green_area'])
-        pp_elements_df.loc[:, 'Surfacic_NS'] = Element.calculate_surfacic_non_structural(elements_df['sum_dry_mass'],
-                                                                                   elements_df['mstruct'], elements_df['green_area'])
-        pp_elements_df.loc[:, 'NS'] = Element.calculate_ratio_non_structural(elements_df['sum_dry_mass'],
-                                                                                         elements_df['mstruct'])
-
-        grouped = elements_df.groupby('organ')
-        for organ_type, parameters_class in \
-            (('ear', cnwheat_parameters.CHAFF_ELEMENT_PARAMETERS),
-             ('blade', cnwheat_parameters.LAMINA_ELEMENT_PARAMETERS),
-             ('internode', cnwheat_parameters.INTERNODE_ELEMENT_PARAMETERS),
-             ('peduncle', cnwheat_parameters.PEDUNCLE_ELEMENT_PARAMETERS),
-             ('sheath', cnwheat_parameters.SHEATH_ELEMENT_PARAMETERS)):
-            if organ_type not in grouped.groups:
-                continue
-            group = grouped.get_group(organ_type)
-            if len(group) == 0:  # TODO: faire mm tri que dans simulation de cnwheat (surface nulle)
-                continue
-            curr_organ_elements_df = elements_df.loc[group.index]
-            pp_curr_organ_elements_df = pp_elements_df.loc[group.index]
-            R_residual = np.array(respiwheat_model.RespirationModel.R_residual(curr_organ_elements_df['sucrose'], curr_organ_elements_df['mstruct'] * parameters_class.ALPHA,
-                                                                               curr_organ_elements_df['Total_Organic_Nitrogen'], curr_organ_elements_df['Ts']))
-            pp_curr_organ_elements_df.loc[:, 'R_maintenance'] = R_residual[0]
-        pp_elements_df = pp_elements_df.reindex(columns=ELEMENTS_RUN_POSTPROCESSING_VARIABLES, copy=False)
-        pp_elements_df[['plant', 'metamer']] = pp_elements_df[['plant', 'metamer']].astype(int)
-        returned_dataframes.append(pp_elements_df)
-
+    else:
+        returned_dataframes.append(pd.DataFrame({'A' : []}))
 
     # soils
     if soils_df is not None:
@@ -963,6 +999,8 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
         pp_soils_df = pp_soils_df.reindex(columns=SOILS_RUN_POSTPROCESSING_VARIABLES, copy=False)
         pp_soils_df[['plant']] = pp_soils_df[['plant']].astype(int)
         returned_dataframes.append(pp_soils_df)
+    else:
+        returned_dataframes.append(pd.DataFrame({'A' : []}))
 
     return tuple(returned_dataframes)
 
