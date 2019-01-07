@@ -772,8 +772,8 @@ class Roots(Organ):
         :Returns Type:
             :class:`float`
         """
-        # total_surfacic_transpiration / (total_surfacic_transpiration + Roots.PARAMETERS.K_TRANSPIRATION)
-        return total_transpiration * 0.0152 / (total_transpiration + Roots.PARAMETERS.K_TRANSPIRATION * 0.0152)
+        # total_transpiration * 0.0152 / (total_transpiration + Roots.PARAMETERS.K_TRANSPIRATION * 0.0152)
+        return total_surfacic_transpiration / (total_surfacic_transpiration + Roots.PARAMETERS.K_TRANSPIRATION)
 
 
     # FLUXES
