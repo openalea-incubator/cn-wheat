@@ -270,11 +270,11 @@ def main(stop_time, run_simu=True, run_postprocessing=True, generate_graphs=True
         soils_postprocessing_file_basename = SOILS_POSTPROCESSING_FILENAME.split('.')[0]
 
         postprocessing_df_dict = {}
-        
-        (postprocessing_df_dict[axes_postprocessing_file_basename], 
-         postprocessing_df_dict[hiddenzones_postprocessing_file_basename], 
-         postprocessing_df_dict[organs_postprocessing_file_basename], 
-         postprocessing_df_dict[elements_postprocessing_file_basename], 
+        (_, _,
+         postprocessing_df_dict[organs_postprocessing_file_basename],
+         postprocessing_df_dict[elements_postprocessing_file_basename],
+         postprocessing_df_dict[hiddenzones_postprocessing_file_basename],
+         postprocessing_df_dict[axes_postprocessing_file_basename],
          postprocessing_df_dict[soils_postprocessing_file_basename]) \
             = cnwheat_postprocessing.postprocessing(axes_df=outputs_df_dict[AXES_OUTPUTS_FILENAME.split('.')[0]], 
                                                       hiddenzones_df=outputs_df_dict[HIDDENZONES_OUTPUTS_FILENAME.split('.')[0]], 
