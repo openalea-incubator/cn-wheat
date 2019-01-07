@@ -752,11 +752,10 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
     # elements
     if elements_df is not None:
 
-        titi = []
-        titi.append(elements_df['axis'])
+        titi = list(set(list(elements_df['axis'])))
         if hiddenzones_df is not None:
-            titi.append(hiddenzones_df['axis'])
-        tillers = [ i for i in list(np.unique(np.array(titi))) if i != 'MS']
+            titi = titi + list(set(hiddenzones_df['axis']))
+        tillers = [ i for i in list(set(titi)) if i != 'MS']
         nb_tillers = len(tillers)
         last_metamer = max(elements_df['metamer'])
         nb_replications_df = pd.DataFrame(data={'metamer': range(1,last_metamer+1)})
