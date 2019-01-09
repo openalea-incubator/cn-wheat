@@ -1,4 +1,13 @@
 # -*- coding: latin-1 -*-
+
+import os
+
+import pandas as pd
+
+from respiwheat import model as respiwheat_model
+
+from cnwheat import simulation as cnwheat_simulation, tools as cnwheat_tools, converter as cnwheat_converter
+
 """
     test_cnwheat
     ~~~~~~~~~~~~
@@ -32,14 +41,6 @@
         $Id$
 """
 
-import os
-
-import pandas as pd
-
-from respiwheat import model as respiwheat_model
-
-from cnwheat import simulation as cnwheat_simulation, tools as cnwheat_tools, converter as cnwheat_converter
-
 # inputs directory path
 INPUTS_DIRPATH = 'inputs'
 
@@ -72,11 +73,11 @@ ACTUAL_ELEMENTS_OUTPUTS_FILENAME = 'actual_elements_outputs.csv'
 ACTUAL_SOILS_OUTPUTS_FILENAME = 'actual_soils_outputs.csv'
 
 # culm density (culm m-2)
-CULM_DENSITY = {1:410}
+CULM_DENSITY = {1: 410}
 
 
 def force_senescence_and_photosynthesis(t, population, senescence_roots_data_grouped, senescence_elements_data_grouped, photosynthesis_elements_data_grouped):
-        '''Force the senescence and photosynthesis data of the population at `t` from input grouped dataframes'''
+        """Force the senescence and photosynthesis data of the population at `t` from input grouped dataframes"""
         for plant in population.plants:
             for axis in plant.axes:
                 # Root growth and senescence
@@ -117,7 +118,7 @@ def test_run():
                                                           inputs_dataframes[SOILS_INPUTS_FILENAME])
 
     # initialize the simulation from the population and the soils
-    simulation_.initialize(population, soils,Tair=15, Tsoil=15)
+    simulation_.initialize(population, soils, Tair=15, Tsoil=15)
 
     # get photosynthesis data
     photosynthesis_elements_data_filepath = os.path.join(INPUTS_DIRPATH, PHOTOSYNTHESIS_ELEMENTS_DATA_FILENAME)
@@ -143,7 +144,7 @@ def test_run():
     start_time = 0
     stop_time = 2
     time_step = 1
-    time_grid = xrange(start_time, stop_time+time_step, time_step)
+    time_grid = range(start_time, stop_time+time_step, time_step)
     
     # force the senescence and photosynthesis of the population
     force_senescence_and_photosynthesis(0, population, senescence_roots_data_grouped, senescence_elements_data_grouped, photosynthesis_elements_data_grouped)
@@ -154,7 +155,7 @@ def test_run():
     # run the model on the time grid
     for t in time_grid:
 
-        if t > 0: # do not run the model at t = 0
+        if t > 0:  # do not run the model at t = 0
             # run the model of CN exchanges ; the population is internally updated by the model
             simulation_.run()
         
@@ -168,7 +169,7 @@ def test_run():
             df.insert(0, 't', t)
             list_.append(df)
         
-        if t > 0 and t < stop_time:
+        if 0 < t < stop_time:
             
             # force the senescence and photosynthesis of the population
             force_senescence_and_photosynthesis(t, population, senescence_roots_data_grouped, senescence_elements_data_grouped, photosynthesis_elements_data_grouped)
@@ -176,20 +177,17 @@ def test_run():
             simulation_.initialize(population, soils)
     
     # compare actual to desired outputs at each scale level (an exception is raised if the test failed)  
-    for (outputs_df_list, 
-         desired_outputs_filename, 
-         actual_outputs_filename,
-         state_variables_names) \
-         in ((axes_outputs_df_list, DESIRED_AXES_OUTPUTS_FILENAME, ACTUAL_AXES_OUTPUTS_FILENAME, cnwheat_simulation.Simulation.AXES_T_INDEXES + cnwheat_simulation.Simulation.AXES_STATE),
-             (organs_outputs_df_list, DESIRED_ORGANS_OUTPUTS_FILENAME, ACTUAL_ORGANS_OUTPUTS_FILENAME, cnwheat_simulation.Simulation.ORGANS_T_INDEXES + cnwheat_simulation.Simulation.ORGANS_STATE),
-             (hiddenzones_outputs_df_list, DESIRED_HIDDENZONES_OUTPUTS_FILENAME, ACTUAL_HIDDENZONES_OUTPUTS_FILENAME, cnwheat_simulation.Simulation.HIDDENZONE_T_INDEXES + cnwheat_simulation.Simulation.HIDDENZONE_STATE),
-             (elements_outputs_df_list, DESIRED_ELEMENTS_OUTPUTS_FILENAME, ACTUAL_ELEMENTS_OUTPUTS_FILENAME, cnwheat_simulation.Simulation.ELEMENTS_T_INDEXES + cnwheat_simulation.Simulation.ELEMENTS_STATE),
-             (soils_outputs_df_list, DESIRED_SOILS_OUTPUTS_FILENAME, ACTUAL_SOILS_OUTPUTS_FILENAME, cnwheat_simulation.Simulation.SOILS_T_INDEXES + cnwheat_simulation.Simulation.SOILS_STATE)):
+    for (outputs_df_list, desired_outputs_filename, actual_outputs_filename, state_variables_names) \
+            in ((axes_outputs_df_list, DESIRED_AXES_OUTPUTS_FILENAME, ACTUAL_AXES_OUTPUTS_FILENAME, cnwheat_simulation.Simulation.AXES_T_INDEXES + cnwheat_simulation.Simulation.AXES_STATE),
+                (organs_outputs_df_list, DESIRED_ORGANS_OUTPUTS_FILENAME, ACTUAL_ORGANS_OUTPUTS_FILENAME, cnwheat_simulation.Simulation.ORGANS_T_INDEXES + cnwheat_simulation.Simulation.ORGANS_STATE),
+                (hiddenzones_outputs_df_list, DESIRED_HIDDENZONES_OUTPUTS_FILENAME, ACTUAL_HIDDENZONES_OUTPUTS_FILENAME, cnwheat_simulation.Simulation.HIDDENZONE_T_INDEXES + cnwheat_simulation.Simulation.HIDDENZONE_STATE),
+                (elements_outputs_df_list, DESIRED_ELEMENTS_OUTPUTS_FILENAME, ACTUAL_ELEMENTS_OUTPUTS_FILENAME, cnwheat_simulation.Simulation.ELEMENTS_T_INDEXES + cnwheat_simulation.Simulation.ELEMENTS_STATE),
+                (soils_outputs_df_list, DESIRED_SOILS_OUTPUTS_FILENAME, ACTUAL_SOILS_OUTPUTS_FILENAME, cnwheat_simulation.Simulation.SOILS_T_INDEXES + cnwheat_simulation.Simulation.SOILS_STATE)):
         outputs_df = pd.concat(outputs_df_list, ignore_index=True)
-        outputs_df = outputs_df.loc[:, state_variables_names] # compare only the values of the compartments
-        print 'Compare', actual_outputs_filename, 'to', desired_outputs_filename 
+        outputs_df = outputs_df.loc[:, state_variables_names]  # compare only the values of the compartments
+        print ('Compare {} to {}'.format(actual_outputs_filename, desired_outputs_filename))
         cnwheat_tools.compare_actual_to_desired(OUTPUTS_DIRPATH, outputs_df, desired_outputs_filename, actual_outputs_filename)
-        print actual_outputs_filename, 'OK!' 
+        print (actual_outputs_filename, 'OK!')
         
 
 if __name__ == '__main__':
