@@ -1100,8 +1100,8 @@ def generate_graphs(axes_df=None, hiddenzones_df=None, organs_df=None, elements_
         graph_variables_hiddenzones = {'Conc_Sucrose': u'[Sucrose] (µmol g$^{-1}$ mstruct)', 'Conc_Amino_Acids': u'[Amino Acids] (µmol g$^{-1}$ mstruct)',
                                        'Conc_Proteins': u'[Proteins] (g g$^{-1}$ mstruct)', 'Conc_Fructan': u'[Fructan] (µmol g$^{-1}$ mstruct)', 'Unloading_Sucrose': u'Sucrose unloading (µmol C)',
                                        'Unloading_Amino_Acids': u'Amino_acids unloading (µmol N)', 'mstruct': u'Structural mass (g)', 'Nstruct': u'Structural N mass (g)',
-                                       'leaf_L': 'Leaf length in hz (m))', 'delta_leaf_L': 'delta of leaf length (m)', 'internode_L': 'Internode length in hz (m))',
-                                       'leaf_pseudostem_length': 'leaf pseudostem length (m)'}
+                                       'leaf_L': u'Leaf length in hz (m)', 'delta_leaf_L': u'delta of leaf length (m)', 'internode_L': u'Internode length in hz (m)',
+                                       'leaf_pseudostem_length': u'leaf pseudostem length (m)'}
     
         for variable_name, variable_label in graph_variables_hiddenzones.items():
             graph_name = variable_name + '_hz' + '.PNG'
