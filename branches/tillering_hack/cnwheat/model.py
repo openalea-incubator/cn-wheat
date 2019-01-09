@@ -772,8 +772,8 @@ class Roots(Organ):
         :Returns Type:
             :class:`float`
         """
-        # total_transpiration * 0.0152 / (total_transpiration + Roots.PARAMETERS.K_TRANSPIRATION * 0.0152)
-        return total_surfacic_transpiration / (total_surfacic_transpiration + Roots.PARAMETERS.K_TRANSPIRATION)
+        # total_surfacic_transpiration / (total_surfacic_transpiration + Roots.PARAMETERS.K_TRANSPIRATION) # Former relationship
+        return total_transpiration * Roots.PARAMETERS.CST_TRANSPIRATION
 
 
     # FLUXES
@@ -833,7 +833,7 @@ class Roots(Organ):
         #: High Affinity Transport System (HATS)
         VMAX_HATS_MAX = Roots.PARAMETERS.A_VMAX_HATS * np.exp(-Roots.PARAMETERS.LAMBDA_VMAX_HATS * conc_nitrates_roots)  #: Maximal rate of nitrates influx at saturating soil N concentration;HATS (:math:`\mu mol` N nitrates g-1 mstruct s-1)
         K_HATS = Roots.PARAMETERS.A_K_HATS * np.exp(-Roots.PARAMETERS.LAMBDA_K_HATS * conc_nitrates_roots)               #: Affinity coefficient of nitrates influx at saturating soil N concentration;HATS (:math:`\mu mol` m-3)
-        HATS = (VMAX_HATS_MAX * Conc_Nitrates_Soil)/ (K_HATS + Conc_Nitrates_Soil) * T_effect_Vmax                                 #: Rate of nitrate influx by HATS (:math:`\mu mol` N nitrates uptaked s-1
+        HATS = (VMAX_HATS_MAX * Conc_Nitrates_Soil)/ (K_HATS + Conc_Nitrates_Soil) * T_effect_Vmax                       #: Rate of nitrate influx by HATS (:math:`\mu mol` N nitrates uptaked s-1
         # g-1 mstruct)
 
         #: Low Affinity Transport System (LATS)
@@ -875,12 +875,9 @@ class Roots(Organ):
         :Returns Type:
             :class:`float`
         """
-        if nitrates <= 0 or regul_transpiration <= 0:
-            Export_Nitrates = 0
-        else:
-            f_nitrates = (nitrates / (self.mstruct * Roots.PARAMETERS.ALPHA)) * Roots.PARAMETERS.K_NITRATE_EXPORT           #: :math:`\mu mol` g-1 s-1
-            Export_Nitrates = f_nitrates * self.mstruct * regul_transpiration * parameters.SECOND_TO_HOUR_RATE_CONVERSION   #: Nitrate export regulation by transpiration (:math:`\mu mol` N)
-        return Export_Nitrates
+        f_nitrates = (nitrates / (self.mstruct * Roots.PARAMETERS.ALPHA)) * Roots.PARAMETERS.K_NITRATE_EXPORT           #: :math:`\mu mol` g-1 s-1
+        Export_Nitrates = f_nitrates * self.mstruct * regul_transpiration * parameters.SECOND_TO_HOUR_RATE_CONVERSION   #: Nitrate export regulation by transpiration (:math:`\mu mol` N)
+        return max( min(Export_Nitrates, nitrates), 0.)
 
     def calculate_Export_Amino_Acids(self, amino_acids, regul_transpiration):
         """Total export of amino acids from roots to shoot organs
@@ -895,13 +892,11 @@ class Roots(Organ):
         :Returns Type:
             :class:`float`
         """
-        if amino_acids <= 0:
-            Export_Amino_Acids = 0
-        else:
-            f_amino_acids = (amino_acids/(self.mstruct * Roots.PARAMETERS.ALPHA)) * Roots.PARAMETERS.K_AMINO_ACIDS_EXPORT
-            Export_Amino_Acids = f_amino_acids * self.mstruct * regul_transpiration * parameters.SECOND_TO_HOUR_RATE_CONVERSION  #: Amino acids export regulation by plant transpiration (:math:`\mu  mol` N)
 
-        return Export_Amino_Acids
+        f_amino_acids = (amino_acids/(self.mstruct * Roots.PARAMETERS.ALPHA)) * Roots.PARAMETERS.K_AMINO_ACIDS_EXPORT
+        Export_Amino_Acids = f_amino_acids * self.mstruct * regul_transpiration * parameters.SECOND_TO_HOUR_RATE_CONVERSION  #: Amino acids export regulation by plant transpiration (:math:`\mu  mol` N)
+
+        return  max( min(Export_Amino_Acids, amino_acids), 0.)
 
     def calculate_exudation(self, Unloading_Sucrose, sucrose_roots, amino_acids_roots, amino_acids_phloem, T_effect_Vmax):
         """C sucrose and N amino acids lost by root exudation (:math:`\mu mol` C or N g-1 mstruct).
@@ -957,13 +952,11 @@ class Roots(Organ):
         :Returns Type:
             :class:`float`
         """
-        if cytokinins <= 0:
-            Export_cytokinins = 0
-        else:
-            f_cytokinins = (cytokinins / (self.mstruct*Roots.PARAMETERS.ALPHA)) * Roots.PARAMETERS.K_CYTOKININS_EXPORT
-            Export_cytokinins = f_cytokinins * self.mstruct * regul_transpiration * parameters.SECOND_TO_HOUR_RATE_CONVERSION  #: Cytokinin export regulation by plant transpiration (AU)
 
-        return Export_cytokinins
+        f_cytokinins = (cytokinins / (self.mstruct*Roots.PARAMETERS.ALPHA)) * Roots.PARAMETERS.K_CYTOKININS_EXPORT
+        Export_cytokinins = f_cytokinins * self.mstruct * regul_transpiration * parameters.SECOND_TO_HOUR_RATE_CONVERSION  #: Cytokinin export regulation by plant transpiration (AU)
+
+        return  max( min(Export_cytokinins, cytokinins), 0.)
 
     # COMPARTMENTS
 
