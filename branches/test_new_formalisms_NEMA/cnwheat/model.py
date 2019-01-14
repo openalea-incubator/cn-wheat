@@ -108,10 +108,10 @@ class Plant(object):
             :class:`float`
         """
         Q10 = 1.3
-        Tref = 20
+        Tref = 20.
         # 1/(-1.208*10**-5*T**3 + 1.432*10**-3*T**2 - 0.07318*T + 2.07) # (Bancal 2002)
 
-        return Q10**((Tair-Tref)/10)
+        return Q10**((Tair-Tref)/10.)
 
     def calculate_temperature_effect_on_Vmax(self, Tair):
         """Effect of the temperature on maximal enzyme activity
@@ -313,12 +313,7 @@ class HiddenZone(Organ):
             :class:`float`
         """
         conductance = parameters.HIDDEN_ZONE_PARAMETERS.SIGMA * parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.BETA * self.mstruct**(2/3) * T_effect_conductivity
-
-        flux =  ((amino_acids_phloem / mstruct_axis) - (amino_acids / self.mstruct)) * conductance * parameters.SECOND_TO_HOUR_RATE_CONVERSION
-        # res = 0
-        # if flux > 0:
-        res = flux
-        return res
+        return ((amino_acids_phloem / mstruct_axis) - (amino_acids / self.mstruct)) * conductance * parameters.SECOND_TO_HOUR_RATE_CONVERSION
 
     def calculate_S_proteins(self, amino_acids, T_effect_Vmax): # TODO : ON ne va pas chercher les paramètres au bon endroit
         """Rate of protein synthesis (:math:`\mu mol` N proteins h-1 g-1 MS).
@@ -587,7 +582,7 @@ class Grains(Organ): # TODO : temperature effects ?
         :Returns Type:
             :class:`float`
         """
-        return ((max(0, sucrose_phloem) / (mstruct_axis * Axis.PARAMETERS.ALPHA)) * Grains.PARAMETERS.VMAX_RGR) / ((max(0, sucrose_phloem)/(mstruct_axis * Axis.PARAMETERS.ALPHA))
+        return ((max(0, sucrose_phloem) / (mstruct_axis * Axis.PARAMETERS.ALPHA)) * Grains.PARAMETERS.VMAX_RGR) / ((max(0, sucrose_phloem) / (mstruct_axis * Axis.PARAMETERS.ALPHA))
                                                                                                                    + Grains.PARAMETERS.K_RGR)
 
     # FLUXES
@@ -762,17 +757,16 @@ class Roots(Organ):
         """
         return amino_acids + (Nstruct / EcophysiologicalConstants.N_MOLAR_MASS)*1E6
 
-    def calculate_regul_transpiration(self, total_surfacic_transpiration, total_transpiration):
+    def calculate_regul_transpiration(self, total_transpiration):
         """A function to regulate metabolite exports from roots by shoot transpiration
 
         :Parameters:
-            - `total_surfacic_transpiration` (:class:`float`) - Surfacic rate of total transpiration (mmol m-2 s-1)
+            - `total_transpiration` (:class:`float`) - Total transpiration (mmol s-1)
         :Returns:
             Dimensionless regulating factor
         :Returns Type:
             :class:`float`
         """
-        # total_surfacic_transpiration / (total_surfacic_transpiration + Roots.PARAMETERS.K_TRANSPIRATION) # Former relationship
         return total_transpiration * Roots.PARAMETERS.CST_TRANSPIRATION
 
 
@@ -875,6 +869,7 @@ class Roots(Organ):
         :Returns Type:
             :class:`float`
         """
+
         f_nitrates = (nitrates / (self.mstruct * Roots.PARAMETERS.ALPHA)) * Roots.PARAMETERS.K_NITRATE_EXPORT           #: :math:`\mu mol` g-1 s-1
         Export_Nitrates = f_nitrates * self.mstruct * regul_transpiration * parameters.SECOND_TO_HOUR_RATE_CONVERSION   #: Nitrate export regulation by transpiration (:math:`\mu mol` N)
         return max( min(Export_Nitrates, nitrates), 0.)
@@ -892,7 +887,6 @@ class Roots(Organ):
         :Returns Type:
             :class:`float`
         """
-
         f_amino_acids = (amino_acids/(self.mstruct * Roots.PARAMETERS.ALPHA)) * Roots.PARAMETERS.K_AMINO_ACIDS_EXPORT
         Export_Amino_Acids = f_amino_acids * self.mstruct * regul_transpiration * parameters.SECOND_TO_HOUR_RATE_CONVERSION  #: Amino acids export regulation by plant transpiration (:math:`\mu  mol` N)
 
@@ -952,7 +946,6 @@ class Roots(Organ):
         :Returns Type:
             :class:`float`
         """
-
         f_cytokinins = (cytokinins / (self.mstruct*Roots.PARAMETERS.ALPHA)) * Roots.PARAMETERS.K_CYTOKININS_EXPORT
         Export_cytokinins = f_cytokinins * self.mstruct * regul_transpiration * parameters.SECOND_TO_HOUR_RATE_CONVERSION  #: Cytokinin export regulation by plant transpiration (AU)
 
@@ -1545,11 +1538,7 @@ class PhotosyntheticOrganElement(object):
         :Returns Type:
             :class:`float`
         """
-        # We consider that DELTA_D_CYTOKININS is the rate at 20°C. The actual rate varies lineraly with organ temperature and is 0.59  at and below zero °C
-        # 0.59 is the regulation of phloem translocation at 0°C
-        # 0.98 pour corriger la différence entre regulation de la transpiration par Tair, et régulation D_cyto par Ts (pas même équation non plus)
-        # return max(0, PhotosyntheticOrgan.PARAMETERS.DELTA_D_CYTOKININS * ((1-0.1)/20*max(0,Ts) + 0.1) * (cytokinins/(self.mstruct*self.__class__.PARAMETERS.ALPHA))) * \
-        #        parameters.SECOND_TO_HOUR_RATE_CONVERSION
+
         return max(0, PhotosyntheticOrgan.PARAMETERS.DELTA_D_CYTOKININS * (cytokinins/(self.mstruct*self.__class__.PARAMETERS.ALPHA))) * \
                parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
 
