@@ -911,7 +911,7 @@ class Roots(Organ):
         if amino_acids_phloem <= 0 or amino_acids_roots <= 0 or sucrose_roots <= 0:
             N_exudation = 0
         else:
-            N_exudation = (amino_acids_roots/sucrose_roots) * C_exudation
+            N_exudation =  min( (amino_acids_roots/sucrose_roots), 0.2) * C_exudation
         return C_exudation, N_exudation
 
     def calculate_S_cytokinins(self, sucrose_roots, nitrates_roots, T_effect_Vmax):
