@@ -286,7 +286,7 @@ def to_dataframes(population=None, soils=None):
 
     if convert_soils_to_dataframe:
         all_soils_df = pd.DataFrame(columns=SOILS_VARIABLES)
-        for soil_id, soil in soils.iteritems():
+        for soil_id, soil in soils.items():
             append_row(soil, list(soil_id), simulation.Simulation.SOILS_RUN_VARIABLES, all_soils_df)
         all_soils_df.sort_values(by=SOILS_VARIABLES, inplace=True)
         all_soils_df['plant'] = all_soils_df['plant'].astype(int)
