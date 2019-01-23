@@ -88,7 +88,7 @@ HIDDENZONE_INDEXES = cnwheat_simulation.Simulation.HIDDENZONE_INDEXES
 HIDDENZONE_T_INDEXES = cnwheat_simulation.Simulation.HIDDENZONE_T_INDEXES
 #: hidden zones post-processing variables
 HIDDENZONE_POSTPROCESSING_VARIABLES = ['Conc_Amino_Acids', 'Conc_Fructan', 'Conc_Proteins', 'Conc_Sucrose', 'RER','nb_replications']
-HIDDENZONE_RUN_VARIABLES_ADDITIONAL = ['leaf_L', 'delta_leaf_L', 'internode_L', 'leaf_pseudostem_length', 'leaf_is_emerged','Respi_growth']
+HIDDENZONE_RUN_VARIABLES_ADDITIONAL = ['leaf_L', 'delta_leaf_L', 'internode_L', 'leaf_pseudostem_length', 'leaf_is_emerged','Respi_growth','sucrose_consumption_mstruct','AA_consumption_mstruct']
 #: concatenation of :attr:`HIDDENZONE_T_INDEXES`, :attr:`HIDDENZONE_RUN_VARIABLES <cnwheat.simulation.Simulation.HIDDENZONE_RUN_VARIABLES>` and :attr:`HIDDENZONE_POSTPROCESSING_VARIABLES`
 HIDDENZONE_RUN_POSTPROCESSING_VARIABLES = HIDDENZONE_T_INDEXES + cnwheat_simulation.Simulation.HIDDENZONE_RUN_VARIABLES + HIDDENZONE_RUN_VARIABLES_ADDITIONAL +HIDDENZONE_POSTPROCESSING_VARIABLES
 
@@ -752,20 +752,22 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
     # elements
     if elements_df is not None:
 
-        titi = list(set(list(elements_df['axis'])))
-        if hiddenzones_df is not None:
-            titi = titi + list(set(hiddenzones_df['axis']))
-        tillers = [ i for i in list(set(titi)) if i != 'MS']
-        nb_tillers = len(tillers)
-        last_metamer = max(elements_df['metamer'])
-        nb_replications_df = pd.DataFrame(data={'metamer': range(1,last_metamer+1)})
-        nb_replications_df['nb_replications'] = 1
-        if nb_tillers > 0:
-            tiller_ranks = [ int(i[1:]) for i in tillers ]
-            for i in nb_replications_df.metamer :
-                nb_replications_df.loc[ nb_replications_df['metamer']==i ,'nb_replications'] += sum([ 1 for j in tiller_ranks if j+3<= i ])
-
-        elements_df = elements_df.merge(nb_replications_df, on='metamer')
+        # titi = list(set(list(elements_df['axis'])))
+        # if hiddenzones_df is not None:
+        #     titi = titi + list(set(hiddenzones_df['axis']))
+        # tillers = [ i for i in list(set(titi)) if i != 'MS']
+        # nb_tillers = len(tillers)
+        # tmp = list(elements_df['metamer'])
+        # tmp.append(11)
+        # last_metamer = max(tmp)
+        # nb_replications_df = pd.DataFrame(data={'metamer': range(1,last_metamer+1)})
+        # nb_replications_df['nb_replications'] = 1
+        # if nb_tillers > 0:
+        #     tiller_ranks = [ int(i[1:]) for i in tillers ]
+        #     for i in nb_replications_df.metamer :
+        #         nb_replications_df.loc[ nb_replications_df['metamer']==i ,'nb_replications'] += sum([ 1 for j in tiller_ranks if j+3<= i ])
+        #
+        # elements_df = elements_df.merge(nb_replications_df, on='metamer')
 
         elements_df['sum_dry_mass'] = Element.calculate_dry_mass(elements_df.fillna(0)['triosesP'],
                                                                  elements_df.fillna(0)['sucrose'],
@@ -830,7 +832,7 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
     # hidden zones
     if hiddenzones_df is not None:
 
-        hiddenzones_df = hiddenzones_df.merge(nb_replications_df, on='metamer')
+        # hiddenzones_df = hiddenzones_df.merge(nb_replications_df, on='metamer')
 
         hiddenzones_df['sum_dry_mass'] = HiddenZone.calculate_dry_mass(hiddenzones_df.fillna(0)['sucrose'],
                                                                        0,  # hiddenzones_df.fillna(0)['starch'],

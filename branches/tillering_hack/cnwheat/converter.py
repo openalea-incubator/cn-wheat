@@ -44,9 +44,13 @@ ORGANS_VARIABLES = simulation.Simulation.ORGANS_INDEXES + simulation.Simulation.
 
 #: the columns of the outputs dataframe at HIDDEN ZONE scale
 HIDDENZONE_VARIABLES = simulation.Simulation.HIDDENZONE_INDEXES + simulation.Simulation.HIDDENZONE_RUN_VARIABLES
+HIDDENZONE_OUTPUTS_VARIABLES = HIDDENZONE_VARIABLES + ['nb_replications']
+HIDDENZONE_OUTPUTS_RUN_VARIABLES = simulation.Simulation.HIDDENZONE_RUN_VARIABLES + ['nb_replications']
 
 #: the columns of the outputs dataframe at ELEMENT scale
 ELEMENTS_VARIABLES = simulation.Simulation.ELEMENTS_INDEXES + simulation.Simulation.ELEMENTS_RUN_VARIABLES
+ELEMENTS_OUTPUTS_VARIABLES = ELEMENTS_VARIABLES + ['nb_replications']
+ELEMENTS_OUTPUTS_RUN_VARIABLES = simulation.Simulation.ELEMENTS_RUN_VARIABLES  + ['nb_replications']
 
 #: the columns of the outputs dataframe at SOIL scale
 SOILS_VARIABLES = simulation.Simulation.SOILS_INDEXES + simulation.Simulation.SOILS_RUN_VARIABLES
@@ -238,8 +242,8 @@ def to_dataframes(population=None, soils=None):
         all_axes_df = pd.DataFrame(columns=AXES_VARIABLES)
         all_phytomers_df = pd.DataFrame(columns=PHYTOMERS_VARIABLES)
         all_organs_df = pd.DataFrame(columns=ORGANS_VARIABLES)
-        all_hiddenzones_df = pd.DataFrame(columns=HIDDENZONE_VARIABLES)
-        all_elements_df = pd.DataFrame(columns=ELEMENTS_VARIABLES)
+        all_hiddenzones_df = pd.DataFrame(columns=HIDDENZONE_OUTPUTS_VARIABLES)
+        all_elements_df = pd.DataFrame(columns=ELEMENTS_OUTPUTS_VARIABLES)
 
         # run through the population tree and fill the dataframes
         for plant in population.plants:
@@ -252,22 +256,22 @@ def to_dataframes(population=None, soils=None):
                 for phytomer in axis.phytomers:
                     append_row(phytomer, [plant.index, axis.label, phytomer.index], simulation.Simulation.PHYTOMERS_RUN_VARIABLES, all_phytomers_df)
                     if phytomer.hiddenzone is not None:
-                        append_row(phytomer.hiddenzone, [plant.index, axis.label, phytomer.index], simulation.Simulation.HIDDENZONE_RUN_VARIABLES, all_hiddenzones_df)
+                        append_row(phytomer.hiddenzone, [plant.index, axis.label, phytomer.index], HIDDENZONE_OUTPUTS_RUN_VARIABLES, all_hiddenzones_df)
                     for organ in (phytomer.chaff, phytomer.peduncle, phytomer.lamina, phytomer.internode, phytomer.sheath):
                         if organ is None:
                             continue
                         for element in (organ.exposed_element, organ.enclosed_element):
                             if element is None:
                                 continue
-                            append_row(element, [plant.index, axis.label, phytomer.index, organ.label, element.label], simulation.Simulation.ELEMENTS_RUN_VARIABLES, all_elements_df)
+                            append_row(element, [plant.index, axis.label, phytomer.index, organ.label, element.label], ELEMENTS_OUTPUTS_RUN_VARIABLES, all_elements_df)
 
         # sort the rows of the dataframes by columns
         all_plants_df.sort_values(by=PLANTS_VARIABLES, inplace=True)
         all_axes_df.sort_values(by=AXES_VARIABLES, inplace=True)
         all_phytomers_df.sort_values(by=PHYTOMERS_VARIABLES, inplace=True)
         all_organs_df.sort_values(by=ORGANS_VARIABLES, inplace=True)
-        all_hiddenzones_df.sort_values(by=HIDDENZONE_VARIABLES, inplace=True)
-        all_elements_df.sort_values(by=ELEMENTS_VARIABLES, inplace=True)
+        all_hiddenzones_df.sort_values(by=HIDDENZONE_OUTPUTS_VARIABLES, inplace=True)
+        all_elements_df.sort_values(by=ELEMENTS_OUTPUTS_VARIABLES, inplace=True)
 
         # convert the indexes of plants, metamers and elements to integers in the dataframes
         all_plants_df['plant'] = all_plants_df['plant'].astype(int)

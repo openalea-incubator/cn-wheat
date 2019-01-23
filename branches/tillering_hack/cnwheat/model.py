@@ -295,8 +295,11 @@ class HiddenZone(Organ):
         :Returns Type:
             :class:`float`
         """
+        conc_sucrose_phloem = (sucrose_phloem / mstruct_axis)
+        conc_sucrose_HZ = (sucrose / self.mstruct)
         conductance = parameters.HIDDEN_ZONE_PARAMETERS.SIGMA * parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.BETA * self.mstruct**(2/3) * T_effect_conductivity  # TODO: choix valeurs param / flux phloem-hgz
-        return ((sucrose_phloem / mstruct_axis) - (sucrose / self.mstruct)) * conductance * parameters.SECOND_TO_HOUR_RATE_CONVERSION
+
+        return (conc_sucrose_phloem - conc_sucrose_HZ)* conductance * parameters.SECOND_TO_HOUR_RATE_CONVERSION
 
     def calculate_Unloading_Amino_Acids(self, amino_acids, amino_acids_phloem, mstruct_axis, T_effect_conductivity): # TODO : ON ne va pas chercher les paramètres au bon endroit
         """Rate of amino acids Unloading from phloem to the hidden zone (:math:`\mu mol` N amino acids unloaded g-1 mstruct h-1).
@@ -312,8 +315,10 @@ class HiddenZone(Organ):
         :Returns Type:
             :class:`float`
         """
+        conc_amino_acids_phloem = (amino_acids_phloem / mstruct_axis)
+        conc_amino_acids_HZ = (amino_acids / self.mstruct)
         conductance = parameters.HIDDEN_ZONE_PARAMETERS.SIGMA * parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.BETA * self.mstruct**(2/3) * T_effect_conductivity
-        return ((amino_acids_phloem / mstruct_axis) - (amino_acids / self.mstruct)) * conductance * parameters.SECOND_TO_HOUR_RATE_CONVERSION
+        return (conc_amino_acids_phloem - conc_amino_acids_HZ) * conductance * parameters.SECOND_TO_HOUR_RATE_CONVERSION
 
     def calculate_S_proteins(self, amino_acids, T_effect_Vmax): # TODO : ON ne va pas chercher les paramètres au bon endroit
         """Rate of protein synthesis (:math:`\mu mol` N proteins h-1 g-1 MS).
@@ -326,7 +331,7 @@ class HiddenZone(Organ):
         :Returns Type:
             :class:`float`
         """
-        return 5*(parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.VMAX_SPROTEINS * max(0, (amino_acids / self.mstruct))) / (parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.K_SPROTEINS +
+        return 30 *(parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.VMAX_SPROTEINS * max(0, (amino_acids / self.mstruct))) / (parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.K_SPROTEINS +
                                                                                                                      max(0, (amino_acids / self.mstruct))) * \
                parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
 
@@ -827,15 +832,15 @@ class Roots(Organ):
         #: High Affinity Transport System (HATS)
         VMAX_HATS_MAX = Roots.PARAMETERS.A_VMAX_HATS * np.exp(-Roots.PARAMETERS.LAMBDA_VMAX_HATS * conc_nitrates_roots)  #: Maximal rate of nitrates influx at saturating soil N concentration;HATS (:math:`\mu mol` N nitrates g-1 mstruct s-1)
         K_HATS = Roots.PARAMETERS.A_K_HATS * np.exp(-Roots.PARAMETERS.LAMBDA_K_HATS * conc_nitrates_roots)               #: Affinity coefficient of nitrates influx at saturating soil N concentration;HATS (:math:`\mu mol` m-3)
-        HATS = (VMAX_HATS_MAX * Conc_Nitrates_Soil)/ (K_HATS + Conc_Nitrates_Soil) * T_effect_Vmax                       #: Rate of nitrate influx by HATS (:math:`\mu mol` N nitrates uptaked s-1
+        HATS = (VMAX_HATS_MAX * Conc_Nitrates_Soil)/ (K_HATS + Conc_Nitrates_Soil)                                       #: Rate of nitrate influx by HATS (:math:`\mu mol` N nitrates uptaked s-1
         # g-1 mstruct)
 
         #: Low Affinity Transport System (LATS)
         K_LATS = Roots.PARAMETERS.A_LATS * np.exp(-Roots.PARAMETERS.LAMBDA_LATS * conc_nitrates_roots)                   #: Rate constant for nitrates influx at low soil N concentration; LATS (m3 g-1 mstruct s-1)
-        LATS = (K_LATS * Conc_Nitrates_Soil) * T_effect_Vmax                                                             #: Rate of nitrate influx by LATS (:math:`\mu mol` N nitrates g-1 mstruct)
+        LATS = (K_LATS * Conc_Nitrates_Soil)                                                                             #: Rate of nitrate influx by LATS (:math:`\mu mol` N nitrates g-1 mstruct)
 
         #: Nitrate influx (:math:`\mu mol` N)
-        HATS_LATS = (HATS + LATS) * self.mstruct * parameters.SECOND_TO_HOUR_RATE_CONVERSION
+        HATS_LATS = (HATS + LATS) * self.mstruct * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
 
         # Regulations
         regul_C = (sucrose_roots/self.mstruct) / ((sucrose_roots/self.mstruct) + Roots.PARAMETERS.K_C)                   #: Nitrate uptake regulation by root C
@@ -932,7 +937,7 @@ class Roots(Organ):
         f_sucrose = conc_sucrose**Roots.PARAMETERS.N_SUC_CYTOKININS/(conc_sucrose**Roots.PARAMETERS.N_SUC_CYTOKININS + Roots.PARAMETERS.K_SUCROSE_CYTOKININS**Roots.PARAMETERS.N_SUC_CYTOKININS)
         f_nitrates = conc_Nitrates**Roots.PARAMETERS.N_NIT_CYTOKININS/(conc_Nitrates**Roots.PARAMETERS.N_NIT_CYTOKININS + Roots.PARAMETERS.K_NITRATES_CYTOKININS**Roots.PARAMETERS.N_NIT_CYTOKININS)
         S_cytokinins = Roots.PARAMETERS.VMAX_S_CYTOKININS * f_sucrose * f_nitrates * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
-        return S_cytokinins
+        return S_cytokinins / 2
 
     def calculate_Export_cytokinins(self, cytokinins, regul_transpiration):
         """Total export of cytokinin from roots to shoot organs
@@ -1193,7 +1198,7 @@ class PhotosyntheticOrganElement(object):
         :Returns Type:
             :class:`float`
         """
-        return Ag * green_area * parameters.SECOND_TO_HOUR_RATE_CONVERSION # * 0.70
+        return Ag * green_area * parameters.SECOND_TO_HOUR_RATE_CONVERSION
 
     def calculate_Total_Transpiration(self, Tr, green_area):
         """Surfacic transpiration rate of an element
