@@ -211,6 +211,7 @@ def plot_cnwheat_ouputs(outputs, x_name, y_name, x_label='', y_label='', title=N
         plt.show()
     else:
         # save the plot
+        # plt.show()
         plt.savefig(plot_filepath, dpi=200, format='PNG', bbox_inches='tight')
         plt.close()
 

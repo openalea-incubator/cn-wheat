@@ -99,7 +99,7 @@ ELEMENTS_T_INDEXES = cnwheat_simulation.Simulation.ELEMENTS_T_INDEXES
 #: elements post-processing variables
 ELEMENTS_POSTPROCESSING_VARIABLES = ['Conc_Amino_Acids', 'Conc_Fructan', 'Conc_Nitrates', 'Conc_Proteins', 'Conc_Starch', 'Conc_Sucrose', 'Conc_TriosesP',
                                      'Conc_cytokinins', 'R_maintenance', 'Surfacic N', 'Surfacic_NS', 'NS', 'nb_replications']
-ELEMENTS_RUN_VARIABLES_ADDITIONAL = ['length', 'PARa']
+ELEMENTS_RUN_VARIABLES_ADDITIONAL = ['length','PARa']
 #: concatenation of :attr:`ELEMENTS_T_INDEXES`, :attr:`ELEMENTS_RUN_VARIABLES <cnwheat.simulation.Simulation.ELEMENTS_RUN_VARIABLES>` and :attr:`ELEMENTS_POSTPROCESSING_VARIABLES`
 ELEMENTS_RUN_POSTPROCESSING_VARIABLES = ELEMENTS_T_INDEXES + cnwheat_simulation.Simulation.ELEMENTS_RUN_VARIABLES + ELEMENTS_RUN_VARIABLES_ADDITIONAL + ELEMENTS_POSTPROCESSING_VARIABLES
 
@@ -676,19 +676,12 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
 
     # plants
     if plants_df is not None:
-        pp_plants_df = pd.concat([plants_df, pd.DataFrame(columns=PLANTS_POSTPROCESSING_VARIABLES)])
+        pp_plants_df = pd.concat([plants_df, pd.DataFrame(columns=PLANTS_POSTPROCESSING_VARIABLES)], sort=False)
         pp_plants_df = pp_plants_df.reindex(PLANTS_RUN_POSTPROCESSING_VARIABLES, axis=1, copy=False)
         pp_plants_df['plant'] = pp_plants_df['plant'].astype(int)
         returned_dataframes.append(pp_plants_df)
     else:
         returned_dataframes.append(pd.DataFrame({'A': []}))
-
-    # axes
-    if axes_df is not None:
-        pp_axes_df = pd.concat([axes_df, pd.DataFrame(columns=AXES_POSTPROCESSING_VARIABLES)])
-        pp_axes_df = pp_axes_df.reindex(columns=AXES_RUN_POSTPROCESSING_VARIABLES, copy=False)
-        pp_axes_df['plant'] = pp_axes_df['plant'].astype(int)
-        returned_dataframes.append(pp_axes_df)
 
     # metamers
     if metamers_df is not None:
@@ -698,20 +691,6 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
         returned_dataframes.append(pp_metamers_df)
     else:
         returned_dataframes.append(pd.DataFrame({'A': []}))
-
-    # hidden zones
-    if hiddenzones_df is not None:
-        pp_hiddenzones_df = pd.concat([hiddenzones_df, pd.DataFrame(columns=HIDDENZONE_POSTPROCESSING_VARIABLES)], sort=True)
-        pp_hiddenzones_df.loc[:, 'Conc_Amino_Acids'] = HiddenZone.calculate_Conc_Amino_Acids(hiddenzones_df['amino_acids'], hiddenzones_df['mstruct'])
-        pp_hiddenzones_df.loc[:, 'Conc_Fructan'] = HiddenZone.calculate_conc_fructan(hiddenzones_df['fructan'], hiddenzones_df['mstruct'])
-        pp_hiddenzones_df.loc[:, 'Conc_Proteins'] = HiddenZone.calculate_conc_protein(hiddenzones_df['proteins'], hiddenzones_df['mstruct'])
-        pp_hiddenzones_df.loc[:, 'Conc_Sucrose'] = HiddenZone.calculate_conc_sucrose(hiddenzones_df['sucrose'], hiddenzones_df['mstruct'])
-        if set(hiddenzones_df.columns).issuperset(['delta_leaf_L', 'leaf_L']):
-            # this is temporary: those post-processing should be done in model "elong-wheat" 
-            pp_hiddenzones_df.loc[:, 'RER'] = HiddenZone.calculate_RER(hiddenzones_df['delta_leaf_L'], hiddenzones_df['leaf_L'], delta_t)
-        pp_hiddenzones_df = pp_hiddenzones_df.reindex(columns=HIDDENZONE_RUN_POSTPROCESSING_VARIABLES, copy=False)
-        pp_hiddenzones_df[['plant', 'metamer']] = pp_hiddenzones_df[['plant', 'metamer']].astype(int)
-        returned_dataframes.append(pp_hiddenzones_df)
 
     # organs
     if organs_df is not None:
@@ -732,11 +711,9 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
         organs_df['C_g'] = ((organs_df.fillna(0)['sucrose'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.C_MOLAR_MASS) +
                             (organs_df.fillna(0)['starch'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.C_MOLAR_MASS) +
                             (organs_df.fillna(0)[
-                                 'amino_acids'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS) * cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_C_RATIO /
-                            cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_N_RATIO +
+                                 'amino_acids'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS) * cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_C_RATIO / cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_N_RATIO +
                             (organs_df.fillna(0)[
-                                 'proteins'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS) * cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_C_RATIO /
-                            cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_N_RATIO +
+                                 'proteins'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS) * cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_C_RATIO / cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_MOLAR_MASS_N_RATIO +
                             organs_df.fillna(0)['mstruct'] * cnwheat_model.EcophysiologicalConstants.RATIO_C_mstruct)
         organs_df['N_g'] = ((organs_df.fillna(0)['nitrates'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS) +
                             (organs_df.fillna(0)['amino_acids'] * 1E-6 * cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS) +
@@ -921,7 +898,8 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
             # Total shoot
             hz_df_MS['sum_dry_mass_tillers'] = hz_df_MS['sum_dry_mass'] * hz_df_MS['nb_replications']
             elt_df_MS['sum_dry_mass_tillers'] = elt_df_MS['sum_dry_mass'] * elt_df_MS['nb_replications']
-            sum_dry_mass_shoot = sum_dry_mass_phloem_shoot + hz_df_MS.groupby(['t', 'plant', 'axis'])['sum_dry_mass_tillers'].agg('sum') + \
+            sum_dry_mass_shoot = sum_dry_mass_phloem_shoot + \
+                                 hz_df_MS.groupby(['t', 'plant', 'axis'])['sum_dry_mass_tillers'].agg('sum') + \
                                  elt_df_MS.groupby(['t', 'plant', 'axis'])['sum_dry_mass_tillers'].agg('sum')
 
             # Total root
@@ -1062,7 +1040,9 @@ def generate_graphs(axes_df=None, hiddenzones_df=None, organs_df=None, elements_
                                        'Conc_cytokinins': u'[cytokinins] (UA g$^{-1}$ mstruct)', 'D_cytokinins': u'Cytokinin degradation (UA g$^{-1}$ mstruct)',
                                        'cytokinins_import': u'Cytokinin import (UA)', 'Surfacic N': u'Surfacic N (g m$^{-2}$)',
                                        'Surfacic_NS': u'Surfacic Non Structural mass (g m$^{-2}$)', 'NS': u'Ratio of Non Structural mass',
-                                       'length': 'Length (m)'}
+                                       'length': 'Length (m)', 'osmotic_water_potential': u'Osmotic water potential (MPa)', 'thickness': u'Thickness (m)', 'total_water_potential': u'Total water potential (MPa)',
+                                       'turgor_water_potential': u'Turgor water potential (MPa)', 'water_content': u'Water content (m$^{3}$)', 'width': u'Width (m)',
+                                       'water_influx': u'Water_influx (g)', 'resistance': u'Resistance (MPa s g$^{-1}$)', 'radius': u'Radius (m)'}
     
         for org_ph in (['blade'], ['sheath'], ['internode'], ['peduncle', 'ear']):
             for variable_name, variable_label in graph_variables_ph_elements.items():
@@ -1122,7 +1102,10 @@ def generate_graphs(axes_df=None, hiddenzones_df=None, organs_df=None, elements_
                                        'Conc_Proteins': u'[Proteins] (g g$^{-1}$ mstruct)', 'Conc_Fructan': u'[Fructan] (µmol g$^{-1}$ mstruct)', 'Unloading_Sucrose': u'Sucrose unloading (µmol C)',
                                        'Unloading_Amino_Acids': u'Amino_acids unloading (µmol N)', 'mstruct': u'Structural mass (g)', 'Nstruct': u'Structural N mass (g)',
                                        'leaf_L': 'Leaf length in hz (m))', 'delta_leaf_L': 'delta of leaf length (m)', 'internode_L': 'Internode length in hz (m))',
-                                       'leaf_pseudostem_length': 'leaf pseudostem length (m)'}
+                                       'leaf_pseudostem_length': 'leaf pseudostem length (m)', 'temperature': u'Temperature surface (°C)',
+                                       'osmotic_water_potential': u'Osmotic water potential (MPa)', 'radius': u'Radius (m)', 'total_water_potential': u'Total water potential (MPa)',
+                                       'turgor_water_potential': u'Turgor water potential (MPa)', 'water_content': u'Water content (m$^{3}$)', 'water_influx': u'Water_influx (g)',
+                                       'resistance': u'Resistance (MPa s g$^{-1}$)'}
     
         for variable_name, variable_label in graph_variables_hiddenzones.items():
             graph_name = variable_name + '_hz' + '.PNG'
