@@ -238,7 +238,7 @@ class Simulation(object):
     #: concatenation of :attr:`T_INDEX` and :attr:`HIDDENZONE_INDEXES`
     HIDDENZONE_T_INDEXES = T_INDEX + HIDDENZONE_INDEXES
     #: the parameters which define the state of the modeled system at hidden zone scale
-    HIDDENZONE_STATE_PARAMETERS = ['Nstruct', 'mstruct']
+    HIDDENZONE_STATE_PARAMETERS = ['Nstruct', 'mstruct','ratio_DZ']
     #: the variables which define the state of the modeled system at hidden zone scale,
     #: formed be the concatenation of :attr:`HIDDENZONE_STATE_PARAMETERS` and the names
     #: of the compartments associated to each hidden zone (see :attr:`MODEL_COMPARTMENTS_NAMES`)
@@ -821,7 +821,7 @@ class Simulation(object):
                             element.S_Proteins = element.calculate_S_proteins(element.amino_acids, plant.T_effect_Vmax)
                             element.k_proteins, element.D_Proteins = element.calculate_D_Proteins(element.proteins, element.cytokinins, plant.T_effect_Vmax)
                             element.cytokinins_import = element.calculate_cytokinins_import(axis.roots.Export_cytokinins, element.Transpiration, axis.Total_Transpiration)
-                            element.D_cytokinins = element.calculate_D_cytokinins(element.cytokinins, plant.T_effect_Vmax)
+                            element.D_cytokinins = element.calculate_D_cytokinins(element.cytokinins, element.is_growing, plant.T_effect_Vmax)
 
                             # compartments derivatives
                             starch_derivative = element.calculate_starch_derivative(element.S_Starch, element.D_Starch)
@@ -1063,7 +1063,7 @@ class Simulation(object):
                             element.S_Proteins = element.calculate_S_proteins(element.amino_acids, plant.T_effect_Vmax)
                             element.k_proteins, element.D_Proteins = element.calculate_D_Proteins(element.proteins, element.cytokinins, plant.T_effect_Vmax)
                             element.cytokinins_import = element.calculate_cytokinins_import(axis.roots.Export_cytokinins, element.Transpiration, axis.Total_Transpiration)
-                            element.D_cytokinins = element.calculate_D_cytokinins(element.cytokinins, plant.T_effect_Vmax)
+                            element.D_cytokinins = element.calculate_D_cytokinins(element.cytokinins, element.is_growing, plant.T_effect_Vmax)
 
                             element.R_residual, _ = self.respiration_model.RespirationModel.R_residual(element.sucrose, element.mstruct * element.__class__.PARAMETERS.ALPHA,
                                                                                                        element.Total_Organic_Nitrogen, element.Ts)

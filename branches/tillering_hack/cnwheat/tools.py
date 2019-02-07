@@ -198,6 +198,8 @@ def plot_cnwheat_ouputs(outputs, x_name, y_name, x_label='', y_label='', title=N
         # plot the line
         ax.plot(outputs_group[x_name], outputs_group[y_name], **kwargs)
 
+    ax.set_ylim(bottom=0.)
+
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
     ax.legend(prop={'size': 10}, framealpha=0.5, loc='center left', bbox_to_anchor=(1, 0.815), borderaxespad=0.)

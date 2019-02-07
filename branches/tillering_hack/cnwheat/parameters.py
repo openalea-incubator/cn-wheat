@@ -121,6 +121,7 @@ class HiddenZoneParameters(object):
         self.n_Regul_Sfructans = 15      #: Parameter of the regulation function of fructan synthesis (dimensionless)
         self.Vmax_Sfructans = 0.2        #: Maximal rate of fructan synthesis (:math:`\mu` mol C s-1 g-1 MS)
         self.delta_Dproteins = 0.25e-6   #: Relative rate of proteins degradation (s-1)
+        self.VMAX_SPROTEINS = 0.0015 * 58 #: Maximal rate of protein synthesis (:math:`\mu` mol N s-1 g-1 MS)
 
 
 #: The instance of class :class:`cnwheat.parameters.HiddenZoneParameters` for current process
@@ -138,6 +139,7 @@ class HiddenZoneInitCompartments(object):
         self.proteins = 0        #: initial value of proteins (:math:`\mu` mol N)
         self.mstruct = 6.39E-08  #: initial value of mstruct (g)
         self.Nstruct = 2.06E-09  #: initial value of Nstruct (g)
+        self.ratio_DZ = 1        #: initial value of ratio of Division Zone into the HiddenZone
 
 
 #: The instance of class :class:`cnwheat.parameters.HiddenZoneInitCompartments` for current process
@@ -214,7 +216,7 @@ class RootsParameters(object):
     def __init__(self):
         self.ALPHA = 1                       #: Proportion of structural mass containing substrate
 
-        self.VMAX_SUCROSE_UNLOADING = 0.03 * 1.3   #: Maximal rate of sucrose unloading from phloem to roots (:math:`\mu` mol C sucrose s-1 g-1 MS)
+        self.VMAX_SUCROSE_UNLOADING = 0.03 * 1.35 #1.3   #: Maximal rate of sucrose unloading from phloem to roots (:math:`\mu` mol C sucrose s-1 g-1 MS)
         self.K_SUCROSE_UNLOADING = 1000      #: Affinity coefficient of sucrose unloading from phloem to roots (:math:`\mu` mol C sucrose g-1 MS)
 
         # Regulation function by transpiration of nitrate uptake
@@ -234,13 +236,13 @@ class RootsParameters(object):
         self.LAMBDA_LATS = 1.6517E-03        #: Parameter for estimating the rate of nitrates uptake at low soil N concentration; LATS (g :math:`\mu` mol-1)
 
         # Nitrate export
-        self.K_NITRATE_EXPORT = 1E-6 * 12        #: Relative rate of nitrate export from roots (s-1)
+        self.K_NITRATE_EXPORT = 1E-6 * 110   #: Relative rate of nitrate export from roots (s-1)
 
         # Amino acids
-        self.VMAX_AMINO_ACIDS = 0.001       #: Maximal rate of amino acid synthesis (:math:`\mu` mol N s-1 g-1 MS)
+        self.VMAX_AMINO_ACIDS = 0.001        #: Maximal rate of amino acid synthesis (:math:`\mu` mol N s-1 g-1 MS)
         self.K_AMINO_ACIDS_NITRATES = 3      #: Affinity coefficient of amino acid synthesis from nitrates (:math:`\mu` mol N g-1 MS)
         self.K_AMINO_ACIDS_SUCROSE = 350     #: Affinity coefficient of amino acid synthesis from sucrose (:math:`\mu` mol C g-1 MS)
-        self.K_AMINO_ACIDS_EXPORT = 3E-5 * 18    #: Relative rate of amino acids export from roots (s-1)
+        self.K_AMINO_ACIDS_EXPORT = 3E-5 * 5   #: Relative rate of amino acids export from roots (s-1)
 
         # Exudation
         self.C_EXUDATION = 0.20              #: Proportion of C exudated from C sucrose unloaded to roots (Keith et al., 1986)

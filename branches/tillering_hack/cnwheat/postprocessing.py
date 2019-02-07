@@ -98,7 +98,7 @@ ELEMENTS_INDEXES = cnwheat_simulation.Simulation.ELEMENTS_INDEXES
 ELEMENTS_T_INDEXES = cnwheat_simulation.Simulation.ELEMENTS_T_INDEXES
 #: elements post-processing variables
 ELEMENTS_POSTPROCESSING_VARIABLES = ['Conc_Amino_Acids', 'Conc_Fructan', 'Conc_Nitrates', 'Conc_Proteins', 'Conc_Starch', 'Conc_Sucrose', 'Conc_TriosesP',
-                                     'Conc_cytokinins', 'R_maintenance', 'Surfacic N','Surfacic_NS','NS','nb_replications']
+                                     'Conc_cytokinins', 'R_maintenance', 'Surfacic N','Surfacic_NS','NS','N_content','nb_replications']
 ELEMENTS_RUN_VARIABLES_ADDITIONAL = ['length','PARa']
 #: concatenation of :attr:`ELEMENTS_T_INDEXES`, :attr:`ELEMENTS_RUN_VARIABLES <cnwheat.simulation.Simulation.ELEMENTS_RUN_VARIABLES>` and :attr:`ELEMENTS_POSTPROCESSING_VARIABLES`
 ELEMENTS_RUN_POSTPROCESSING_VARIABLES = ELEMENTS_T_INDEXES + cnwheat_simulation.Simulation.ELEMENTS_RUN_VARIABLES + ELEMENTS_RUN_VARIABLES_ADDITIONAL + ELEMENTS_POSTPROCESSING_VARIABLES
@@ -805,6 +805,7 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
                                                                                    elements_df['mstruct'], elements_df['green_area'])
         pp_elements_df.loc[:, 'NS'] = Element.calculate_ratio_non_structural(elements_df['sum_dry_mass'],
                                                                                          elements_df['mstruct'])
+        pp_elements_df.loc[:, 'N_content'] = elements_df['N_g'] / elements_df['sum_dry_mass']
 
         grouped = elements_df.groupby('organ')
         for organ_type, parameters_class in \
@@ -1028,8 +1029,12 @@ def generate_graphs(axes_df=None, hiddenzones_df=None, organs_df=None, elements_
     x_name = 't'
     x_label = 'Time (Hour)'
 
+    colors = ['blue','darkorange','green','red','darkviolet','gold','magenta','brown','darkcyan','grey','lime']
+    colors = colors + colors
+
     # 1) Photosynthetic organs
     if elements_df is not None:
+        elements_df = elements_df.loc[elements_df['mstruct']!=0]
         graph_variables_ph_elements = {'Ag': u'Gross photosynthesis (µmol m$^{-2}$ s$^{-1}$)', 'Tr':u'Organ surfacic transpiration rate (mmol H$_{2}$0 m$^{-2}$ s$^{-1}$)',
                                        'Transpiration': u'Organ transpiration rate (mmol H$_{2}$0 s$^{-1}$)', 'Ts': u'Temperature surface (°C)', 'Conc_TriosesP': u'[TriosesP] (µmol g$^{-1}$ mstruct)',
                                        'Conc_Starch': u'[Starch] (µmol g$^{-1}$ mstruct)', 'Conc_Sucrose':u'[Sucrose] (µmol g$^{-1}$ mstruct)', 'Conc_Fructan': u'[Fructan] (µmol g$^{-1}$ mstruct)',
@@ -1043,7 +1048,8 @@ def generate_graphs(axes_df=None, hiddenzones_df=None, organs_df=None, elements_
                                        'Conc_cytokinins': u'[cytokinins] (UA g$^{-1}$ mstruct)', 'D_cytokinins':u'Cytokinin degradation (UA g$^{-1}$ mstruct)',
                                        'cytokinins_import': u'Cytokinin import (UA)', 'Surfacic N': u'Surfacic N (g m$^{-2}$)',
                                        'Surfacic_NS': u'Surfacic Non Structural mass (g m$^{-2}$)', 'NS': u'Ratio of Non Structural mass',
-                                        'length': 'Length (m)'}
+                                       'N_content':u'N content in the green tissues (% DM)',
+                                        'length': u'Length (m)'}
     
         for org_ph in (['blade'], ['sheath'], ['internode'], ['peduncle', 'ear']):
             for variable_name, variable_label in graph_variables_ph_elements.items():
@@ -1053,6 +1059,7 @@ def generate_graphs(axes_df=None, hiddenzones_df=None, organs_df=None, elements_
                                                   y_name=variable_name,
                                                   x_label=x_label,
                                                   y_label=variable_label,
+                                                  colors = [colors[i-1] for i in elements_df.metamer.unique().tolist()],
                                                   filters={'organ': org_ph},
                                                   plot_filepath=os.path.join(graphs_dirpath, graph_name),
                                                   explicit_label=False)
@@ -1082,6 +1089,7 @@ def generate_graphs(axes_df=None, hiddenzones_df=None, organs_df=None, elements_
                                                   y_name=variable_name,
                                                   x_label=x_label,
                                                   y_label=variable_label,
+                                                  colors =  ['blue'],
                                                   filters={'organ': org},
                                                   plot_filepath=os.path.join(graphs_dirpath, graph_name),
                                                   explicit_label=False)
@@ -1112,6 +1120,7 @@ def generate_graphs(axes_df=None, hiddenzones_df=None, organs_df=None, elements_
                                               y_name=variable_name,
                                               x_label=x_label,
                                               y_label=variable_label,
+                                              colors=[colors[i - 1] for i in hiddenzones_df.metamer.unique().tolist()],
                                               filters={'plant': 1, 'axis': 'MS'},
                                               plot_filepath=os.path.join(graphs_dirpath, graph_name),
                                               explicit_label=False)
@@ -1119,10 +1128,10 @@ def generate_graphs(axes_df=None, hiddenzones_df=None, organs_df=None, elements_
     # 4) Axes
     graph_variables_axes = {'mstruct':'Axis mstruct (g)',
                             'C_N_ratio' : u'C/N mass ratio','C_N_ratio_shoot' : u'C/N mass ratio of the shoot',
-                            'N_content' : u'N content in the axis (g.g$^{-1}$ DM)','N_content_shoot':u'N content in the shoot (g.g$^{-1}$ DM)',
-                            'N_content_roots': u'N content in the roots (g.g$^{-1}$ DM)',
-                            'N_content_mstruct'      : u'N content in the axis (g.g$^{-1}$ mstruct)', 'N_content_mstruct_shoot': u'N content in the shoot (g.g$^{-1}$ mstruct)',
-                            'N_content_mstruct_roots': u'N content in the roots (g.g$^{-1}$ mstruct)',
+                            'N_content' : u'N content in the axis (% DM)','N_content_shoot':u'N content in the shoot (% DM)',
+                            'N_content_roots': u'N content in the roots (% DM)',
+                            'N_content_mstruct'      : u'N content in the axis (% mstruct)', 'N_content_mstruct_shoot': u'N content in the shoot (% mstruct)',
+                            'N_content_mstruct_roots': u'N content in the roots (% mstruct)',
                             'sum_N_g':u'N mass (g)', 'sum_N_g_shoot':u'N mass in the shoot (g)',
                             'shoot_roots_ratio':u'Shoot/Roots dry mass ratio',
                             'shoot_roots_mstruct_ratio':u'Shoot/Roots mstruct ratio',
@@ -1140,6 +1149,7 @@ def generate_graphs(axes_df=None, hiddenzones_df=None, organs_df=None, elements_
                                           y_name=variable_name,
                                           x_label=x_label,
                                           y_label=variable_label,
+                                          colors = ['blue'],
                                           filters={'plant': 1, 'axis': 'MS'},
                                           plot_filepath=os.path.join(graphs_dirpath, graph_name),
                                           explicit_label=False)

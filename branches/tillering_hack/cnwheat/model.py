@@ -214,7 +214,7 @@ class Phytomer(object):
 
     @property
     def nb_replications(self):
-        return sum(v <= self.index for v in self.cohorts) + 1
+        return sum(v <= self.index for v in self.cohorts)*0.5 + 1
 
 
 
@@ -248,7 +248,8 @@ class HiddenZone(Organ):
     INIT_COMPARTMENTS = parameters.HIDDEN_ZONE_INIT_COMPARTMENTS  #: the initial values of compartments and state parameters
 
     def __init__(self, label='hiddenzone',  mstruct=INIT_COMPARTMENTS.mstruct, Nstruct=INIT_COMPARTMENTS.Nstruct,
-                 sucrose=INIT_COMPARTMENTS.sucrose, fructan=INIT_COMPARTMENTS.fructan, amino_acids=INIT_COMPARTMENTS.amino_acids, proteins=INIT_COMPARTMENTS.proteins,cohorts=[], index = None):
+                 sucrose=INIT_COMPARTMENTS.sucrose, fructan=INIT_COMPARTMENTS.fructan, amino_acids=INIT_COMPARTMENTS.amino_acids, proteins=INIT_COMPARTMENTS.proteins,
+                 ratio_DZ=INIT_COMPARTMENTS.ratio_DZ, cohorts=[], index = None):
 
         super(HiddenZone, self).__init__(label)
 
@@ -258,6 +259,7 @@ class HiddenZone(Organ):
         # state parameters
         self.mstruct = mstruct                      #: g
         self.Nstruct = Nstruct                      #: g
+        self.ratio_DZ = ratio_DZ
 
         # state variables
         self.sucrose = sucrose                      #: :math:`\mu mol` C
@@ -277,7 +279,7 @@ class HiddenZone(Organ):
 
     @property
     def nb_replications(self):
-        return sum(v <= self.index for v in self.cohorts) + 1
+        return sum(v <= self.index for v in self.cohorts)*0.5 + 1
 
     # FLUXES
 
@@ -331,9 +333,9 @@ class HiddenZone(Organ):
         :Returns Type:
             :class:`float`
         """
-        return 30 *(parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.VMAX_SPROTEINS * max(0, (amino_acids / self.mstruct))) / (parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.K_SPROTEINS +
-                                                                                                                     max(0, (amino_acids / self.mstruct))) * \
-               parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
+        VMAX = parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.VMAX_SPROTEINS * (1-self.ratio_DZ) + parameters.HIDDEN_ZONE_PARAMETERS.VMAX_SPROTEINS * self.ratio_DZ
+        return ( (VMAX * max(0, (amino_acids / self.mstruct)) ) / (parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.K_SPROTEINS + max(0, (amino_acids / self.mstruct)))) * \
+                 parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
 
     def calculate_D_Proteins(self, proteins, T_effect_Vmax):
         """Rate of protein degradation (:math:`\mu mol` N proteins h-1 g-1 MS).
@@ -1178,7 +1180,7 @@ class PhotosyntheticOrganElement(object):
 
     @property
     def nb_replications(self):
-        return sum(v <= self.index for v in self.cohorts) + 1
+        return sum(v <= self.index for v in self.cohorts)*0.5 + 1
 
     def calculate_integrative_variables(self):
         """Calculate the integrative variables of the element.
@@ -1531,7 +1533,7 @@ class PhotosyntheticOrganElement(object):
             cytokinins_import = 0
         return cytokinins_import
 
-    def calculate_D_cytokinins(self, cytokinins, T_effect_Vmax):
+    def calculate_D_cytokinins(self, cytokinins, is_growing, T_effect_Vmax):
         """Rate of cytokinins degradation (AU g-1 mstruct h-1).
         First order kinetic. Vary with organ temperature.
 
@@ -1543,8 +1545,8 @@ class PhotosyntheticOrganElement(object):
         :Returns Type:
             :class:`float`
         """
-
-        return max(0, PhotosyntheticOrgan.PARAMETERS.DELTA_D_CYTOKININS * (cytokinins/(self.mstruct*self.__class__.PARAMETERS.ALPHA))) * \
+        # will be null if the element is growing (1-is_growing) *
+        return  max(0, PhotosyntheticOrgan.PARAMETERS.DELTA_D_CYTOKININS * (cytokinins/(self.mstruct*self.__class__.PARAMETERS.ALPHA))) * \
                parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
 
     # COMPARTMENTS
