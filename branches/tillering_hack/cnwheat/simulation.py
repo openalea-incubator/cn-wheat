@@ -752,25 +752,6 @@ class Simulation(object):
                         hiddenzone.proteins = y[self.initial_conditions_mapping[hiddenzone]['proteins']]
                         phloem_contributors.append(hiddenzone)
 
-                        # Unloading of sucrose from phloem
-                        hiddenzone.Unloading_Sucrose = hiddenzone.calculate_Unloading_Sucrose(hiddenzone.sucrose, axis.phloem.sucrose, axis.mstruct, plant.T_effect_conductivity)
-
-                        # Unloading of AA from phloem
-                        hiddenzone.Unloading_Amino_Acids = hiddenzone.calculate_Unloading_Amino_Acids(hiddenzone.amino_acids, axis.phloem.amino_acids, axis.mstruct, plant.T_effect_conductivity)
-
-                        # Fructan synthesis
-                        Regul_Sfructanes = hiddenzone.calculate_Regul_S_Fructan(hiddenzone.Unloading_Sucrose)
-                        hiddenzone.S_Fructan = hiddenzone.calculate_S_Fructan(hiddenzone.sucrose, Regul_Sfructanes, plant.T_effect_Vmax)
-                        #
-                        # # Fructan degradation
-                        hiddenzone.D_Fructan = hiddenzone.calculate_D_Fructan(hiddenzone.sucrose, hiddenzone.fructan, plant.T_effect_Vmax)
-                        #
-                        # # Synthesis proteins
-                        hiddenzone.S_Proteins = hiddenzone.calculate_S_proteins(hiddenzone.amino_acids, plant.T_effect_Vmax)
-
-                        # Degradation proteins
-                        hiddenzone.D_Proteins = hiddenzone.calculate_D_Proteins(hiddenzone.proteins, plant.T_effect_Vmax)
-
                     hiddenzone_Loading_Sucrose_contribution = 0
                     hiddenzone_Loading_Amino_Acids_contribution = 0
                     for organ in (phytomer.chaff, phytomer.peduncle, phytomer.lamina, phytomer.internode, phytomer.sheath):
@@ -848,6 +829,25 @@ class Simulation(object):
                             y_derivatives[self.initial_conditions_mapping[element]['cytokinins']] = cytokinins_derivative
 
                     if phytomer.hiddenzone is not None:
+                        # Unloading of sucrose from phloem
+                        hiddenzone.Unloading_Sucrose = hiddenzone.calculate_Unloading_Sucrose(hiddenzone.sucrose, axis.phloem.sucrose, axis.mstruct, plant.T_effect_conductivity)
+
+                        # Unloading of AA from phloem
+                        hiddenzone.Unloading_Amino_Acids = hiddenzone.calculate_Unloading_Amino_Acids(hiddenzone.amino_acids, axis.phloem.amino_acids, axis.mstruct, plant.T_effect_conductivity)
+
+                        # Fructan synthesis
+                        Regul_Sfructanes = hiddenzone.calculate_Regul_S_Fructan( (hiddenzone.Unloading_Sucrose + hiddenzone_Loading_Sucrose_contribution) )
+                        hiddenzone.S_Fructan = hiddenzone.calculate_S_Fructan(hiddenzone.sucrose, Regul_Sfructanes, plant.T_effect_Vmax)
+
+                        # # Fructan degradation
+                        hiddenzone.D_Fructan = hiddenzone.calculate_D_Fructan(hiddenzone.sucrose, hiddenzone.fructan, plant.T_effect_Vmax)
+                        #
+                        # # Synthesis proteins
+                        hiddenzone.S_Proteins = hiddenzone.calculate_S_proteins(hiddenzone.amino_acids, plant.T_effect_Vmax)
+
+                        # Degradation proteins
+                        hiddenzone.D_Proteins = hiddenzone.calculate_D_Proteins(hiddenzone.proteins, plant.T_effect_Vmax)
+
                         # compute the derivatives of the hidden zone
                         y_derivatives[self.initial_conditions_mapping[hiddenzone]['sucrose']] = hiddenzone.calculate_sucrose_derivative(hiddenzone.Unloading_Sucrose, hiddenzone.S_Fructan,
                                                                                                                                         hiddenzone.D_Fructan, hiddenzone_Loading_Sucrose_contribution)

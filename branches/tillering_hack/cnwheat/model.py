@@ -350,20 +350,20 @@ class HiddenZone(Organ):
         """
         return max(0, (parameters.HIDDEN_ZONE_PARAMETERS.delta_Dproteins * (proteins / self.mstruct))) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
 
-    def calculate_Regul_S_Fructan(self, Loading_Sucrose): # TODO : ON ne va pas chercher les paramètres au bon endroit
+    def calculate_Regul_S_Fructan(self, Unloading_Sucrose): # TODO : ON ne va pas chercher les paramètres au bon endroit
         """Regulating function for fructan maximal rate of synthesis.
         Negative regulation by the loading of sucrose from the phloem ("swith-off" sigmoïdal kinetic).
 
         :Parameters:
-            - `Loading_Sucrose` (:class:`float`) - Sucrose loading (:math:`\mu mol` C)
+            - `Unloading_Sucrose` (:class:`float`) - Sucrose unloading (:math:`\mu mol` C)
         :Returns:
             Maximal rate of fructan synthesis (:math:`\mu mol` C g-1 mstruct)
         :Returns Type:
         """
-        if Loading_Sucrose <= 0:
+        if Unloading_Sucrose >= 0:
             Vmax_Sfructans = PhotosyntheticOrgan.PARAMETERS.VMAX_SFRUCTAN_POT
-        else:  # Regulation by sucrose loading
-            rate_Loading_Sucrose_massic = Loading_Sucrose/self.mstruct/parameters.SECOND_TO_HOUR_RATE_CONVERSION
+        else:  # Regulation by sucrose unloading
+            rate_Loading_Sucrose_massic = -1. * Unloading_Sucrose/self.mstruct/parameters.SECOND_TO_HOUR_RATE_CONVERSION
             Vmax_Sfructans = ((PhotosyntheticOrgan.PARAMETERS.VMAX_SFRUCTAN_POT * PhotosyntheticOrgan.PARAMETERS.K_REGUL_SFRUCTAN**PhotosyntheticOrgan.PARAMETERS.N_REGUL_SFRUCTAN) /
                               (max(0, rate_Loading_Sucrose_massic**PhotosyntheticOrgan.PARAMETERS.N_REGUL_SFRUCTAN) +
                                PhotosyntheticOrgan.PARAMETERS.K_REGUL_SFRUCTAN**PhotosyntheticOrgan.PARAMETERS.N_REGUL_SFRUCTAN))

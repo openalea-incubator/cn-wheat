@@ -223,7 +223,7 @@ class RootsParameters(object):
         self.CST_TRANSPIRATION = 25          #: Coefficient of proportionaly between export and total transpiration (m mmol-1) (this coefficient could be integrated with K_..._EXPORT parameters)
 
         # Regulation function by C in roots of nitrate uptake
-        self.K_C = 4000                      #: Affinity coefficient for the regulation function by root C (:math:`\mu` mol C sucrose g-1 MS)
+        self.K_C = 6000                      #: Affinity coefficient for the regulation function by root C (:math:`\mu` mol C sucrose g-1 MS)
 
         # Nitrate uptake
         self.NET_INFLUX_UPTAKE_RATIO = 0.6   #: ratio (net uptake : nitrate influx)
@@ -236,13 +236,13 @@ class RootsParameters(object):
         self.LAMBDA_LATS = 1.6517E-03        #: Parameter for estimating the rate of nitrates uptake at low soil N concentration; LATS (g :math:`\mu` mol-1)
 
         # Nitrate export
-        self.K_NITRATE_EXPORT = 1E-6 * 110   #: Relative rate of nitrate export from roots (s-1)
+        self.K_NITRATE_EXPORT = 1E-6 * 20   #: Relative rate of nitrate export from roots (s-1)
 
         # Amino acids
         self.VMAX_AMINO_ACIDS = 0.001        #: Maximal rate of amino acid synthesis (:math:`\mu` mol N s-1 g-1 MS)
         self.K_AMINO_ACIDS_NITRATES = 3      #: Affinity coefficient of amino acid synthesis from nitrates (:math:`\mu` mol N g-1 MS)
         self.K_AMINO_ACIDS_SUCROSE = 350     #: Affinity coefficient of amino acid synthesis from sucrose (:math:`\mu` mol C g-1 MS)
-        self.K_AMINO_ACIDS_EXPORT = 3E-5 * 5   #: Relative rate of amino acids export from roots (s-1)
+        self.K_AMINO_ACIDS_EXPORT = 3E-5 * 20   #: Relative rate of amino acids export from roots (s-1)
 
         # Exudation
         self.C_EXUDATION = 0.20              #: Proportion of C exudated from C sucrose unloaded to roots (Keith et al., 1986)

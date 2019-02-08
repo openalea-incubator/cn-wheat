@@ -805,7 +805,7 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
                                                                                    elements_df['mstruct'], elements_df['green_area'])
         pp_elements_df.loc[:, 'NS'] = Element.calculate_ratio_non_structural(elements_df['sum_dry_mass'],
                                                                                          elements_df['mstruct'])
-        pp_elements_df.loc[:, 'N_content'] = elements_df['N_g'] / elements_df['sum_dry_mass']
+        pp_elements_df.loc[:, 'N_content'] = elements_df['N_g'] / elements_df['sum_dry_mass'] * 100
 
         grouped = elements_df.groupby('organ')
         for organ_type, parameters_class in \
@@ -1102,6 +1102,7 @@ def generate_graphs(axes_df=None, hiddenzones_df=None, organs_df=None, elements_
         ax1.set_ylabel(u'[Nitrates] (g m$^{-3}$)')
         ax1.set_xlabel('Time from flowering (hour)')
         ax1.set_title = 'Conc Nitrates Soil'
+        ax1.set_ylim(bottom = 0)
         plt.savefig(os.path.join(graphs_dirpath, 'Conc_Nitrates_Soil.PNG'), format='PNG', bbox_inches='tight')
         plt.close()
 
