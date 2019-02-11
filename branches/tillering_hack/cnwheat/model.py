@@ -779,7 +779,7 @@ class Roots(Organ):
 
     # FLUXES
 
-    def calculate_Unloading_Sucrose(self, sucrose_phloem, mstruct_axis, T_effect_conductivity):
+    def calculate_Unloading_Sucrose(self, sucrose, sucrose_phloem, mstruct_axis, T_effect_conductivity):
         """Rate of sucrose Unloading from phloem to roots (:math:`\mu mol` C sucrose unloaded g-1 mstruct h-1).
         Michaelis-Menten function of the sucrose concentration in phloem.
 
@@ -792,8 +792,16 @@ class Roots(Organ):
         :Returns Type:
             :class:`float`
         """
-        return (((max(0, sucrose_phloem)/(mstruct_axis * Axis.PARAMETERS.ALPHA)) * Roots.PARAMETERS.VMAX_SUCROSE_UNLOADING * T_effect_conductivity ) /
-                ((max(0, sucrose_phloem)/(mstruct_axis * Axis.PARAMETERS.ALPHA)) + Roots.PARAMETERS.K_SUCROSE_UNLOADING )) * parameters.SECOND_TO_HOUR_RATE_CONVERSION
+        conc_sucrose_roots = sucrose / (self.mstruct * self.__class__.PARAMETERS.ALPHA)
+        conc_sucrose_phloem = sucrose_phloem / (mstruct_axis * parameters.AXIS_PARAMETERS.ALPHA)
+        #: Driving compartment (:math:`\mu mol` C g-1 mstruct)
+        driving_sucrose_compartment = max(conc_sucrose_roots, conc_sucrose_phloem)
+        #: Gradient of sucrose between the roots and the phloem (:math:`\mu mol` C g-1 mstruct)
+        diff_sucrose = conc_sucrose_phloem - conc_sucrose_roots
+        #: Conductance depending on mstruct (g2 :math:`\mu mol`-1 s-1)
+        conductance = Roots.PARAMETERS.SIGMA_SUCROSE * Roots.PARAMETERS.BETA * self.mstruct ** (2 / 3) * T_effect_conductivity
+
+        return driving_sucrose_compartment * diff_sucrose * conductance * parameters.SECOND_TO_HOUR_RATE_CONVERSION
 
     def calculate_Unloading_Amino_Acids(self, Unloading_Sucrose, sucrose_phloem, amino_acids_phloem):
         """Unloading of amino_acids from phloem to roots.
@@ -899,7 +907,7 @@ class Roots(Organ):
 
         return  max( min(Export_Amino_Acids, amino_acids), 0.)
 
-    def calculate_exudation(self, Unloading_Sucrose, sucrose_roots, amino_acids_roots, amino_acids_phloem, T_effect_Vmax):
+    def calculate_exudation(self, Unloading_Sucrose, sucrose_roots, amino_acids_roots, amino_acids_phloem):
         """C sucrose and N amino acids lost by root exudation (:math:`\mu mol` C or N g-1 mstruct).
             - C exudation is calculated as a fraction of C Unloading from phloem
             - N exudation is calculated from C exudation using the ratio amino acids:sucrose of the phloem
@@ -914,7 +922,7 @@ class Roots(Organ):
         :Returns Type:
             :class:`tuple` of 2 :class:`float`
         """
-        C_exudation = min(sucrose_roots, Unloading_Sucrose * Roots.PARAMETERS.C_EXUDATION * T_effect_Vmax)  #: C exudated (:math:`\mu mol` g-1 mstruct)
+        C_exudation = min(sucrose_roots, Unloading_Sucrose * Roots.PARAMETERS.C_EXUDATION )  #: C exudated (:math:`\mu mol` g-1 mstruct)
         if amino_acids_phloem <= 0 or amino_acids_roots <= 0 or sucrose_roots <= 0:
             N_exudation = 0
         else:
