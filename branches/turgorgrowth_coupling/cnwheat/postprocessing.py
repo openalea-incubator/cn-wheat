@@ -878,8 +878,8 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
             dry_mass_roots = organs_df[(organs_df['organ'] == 'roots')].groupby(['t', 'plant', 'axis'])['sum_dry_mass'].agg('sum')
 
             # Total mstruct shoot and root
-            hz_df_MS = hiddenzones_df[hiddenzones_df['axis'] == 'MS']
-            elt_df_MS = elements_df[elements_df['axis'] == 'MS']
+            hz_df_MS = hiddenzones_df[hiddenzones_df['axis'] == 'MS'].copy()
+            elt_df_MS = elements_df[elements_df['axis'] == 'MS'].copy()
             hz_df_MS['mstruct_tillers'] = hz_df_MS['mstruct'] * hz_df_MS['nb_replications']
             elt_df_MS['mstruct_tillers'] = elt_df_MS['mstruct'] * elt_df_MS['nb_replications']
             sum_mstruct_shoot = hz_df_MS.groupby(['t', 'plant', 'axis'])['mstruct_tillers'].agg('sum') + elt_df_MS.groupby(['t', 'plant', 'axis'])['mstruct_tillers'].agg('sum')
