@@ -1041,7 +1041,7 @@ def generate_graphs(axes_df=None, hiddenzones_df=None, organs_df=None, elements_
                                        'cytokinins_import': u'Cytokinin import (UA)', 'Surfacic N': u'Surfacic N (g m$^{-2}$)',
                                        'Surfacic_NS': u'Surfacic Non Structural mass (g m$^{-2}$)', 'NS': u'Ratio of Non Structural mass',
                                        'length': 'Length (m)', 'osmotic_water_potential': u'Osmotic water potential (MPa)', 'thickness': u'Thickness (m)', 'total_water_potential': u'Total water potential (MPa)',
-                                       'turgor_water_potential': u'Turgor water potential (MPa)', 'water_content': u'Water content (m$^{3}$)', 'width': u'Width (m)',
+                                       'turgor_water_potential': u'Turgor water potential (MPa)', 'water_content': u'Water content (g)', 'width': u'Width (m)',
                                        'water_influx': u'Water_influx (g)', 'resistance': u'Resistance (MPa s g$^{-1}$)', 'radius': u'Radius (m)'}
     
         for org_ph in (['blade'], ['sheath'], ['internode'], ['peduncle', 'ear']):
