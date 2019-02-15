@@ -115,13 +115,15 @@ class HiddenZoneParameters(object):
     Internal parameters of hidden growing zones.
     """
     def __init__(self):
-        self.SIGMA = 5E-2                #: Coefficient of surface diffusion. Used in Fick's law (g m-2 s-1).
-        self.Vmax_Regul_Sfructans = 1    #: Maximal rate of fructan synthesis in the regulation function of fructan synthesis (:math:`\mu` mol C s-1 g-1 MS)
-        self.K_Regul_Sfructans = 0.5     #: Affinity coefficient of the regulation function of fructan synthesis (:math:`\mu` mol g-1 MS)
-        self.n_Regul_Sfructans = 15      #: Parameter of the regulation function of fructan synthesis (dimensionless)
-        self.Vmax_Sfructans = 0.2        #: Maximal rate of fructan synthesis (:math:`\mu` mol C s-1 g-1 MS)
-        self.delta_Dproteins = 0.25e-6   #: Relative rate of proteins degradation (s-1)
-        self.VMAX_SPROTEINS = 0.0015 * 58 #: Maximal rate of protein synthesis (:math:`\mu` mol N s-1 g-1 MS)
+        self.SIGMA = 5E-2                  #: Coefficient of surface diffusion. Used in Fick's law (g m-2 s-1).
+        self.VMAX_SFRUCTAN_RELATIVE = 7    #: Maximal rate of fructan synthesis in the division zone relative to the rate in mature tissus (:math:`\mu` mol C s-1 g-1 MS)
+        self.K_SFRUCTAN = 5000             #: Affinity coefficient of fructan synthesis (:math:`\mu` mol C g-1 MS)
+        self.K_REGUL_SFRUCTAN = 0.001      #: Affinity coefficient of the regulation function of fructan synthesis (:math:`\mu` mol g-1 MS)
+        self.N_REGUL_SFRUCTAN = 3          #: Parameter of the regulation function of fructan synthesis (dimensionless)
+        self.VMAX_DFRUCTAN = 0.035         #: Maximal rate of fructan degradation (:math:`\mu` mol C s-1 g-1 MS)
+        self.K_DFRUCTAN = 100              #: Affinity coefficient of fructan degradation (:math:`\mu` mol C g-1 MS)
+        self.delta_Dproteins = 0.25e-6     #: Relative rate of proteins degradation (s-1)
+        self.VMAX_SPROTEINS = 0.0015 * 100 #: Maximal rate of protein synthesis (:math:`\mu` mol N s-1 g-1 MS)
 
 
 #: The instance of class :class:`cnwheat.parameters.HiddenZoneParameters` for current process

@@ -360,13 +360,14 @@ class HiddenZone(Organ):
             Maximal rate of fructan synthesis (:math:`\mu mol` C g-1 mstruct)
         :Returns Type:
         """
+
         if Unloading_Sucrose >= 0:
-            Vmax_Sfructans = PhotosyntheticOrgan.PARAMETERS.VMAX_SFRUCTAN_POT
+            Vmax_Sfructans = parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.VMAX_SFRUCTAN_POT
         else:  # Regulation by sucrose unloading
             rate_Loading_Sucrose_massic = -1. * Unloading_Sucrose/self.mstruct/parameters.SECOND_TO_HOUR_RATE_CONVERSION
-            Vmax_Sfructans = ((PhotosyntheticOrgan.PARAMETERS.VMAX_SFRUCTAN_POT * PhotosyntheticOrgan.PARAMETERS.K_REGUL_SFRUCTAN**PhotosyntheticOrgan.PARAMETERS.N_REGUL_SFRUCTAN) /
-                              (max(0, rate_Loading_Sucrose_massic**PhotosyntheticOrgan.PARAMETERS.N_REGUL_SFRUCTAN) +
-                               PhotosyntheticOrgan.PARAMETERS.K_REGUL_SFRUCTAN**PhotosyntheticOrgan.PARAMETERS.N_REGUL_SFRUCTAN))
+            Vmax_Sfructans = ((parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.VMAX_SFRUCTAN_POT * parameters.HIDDEN_ZONE_PARAMETERS.K_REGUL_SFRUCTAN**parameters.HIDDEN_ZONE_PARAMETERS.N_REGUL_SFRUCTAN) /
+                              (max(0, rate_Loading_Sucrose_massic**parameters.HIDDEN_ZONE_PARAMETERS.N_REGUL_SFRUCTAN) +
+                               parameters.HIDDEN_ZONE_PARAMETERS.K_REGUL_SFRUCTAN**parameters.HIDDEN_ZONE_PARAMETERS.N_REGUL_SFRUCTAN))
         return Vmax_Sfructans
 
     def calculate_S_Fructan(self, sucrose, Regul_S_Fructan, T_effect_Vmax): # TODO : ON ne va pas chercher les paramètres au bon endroit
@@ -381,8 +382,9 @@ class HiddenZone(Organ):
         :Returns Type:
             :class:`float`
         """
-        return ((max(0, sucrose)/self.mstruct) * Regul_S_Fructan)/((max(0, sucrose)/self.mstruct) + PhotosyntheticOrgan.PARAMETERS.K_SFRUCTAN) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * \
-               T_effect_Vmax * 1.5
+        VMAX = (1 - self.ratio_DZ) + parameters.HIDDEN_ZONE_PARAMETERS.VMAX_SFRUCTAN_RELATIVE * self.ratio_DZ
+        return ((max(0, sucrose)/self.mstruct) * VMAX * Regul_S_Fructan)/((max(0, sucrose)/self.mstruct) + parameters.HIDDEN_ZONE_PARAMETERS.K_SFRUCTAN) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * \
+               T_effect_Vmax
 
     def calculate_D_Fructan(self, sucrose, fructan, T_effect_Vmax): # TODO : ON ne va pas chercher les paramètres au bon endroit
         """Rate of fructan degradation (:math:`\mu mol` C fructan g-1 mstruct h-1).
@@ -396,8 +398,8 @@ class HiddenZone(Organ):
         :Returns Type:
             :class:`float`
         """
-        d_potential = ((PhotosyntheticOrgan.PARAMETERS.K_DFRUCTAN * PhotosyntheticOrgan.PARAMETERS.VMAX_DFRUCTAN * T_effect_Vmax) /
-                       ((max(0, sucrose) / self.mstruct) + PhotosyntheticOrgan.PARAMETERS.K_DFRUCTAN)) * parameters.SECOND_TO_HOUR_RATE_CONVERSION
+        d_potential = ((parameters.HIDDEN_ZONE_PARAMETERS.K_DFRUCTAN * parameters.HIDDEN_ZONE_PARAMETERS.VMAX_DFRUCTAN * T_effect_Vmax) /
+                       ((max(0, sucrose) / self.mstruct) + parameters.HIDDEN_ZONE_PARAMETERS.K_DFRUCTAN)) * parameters.SECOND_TO_HOUR_RATE_CONVERSION
         d_actual = min(d_potential, max(0, fructan))
         return d_actual
 
