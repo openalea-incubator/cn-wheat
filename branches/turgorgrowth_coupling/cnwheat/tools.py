@@ -200,6 +200,7 @@ def plot_cnwheat_ouputs(outputs, x_name, y_name, x_label='', y_label='', title=N
 
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
+    ax.get_yaxis().get_major_formatter().set_useOffset(False)  #: Avoid scientific notation when the fractional change of the values visible is very small
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         ax.legend(prop={'size': 10}, framealpha=0.5, loc='center left', bbox_to_anchor=(1, 0.815), borderaxespad=0.)
