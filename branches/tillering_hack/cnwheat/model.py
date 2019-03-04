@@ -127,9 +127,9 @@ class Plant(object):
         Tref = 20 + 273.15
         Tk = Tair + 273.15
         R = 8.3144  #: Physical parameter: Gas constant (J mol-1 K-1)
-        deltaHa = 55#89.7  #: Enthalpie of activation of parameter pname (kJ mol-1)
-        deltaS = 0.48#0.486  #: entropy term of parameter pname (kJ mol-1 K-1)
-        deltaHd = 154 #149.3 #: Enthalpie of deactivation of parameter pname (kJ mol-1)
+        deltaHa = 55  #: Enthalpie of activation of parameter pname (kJ mol-1)
+        deltaS = 0.48  #: entropy term of parameter pname (kJ mol-1 K-1)
+        deltaHd = 154 #: Enthalpie of deactivation of parameter pname (kJ mol-1)
 
         f_activation = np.exp((deltaHa * (Tk - Tref)) / (R * 1E-3 * Tref * Tk))  #: Energy of activation (normalized to unity)
 
@@ -249,7 +249,7 @@ class HiddenZone(Organ):
 
     def __init__(self, label='hiddenzone',  mstruct=INIT_COMPARTMENTS.mstruct, Nstruct=INIT_COMPARTMENTS.Nstruct,
                  sucrose=INIT_COMPARTMENTS.sucrose, fructan=INIT_COMPARTMENTS.fructan, amino_acids=INIT_COMPARTMENTS.amino_acids, proteins=INIT_COMPARTMENTS.proteins,
-                 ratio_DZ=INIT_COMPARTMENTS.ratio_DZ, cohorts=[], index = None):
+                 ratio_DZ=INIT_COMPARTMENTS.ratio_DZ, ratio_EOZ=INIT_COMPARTMENTS.ratio_EOZ, cohorts=[], index = None):
 
         super(HiddenZone, self).__init__(label)
 
@@ -260,6 +260,7 @@ class HiddenZone(Organ):
         self.mstruct = mstruct                      #: g
         self.Nstruct = Nstruct                      #: g
         self.ratio_DZ = ratio_DZ
+        self.ratio_EOZ = ratio_EOZ
 
         # state variables
         self.sucrose = sucrose                      #: :math:`\mu mol` C
@@ -333,7 +334,7 @@ class HiddenZone(Organ):
         :Returns Type:
             :class:`float`
         """
-        VMAX = parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.VMAX_SPROTEINS * (1-self.ratio_DZ) + parameters.HIDDEN_ZONE_PARAMETERS.VMAX_SPROTEINS * self.ratio_DZ
+        VMAX = parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.VMAX_SPROTEINS * 25 * (1-self.ratio_DZ) + parameters.HIDDEN_ZONE_PARAMETERS.VMAX_SPROTEINS * self.ratio_DZ
         return ( (VMAX * max(0, (amino_acids / self.mstruct)) ) / (parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.K_SPROTEINS + max(0, (amino_acids / self.mstruct)))) * \
                  parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
 
@@ -365,8 +366,8 @@ class HiddenZone(Organ):
             Vmax_Sfructans = parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.VMAX_SFRUCTAN_POT
         else:  # Regulation by sucrose unloading
             rate_Loading_Sucrose_massic = -1. * Unloading_Sucrose/self.mstruct/parameters.SECOND_TO_HOUR_RATE_CONVERSION
-            Vmax_Sfructans = ((parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.VMAX_SFRUCTAN_POT * parameters.HIDDEN_ZONE_PARAMETERS.K_REGUL_SFRUCTAN**parameters.HIDDEN_ZONE_PARAMETERS.N_REGUL_SFRUCTAN) /
-                              (max(0, rate_Loading_Sucrose_massic**parameters.HIDDEN_ZONE_PARAMETERS.N_REGUL_SFRUCTAN) +
+            Vmax_Sfructans = parameters.HIDDEN_ZONE_PARAMETERS.VMAX_SFRUCTAN_POT * (parameters.HIDDEN_ZONE_PARAMETERS.K_REGUL_SFRUCTAN**parameters.HIDDEN_ZONE_PARAMETERS.N_REGUL_SFRUCTAN /
+                              (max(0., rate_Loading_Sucrose_massic**parameters.HIDDEN_ZONE_PARAMETERS.N_REGUL_SFRUCTAN) +
                                parameters.HIDDEN_ZONE_PARAMETERS.K_REGUL_SFRUCTAN**parameters.HIDDEN_ZONE_PARAMETERS.N_REGUL_SFRUCTAN))
         return Vmax_Sfructans
 
@@ -382,8 +383,8 @@ class HiddenZone(Organ):
         :Returns Type:
             :class:`float`
         """
-        VMAX = (1 - self.ratio_DZ) + parameters.HIDDEN_ZONE_PARAMETERS.VMAX_SFRUCTAN_RELATIVE * self.ratio_DZ
-        return ((max(0, sucrose)/self.mstruct) * VMAX * Regul_S_Fructan)/((max(0, sucrose)/self.mstruct) + parameters.HIDDEN_ZONE_PARAMETERS.K_SFRUCTAN) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * \
+        # VMAX = (1 - self.ratio_EOZ) + parameters.HIDDEN_ZONE_PARAMETERS.VMAX_SFRUCTAN_RELATIVE * self.ratio_EOZ
+        return ((max(0., sucrose)/self.mstruct) * parameters.HIDDEN_ZONE_PARAMETERS.VMAX_SFRUCTAN_RELATIVE * Regul_S_Fructan)/((max(0, sucrose)/self.mstruct) +parameters.HIDDEN_ZONE_PARAMETERS.K_SFRUCTAN) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * \
                T_effect_Vmax
 
     def calculate_D_Fructan(self, sucrose, fructan, T_effect_Vmax): # TODO : ON ne va pas chercher les paramètres au bon endroit
@@ -398,6 +399,7 @@ class HiddenZone(Organ):
         :Returns Type:
             :class:`float`
         """
+
         d_potential = ((parameters.HIDDEN_ZONE_PARAMETERS.K_DFRUCTAN * parameters.HIDDEN_ZONE_PARAMETERS.VMAX_DFRUCTAN * T_effect_Vmax) /
                        ((max(0, sucrose) / self.mstruct) + parameters.HIDDEN_ZONE_PARAMETERS.K_DFRUCTAN)) * parameters.SECOND_TO_HOUR_RATE_CONVERSION
         d_actual = min(d_potential, max(0, fructan))
@@ -766,7 +768,7 @@ class Roots(Organ):
         """
         return amino_acids + (Nstruct / EcophysiologicalConstants.N_MOLAR_MASS)*1E6
 
-    def calculate_regul_transpiration(self, total_transpiration):
+    def calculate_regul_transpiration(self, total_transpiration, total_surfacic_transpiration ):
         """A function to regulate metabolite exports from roots by shoot transpiration
 
         :Parameters:
@@ -776,7 +778,7 @@ class Roots(Organ):
         :Returns Type:
             :class:`float`
         """
-        return total_transpiration * Roots.PARAMETERS.CST_TRANSPIRATION
+        return total_transpiration * Roots.PARAMETERS.CST_TRANSPIRATION #* total_surfacic_transpiration / (total_surfacic_transpiration + Roots.PARAMETERS.K_TRANSPIRATION)
 
 
     # FLUXES
@@ -801,7 +803,7 @@ class Roots(Organ):
         #: Gradient of sucrose between the roots and the phloem (:math:`\mu mol` C g-1 mstruct)
         diff_sucrose = conc_sucrose_phloem - conc_sucrose_roots
         #: Conductance depending on mstruct (g2 :math:`\mu mol`-1 s-1)
-        conductance = Roots.PARAMETERS.SIGMA_SUCROSE * Roots.PARAMETERS.BETA * self.mstruct ** (2 / 3) * T_effect_conductivity
+        conductance = Roots.PARAMETERS.SIGMA_SUCROSE * Roots.PARAMETERS.BETA * self.mstruct ** (2/3) * T_effect_conductivity
 
         return driving_sucrose_compartment * diff_sucrose * conductance * parameters.SECOND_TO_HOUR_RATE_CONVERSION
 
@@ -852,7 +854,7 @@ class Roots(Organ):
         LATS = (K_LATS * Conc_Nitrates_Soil)                                                                             #: Rate of nitrate influx by LATS (:math:`\mu mol` N nitrates g-1 mstruct)
 
         #: Nitrate influx (:math:`\mu mol` N)
-        HATS_LATS = (HATS + LATS) * self.mstruct * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
+        HATS_LATS = (HATS + LATS) * self.mstruct * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax #( self.mstruct ** (3/4) )
 
         # Regulations
         regul_C = (sucrose_roots/self.mstruct) / ((sucrose_roots/self.mstruct) + Roots.PARAMETERS.K_C)                   #: Nitrate uptake regulation by root C
@@ -905,7 +907,9 @@ class Roots(Organ):
             :class:`float`
         """
         f_amino_acids = (amino_acids/(self.mstruct * Roots.PARAMETERS.ALPHA)) * Roots.PARAMETERS.K_AMINO_ACIDS_EXPORT
-        Export_Amino_Acids = f_amino_acids * self.mstruct * regul_transpiration * parameters.SECOND_TO_HOUR_RATE_CONVERSION  #: Amino acids export regulation by plant transpiration (:math:`\mu  mol` N)
+        Export_Amino_Acids = f_amino_acids * self.mstruct * regul_transpiration * parameters.SECOND_TO_HOUR_RATE_CONVERSION  #: Amino acids export regulation by plant transpiration (
+        # :math:`\mu
+        # mol` N)
 
         return  max( min(Export_Amino_Acids, amino_acids), 0.)
 

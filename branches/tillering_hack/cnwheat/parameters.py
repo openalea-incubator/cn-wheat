@@ -115,15 +115,16 @@ class HiddenZoneParameters(object):
     Internal parameters of hidden growing zones.
     """
     def __init__(self):
-        self.SIGMA = 5E-2                  #: Coefficient of surface diffusion. Used in Fick's law (g m-2 s-1).
-        self.VMAX_SFRUCTAN_RELATIVE = 7    #: Maximal rate of fructan synthesis in the division zone relative to the rate in mature tissus (:math:`\mu` mol C s-1 g-1 MS)
-        self.K_SFRUCTAN = 5000             #: Affinity coefficient of fructan synthesis (:math:`\mu` mol C g-1 MS)
+        self.SIGMA = 5E-2 /2               #: Coefficient of surface diffusion. Used in Fick's law (g m-2 s-1).
+        self.VMAX_SFRUCTAN_RELATIVE = 10 #6   #: Maximal rate of fructan synthesis in the division zone relative to the rate in mature tissus (:math:`\mu` mol C s-1 g-1 MS)
+        self.VMAX_SFRUCTAN_POT = 0.015
+        self.K_SFRUCTAN = 5000.            #: Affinity coefficient of fructan synthesis (:math:`\mu` mol C g-1 MS)
         self.K_REGUL_SFRUCTAN = 0.001      #: Affinity coefficient of the regulation function of fructan synthesis (:math:`\mu` mol g-1 MS)
-        self.N_REGUL_SFRUCTAN = 3          #: Parameter of the regulation function of fructan synthesis (dimensionless)
-        self.VMAX_DFRUCTAN = 0.035         #: Maximal rate of fructan degradation (:math:`\mu` mol C s-1 g-1 MS)
-        self.K_DFRUCTAN = 100              #: Affinity coefficient of fructan degradation (:math:`\mu` mol C g-1 MS)
+        self.N_REGUL_SFRUCTAN = 3.         #: Parameter of the regulation function of fructan synthesis (dimensionless)
+        self.VMAX_DFRUCTAN = 0.035 *2        #: Maximal rate of fructan degradation (:math:`\mu` mol C s-1 g-1 MS)
+        self.K_DFRUCTAN = 100.             #: Affinity coefficient of fructan degradation (:math:`\mu` mol C g-1 MS)
         self.delta_Dproteins = 0.25e-6     #: Relative rate of proteins degradation (s-1)
-        self.VMAX_SPROTEINS = 0.0015 * 100 #: Maximal rate of protein synthesis (:math:`\mu` mol N s-1 g-1 MS)
+        self.VMAX_SPROTEINS = 0.0015 * 200 #* 200 #: Maximal rate of protein synthesis (:math:`\mu` mol N s-1 g-1 MS)
 
 
 #: The instance of class :class:`cnwheat.parameters.HiddenZoneParameters` for current process
@@ -142,6 +143,7 @@ class HiddenZoneInitCompartments(object):
         self.mstruct = 6.39E-08  #: initial value of mstruct (g)
         self.Nstruct = 2.06E-09  #: initial value of Nstruct (g)
         self.ratio_DZ = 1        #: initial value of ratio of Division Zone into the HiddenZone
+        self.ratio_EOZ = 0       #: initial value of ratio of Elongation-only Zone into the HiddenZone
 
 
 #: The instance of class :class:`cnwheat.parameters.HiddenZoneInitCompartments` for current process
@@ -228,6 +230,7 @@ class RootsParameters(object):
 
         # Regulation function by transpiration of nitrate uptake
         self.CST_TRANSPIRATION = 25          #: Coefficient of proportionaly between export and total transpiration (m mmol-1) (this coefficient could be integrated with K_..._EXPORT parameters)
+        self.K_TRANSPIRATION = 1             #: Affinity coefficient for the regulation function by culm transpiration (mmol H20 m-2 s-1)
 
         # Regulation function by C in roots of nitrate uptake
         self.K_C = 7000                      #: Affinity coefficient for the regulation function by root C (:math:`\mu` mol C sucrose g-1 MS)
@@ -242,13 +245,13 @@ class RootsParameters(object):
         self.LAMBDA_LATS = 1.6517E-03        #: Parameter for estimating the rate of nitrates uptake at low soil N concentration; LATS (g :math:`\mu` mol-1)
 
         # Nitrate export
-        self.K_NITRATE_EXPORT = 1E-6 * 20   #: Relative rate of nitrate export from roots (s-1)
+        self.K_NITRATE_EXPORT = 1E-6 * 70    #: Relative rate of nitrate export from roots (s-1)
 
         # Amino acids
         self.VMAX_AMINO_ACIDS = 0.001        #: Maximal rate of amino acid synthesis (:math:`\mu` mol N s-1 g-1 MS)
         self.K_AMINO_ACIDS_NITRATES = 3      #: Affinity coefficient of amino acid synthesis from nitrates (:math:`\mu` mol N g-1 MS)
-        self.K_AMINO_ACIDS_SUCROSE = 350 * 2     #: Affinity coefficient of amino acid synthesis from sucrose (:math:`\mu` mol C g-1 MS)
-        self.K_AMINO_ACIDS_EXPORT = 3E-5 * 20   #: Relative rate of amino acids export from roots (s-1)
+        self.K_AMINO_ACIDS_SUCROSE = 350#*2     #: Affinity coefficient of amino acid synthesis from sucrose (:math:`\mu` mol C g-1 MS)
+        self.K_AMINO_ACIDS_EXPORT = 3E-5 * 50   #: Relative rate of amino acids export from roots (s-1)
 
         # Exudation
         self.C_EXUDATION = 0.20              #: Proportion of C exudated from C sucrose unloaded to roots (Keith et al., 1986)
@@ -302,7 +305,7 @@ class PhotosyntheticOrganParameters(object):
         self.K_SFRUCTAN = 5000               #: Affinity coefficient of fructan synthesis (:math:`\mu` mol C g-1 MS)
         self.K_REGUL_SFRUCTAN = 0.001        #: Affinity coefficient of the regulation function of fructan synthesis (:math:`\mu` mol g-1 MS)
         self.N_REGUL_SFRUCTAN = 3            #: Parameter of the regulation function of fructan synthesis (dimensionless)
-        self.VMAX_DFRUCTAN = 0.035           #: Maximal rate of fructan degradation (:math:`\mu` mol C s-1 g-1 MS)
+        self.VMAX_DFRUCTAN = 0.035 *2          #: Maximal rate of fructan degradation (:math:`\mu` mol C s-1 g-1 MS)
         self.K_DFRUCTAN = 100                #: Affinity coefficient of fructan degradation (:math:`\mu` mol C g-1 MS)
 
         # Loading sucrose and amino acids
@@ -316,8 +319,8 @@ class PhotosyntheticOrganParameters(object):
         self.K_AMINO_ACIDS_TRIOSESP = 0.2    #: Affinity coefficient of amino acid synthesis from triosesP (:math:`\mu` mol C g-1 MS)
 
         # Proteins
-        self.VMAX_SPROTEINS = 0.0015         #: Maximal rate of protein synthesis (:math:`\mu` mol N s-1 g-1 MS)
-        self.K_SPROTEINS = 100               #: Affinity coefficient of protein synthesis (:math:`\mu` mol N g-1 MS)
+        self.VMAX_SPROTEINS = 0.0015 *2  # 0.004        #: Maximal rate of protein synthesis (:math:`\mu` mol N s-1 g-1 MS)
+        self.K_SPROTEINS = 100 *2.5  #380             #: Affinity coefficient of protein synthesis (:math:`\mu` mol N g-1 MS)
         self.VMAX_DPROTEINS = 2.5E-6         #: Maximal rate of protein degradation (:math:`\mu` mol g-1 mstruct s-1)
         self.K_DPROTEINS = 50                #: Affinity coefficient with cytokinins for protein degradation (UA g-1 mstruct)
         self.N_DPROTEINS = 2.1               #: A coefficient for the regulation of protein degradation by cytokines (dimensionless)

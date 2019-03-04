@@ -238,7 +238,7 @@ class Simulation(object):
     #: concatenation of :attr:`T_INDEX` and :attr:`HIDDENZONE_INDEXES`
     HIDDENZONE_T_INDEXES = T_INDEX + HIDDENZONE_INDEXES
     #: the parameters which define the state of the modeled system at hidden zone scale
-    HIDDENZONE_STATE_PARAMETERS = ['Nstruct', 'mstruct','ratio_DZ']
+    HIDDENZONE_STATE_PARAMETERS = ['Nstruct', 'mstruct','ratio_DZ','ratio_EOZ']
     #: the variables which define the state of the modeled system at hidden zone scale,
     #: formed be the concatenation of :attr:`HIDDENZONE_STATE_PARAMETERS` and the names
     #: of the compartments associated to each hidden zone (see :attr:`MODEL_COMPARTMENTS_NAMES`)
@@ -728,8 +728,13 @@ class Simulation(object):
                                     axis.Total_Transpiration += (element.Transpiration * element.nb_replications)
                                     total_green_area += (element.green_area * element.nb_replications)
 
+                if total_green_area == 0.0:
+                    total_surfacic_transpiration = 0.0
+                else:
+                    total_surfacic_transpiration = axis.Total_Transpiration / total_green_area  #: total transpiration rate of plant per unit area (mmol m-2 s-1)
+
                 # Compute the regulating factor of root exports by shoot transpiration
-                axis.roots.regul_transpiration = axis.roots.calculate_regul_transpiration(axis.Total_Transpiration)
+                axis.roots.regul_transpiration = axis.roots.calculate_regul_transpiration(axis.Total_Transpiration, total_surfacic_transpiration)
 
                 # compute the flows from/to the roots to/from photosynthetic organs
                 axis.roots.Uptake_Nitrates, axis.roots.HATS_LATS = axis.roots.calculate_Uptake_Nitrates(soil.Conc_Nitrates_Soil, axis.roots.nitrates, axis.roots.sucrose, soil.T_effect_Vmax)
@@ -836,7 +841,7 @@ class Simulation(object):
                         hiddenzone.Unloading_Amino_Acids = hiddenzone.calculate_Unloading_Amino_Acids(hiddenzone.amino_acids, axis.phloem.amino_acids, axis.mstruct, plant.T_effect_conductivity)
 
                         # Fructan synthesis
-                        Regul_Sfructanes = hiddenzone.calculate_Regul_S_Fructan( (hiddenzone.Unloading_Sucrose + hiddenzone_Loading_Sucrose_contribution) )
+                        Regul_Sfructanes = hiddenzone.calculate_Regul_S_Fructan( hiddenzone.Unloading_Sucrose )
                         hiddenzone.S_Fructan = hiddenzone.calculate_S_Fructan(hiddenzone.sucrose, Regul_Sfructanes, plant.T_effect_Vmax)
 
                         # # Fructan degradation
@@ -971,8 +976,13 @@ class Simulation(object):
                                     axis.Total_Transpiration += (element.Transpiration * element.nb_replications)
                                     total_green_area += (element.green_area * element.nb_replications)
 
+                if total_green_area == 0.0:
+                    total_surfacic_transpiration = 0.0
+                else:
+                    total_surfacic_transpiration = axis.Total_Transpiration / total_green_area  #: total transpiration rate of plant per unit area (mmol m-2 s-1)
+
                 # Compute the regulating factor of root exports by shoot transpiration
-                axis.roots.regul_transpiration = axis.roots.calculate_regul_transpiration( axis.Total_Transpiration)
+                axis.roots.regul_transpiration = axis.roots.calculate_regul_transpiration( axis.Total_Transpiration, total_surfacic_transpiration)
 
                 # compute the flows from/to the roots to/from photosynthetic organs
                 axis.roots.Uptake_Nitrates, axis.roots.HATS_LATS = axis.roots.calculate_Uptake_Nitrates(soil.Conc_Nitrates_Soil, axis.roots.nitrates, axis.roots.sucrose, soil.T_effect_Vmax)
