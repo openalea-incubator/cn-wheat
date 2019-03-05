@@ -384,8 +384,8 @@ class HiddenZone(Organ):
             :class:`float`
         """
         # VMAX = (1 - self.ratio_EOZ) + parameters.HIDDEN_ZONE_PARAMETERS.VMAX_SFRUCTAN_RELATIVE * self.ratio_EOZ
-        return ((max(0., sucrose)/self.mstruct) * parameters.HIDDEN_ZONE_PARAMETERS.VMAX_SFRUCTAN_RELATIVE * Regul_S_Fructan)/((max(0, sucrose)/self.mstruct) +parameters.HIDDEN_ZONE_PARAMETERS.K_SFRUCTAN) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * \
-               T_effect_Vmax
+        return ((max(0., sucrose)/self.mstruct) * parameters.HIDDEN_ZONE_PARAMETERS.VMAX_SFRUCTAN_RELATIVE * Regul_S_Fructan)/\
+               ((max(0, sucrose)/self.mstruct) + parameters.HIDDEN_ZONE_PARAMETERS.K_SFRUCTAN) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
 
     def calculate_D_Fructan(self, sucrose, fructan, T_effect_Vmax): # TODO : ON ne va pas chercher les paramètres au bon endroit
         """Rate of fructan degradation (:math:`\mu mol` C fructan g-1 mstruct h-1).

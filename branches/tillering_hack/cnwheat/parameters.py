@@ -124,7 +124,7 @@ class HiddenZoneParameters(object):
         self.VMAX_DFRUCTAN = 0.035 *2        #: Maximal rate of fructan degradation (:math:`\mu` mol C s-1 g-1 MS)
         self.K_DFRUCTAN = 100.             #: Affinity coefficient of fructan degradation (:math:`\mu` mol C g-1 MS)
         self.delta_Dproteins = 0.25e-6     #: Relative rate of proteins degradation (s-1)
-        self.VMAX_SPROTEINS = 0.0015 * 200 #* 200 #: Maximal rate of protein synthesis (:math:`\mu` mol N s-1 g-1 MS)
+        self.VMAX_SPROTEINS = 0.0015 * 180 #* 200 #: Maximal rate of protein synthesis (:math:`\mu` mol N s-1 g-1 MS)
 
 
 #: The instance of class :class:`cnwheat.parameters.HiddenZoneParameters` for current process
@@ -251,7 +251,7 @@ class RootsParameters(object):
         self.VMAX_AMINO_ACIDS = 0.001        #: Maximal rate of amino acid synthesis (:math:`\mu` mol N s-1 g-1 MS)
         self.K_AMINO_ACIDS_NITRATES = 3      #: Affinity coefficient of amino acid synthesis from nitrates (:math:`\mu` mol N g-1 MS)
         self.K_AMINO_ACIDS_SUCROSE = 350#*2     #: Affinity coefficient of amino acid synthesis from sucrose (:math:`\mu` mol C g-1 MS)
-        self.K_AMINO_ACIDS_EXPORT = 3E-5 * 50   #: Relative rate of amino acids export from roots (s-1)
+        self.K_AMINO_ACIDS_EXPORT = 3E-5 * 52   #: Relative rate of amino acids export from roots (s-1)
 
         # Exudation
         self.C_EXUDATION = 0.20              #: Proportion of C exudated from C sucrose unloaded to roots (Keith et al., 1986)
