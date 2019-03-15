@@ -259,8 +259,8 @@ class RootsParameters(object):
         # Cytokinins
         self.VMAX_S_CYTOKININS = 4.5E-04 *1.3     #: Maximal rate of cytokinins synthesis (UA g-1 mstruct s-1)
         self.K_NITRATES_CYTOKININS = 200     #: Affinity coefficient of cytokinins synthesis for nitrates (:math:`\mu` mol N nitrates g-1 mstruct)
-        self.K_SUCROSE_CYTOKININS = 1250     #: Affinity coefficient of cytokinins synthesis for sucrose (:math:`\mu` mol C sucrose g-1 mstruct)
-        self.N_SUC_CYTOKININS = 10           #: A parameter for cytokinins synthesis (dimensionless)
+        self.K_SUCROSE_CYTOKININS = 800 #1250     #: Affinity coefficient of cytokinins synthesis for sucrose (:math:`\mu` mol C sucrose g-1 mstruct)
+        self.N_SUC_CYTOKININS = 4 #10           #: A parameter for cytokinins synthesis (dimensionless)
         self.N_NIT_CYTOKININS = 0.7          #: A parameter for cytokinins synthesis (dimensionless)
         self.K_CYTOKININS_EXPORT = 2E-4      #: Relative rate of cytokinins export from roots (s-1)
 
