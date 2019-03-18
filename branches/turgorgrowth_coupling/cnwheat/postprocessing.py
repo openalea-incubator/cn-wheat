@@ -1042,7 +1042,7 @@ def generate_graphs(axes_df=None, hiddenzones_df=None, organs_df=None, elements_
                                        'Surfacic_NS': u'Surfacic Non Structural mass (g m$^{-2}$)', 'NS': u'Ratio of Non Structural mass',
                                        'length': 'Length (m)', 'osmotic_water_potential': u'Osmotic water potential (MPa)', 'thickness': u'Thickness (m)', 'total_water_potential': u'Total water potential (MPa)',
                                        'turgor_water_potential': u'Turgor water potential (MPa)', 'water_content': u'Water content (g)', 'width': u'Width (m)',
-                                       'water_influx': u'Water_influx (g)', 'resistance': u'Resistance (MPa s g$^{-1}$)', 'radius': u'Radius (m)'}
+                                       'water_influx': u'Water_influx (g)', 'resistance': u'Resistance (MPa s g$^{-1}$)'}
     
         for org_ph in (['blade'], ['sheath'], ['internode'], ['peduncle', 'ear']):
             for variable_name, variable_label in graph_variables_ph_elements.items():
@@ -1101,10 +1101,10 @@ def generate_graphs(axes_df=None, hiddenzones_df=None, organs_df=None, elements_
         graph_variables_hiddenzones = {'Conc_Sucrose': u'[Sucrose] (µmol g$^{-1}$ mstruct)', 'Conc_Amino_Acids': u'[Amino Acids] (µmol g$^{-1}$ mstruct)',
                                        'Conc_Proteins': u'[Proteins] (g g$^{-1}$ mstruct)', 'Conc_Fructan': u'[Fructan] (µmol g$^{-1}$ mstruct)', 'Unloading_Sucrose': u'Sucrose unloading (µmol C)',
                                        'Unloading_Amino_Acids': u'Amino_acids unloading (µmol N)', 'mstruct': u'Structural mass (g)', 'Nstruct': u'Structural N mass (g)',
-                                       'leaf_L': 'Leaf length in hz (m))', 'delta_leaf_L': 'delta of leaf length (m)', 'internode_L': 'Internode length in hz (m))',
-                                       'leaf_pseudostem_length': 'leaf pseudostem length (m)', 'temperature': u'Temperature surface (°C)',
-                                       'osmotic_water_potential': u'Osmotic water potential (MPa)', 'radius': u'Radius (m)', 'total_water_potential': u'Total water potential (MPa)',
-                                       'turgor_water_potential': u'Turgor water potential (MPa)', 'water_content': u'Water content (m$^{3}$)', 'water_influx': u'Water_influx (g)',
+                                       'leaf_L': 'Leaf length in hz (m)', 'delta_leaf_L': 'delta of leaf length (m)', 'internode_L': 'Internode length in hz (m))',
+                                       'leaf_pseudostem_length': 'leaf pseudostem length (m)', 'temperature': u'Temperature surface (°C)', 'thickness': u'Thickness (m)',
+                                       'osmotic_water_potential': u'Osmotic water potential (MPa)', 'width': u'Width (m)', 'total_water_potential': u'Total water potential (MPa)',
+                                       'turgor_water_potential': u'Turgor water potential (MPa)', 'water_content': u'Water content (g)', 'water_influx': u'Water_influx (g)',
                                        'resistance': u'Resistance (MPa s g$^{-1}$)'}
     
         for variable_name, variable_label in graph_variables_hiddenzones.items():
