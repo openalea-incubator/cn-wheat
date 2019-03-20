@@ -192,7 +192,7 @@ class Phytomer(object):
 
     PARAMETERS = parameters.PHYTOMER_PARAMETERS  #: the internal parameters of the phytomers
 
-    def __init__(self, index=None, chaff=None, peduncle=None, lamina=None, internode=None, sheath=None, hiddenzone=None, cohorts=[]):
+    def __init__(self, index=None, chaff=None, peduncle=None, lamina=None, internode=None, sheath=None, hiddenzone=None, cohorts=[], cohorts_replications=None ):
         self.index = index  #: the index of the phytomer
         self.chaff = chaff  #: the chaff
         self.peduncle = peduncle  #: the peduncle
@@ -202,6 +202,7 @@ class Phytomer(object):
         self.hiddenzone = hiddenzone  #: the hidden zone
         self.mstruct = None  #: the structural mass of the phytomer (g)
         self.cohorts = cohorts  #: list of cohort values - Hack to treat tillering cases : TEMPORARY. Devrait être porté à l'échelle de la plante uniquement mais je ne vois pas comment faire mieux
+        self.cohorts_replications = cohorts_replications #: dictionary of number of replications per cohort rank
 
     def calculate_integrative_variables(self):
         """Calculate the integrative variables of the phytomer recursively.
@@ -214,7 +215,7 @@ class Phytomer(object):
 
     @property
     def nb_replications(self):
-        return sum(v <= self.index for v in self.cohorts)*0.5 + 1
+        return sum( int(v <= self.index) * self.cohorts_replications.get(v,0) for v in self.cohorts) + 1
 
 
 
@@ -249,11 +250,12 @@ class HiddenZone(Organ):
 
     def __init__(self, label='hiddenzone',  mstruct=INIT_COMPARTMENTS.mstruct, Nstruct=INIT_COMPARTMENTS.Nstruct,
                  sucrose=INIT_COMPARTMENTS.sucrose, fructan=INIT_COMPARTMENTS.fructan, amino_acids=INIT_COMPARTMENTS.amino_acids, proteins=INIT_COMPARTMENTS.proteins,
-                 ratio_DZ=INIT_COMPARTMENTS.ratio_DZ, ratio_EOZ=INIT_COMPARTMENTS.ratio_EOZ, cohorts=[], index = None):
+                 ratio_DZ=INIT_COMPARTMENTS.ratio_DZ, ratio_EOZ=INIT_COMPARTMENTS.ratio_EOZ, cohorts=[], cohorts_replications=None, index = None):
 
         super(HiddenZone, self).__init__(label)
 
         self.cohorts = cohorts  #: list of cohort values - Hack to treat tillering cases : TEMPORARY. Devrait être porté à l'échelle de la plante uniquement mais je ne vois pas comment faire mieux
+        self.cohorts_replications = cohorts_replications  #: dictionary of number of replications per cohort rank
         self.index = index #: the index of the phytomer TEMPORARY
 
         # state parameters
@@ -280,7 +282,7 @@ class HiddenZone(Organ):
 
     @property
     def nb_replications(self):
-        return sum(v <= self.index for v in self.cohorts)*0.5 + 1
+        return sum( int(v <= self.index) * self.cohorts_replications.get(v,0) for v in self.cohorts) + 1
 
     # FLUXES
 
@@ -953,7 +955,7 @@ class Roots(Organ):
         f_sucrose = conc_sucrose**Roots.PARAMETERS.N_SUC_CYTOKININS/(conc_sucrose**Roots.PARAMETERS.N_SUC_CYTOKININS + Roots.PARAMETERS.K_SUCROSE_CYTOKININS**Roots.PARAMETERS.N_SUC_CYTOKININS)
         f_nitrates = conc_Nitrates**Roots.PARAMETERS.N_NIT_CYTOKININS/(conc_Nitrates**Roots.PARAMETERS.N_NIT_CYTOKININS + Roots.PARAMETERS.K_NITRATES_CYTOKININS**Roots.PARAMETERS.N_NIT_CYTOKININS)
         S_cytokinins = Roots.PARAMETERS.VMAX_S_CYTOKININS * f_sucrose * f_nitrates * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
-        return S_cytokinins / 2
+        return S_cytokinins
 
     def calculate_Export_cytokinins(self, cytokinins, regul_transpiration):
         """Total export of cytokinin from roots to shoot organs
@@ -1136,10 +1138,11 @@ class PhotosyntheticOrganElement(object):
     def __init__(self, label=None, green_area=INIT_COMPARTMENTS.green_area, mstruct=INIT_COMPARTMENTS.mstruct, Nstruct=INIT_COMPARTMENTS.Nstruct,
                        triosesP=INIT_COMPARTMENTS.triosesP, starch=INIT_COMPARTMENTS.starch, sucrose=INIT_COMPARTMENTS.sucrose, fructan=INIT_COMPARTMENTS.fructan,
                        nitrates=INIT_COMPARTMENTS.nitrates, amino_acids=INIT_COMPARTMENTS.amino_acids, proteins=INIT_COMPARTMENTS.proteins, cytokinins=INIT_COMPARTMENTS.cytokinins,
-                       Tr=INIT_COMPARTMENTS.Tr, Ag=INIT_COMPARTMENTS.Ag, Ts=INIT_COMPARTMENTS.Ts, is_growing=INIT_COMPARTMENTS.is_growing, cohorts = [], index = None):
+                       Tr=INIT_COMPARTMENTS.Tr, Ag=INIT_COMPARTMENTS.Ag, Ts=INIT_COMPARTMENTS.Ts, is_growing=INIT_COMPARTMENTS.is_growing, cohorts = [], cohorts_replications=None, index = None):
 
         self.label = label                   #: the label of the element
         self.cohorts = cohorts  #: list of cohort values - Hack to treat tillering cases : TEMPORARY. Devrait être porté à l'échelle de la plante uniquement mais je ne vois pas comment faire mieux
+        self.cohorts_replications = cohorts_replications  #: dictionary of number of replications per cohort rank
         self.index = index #: the index of the phytomer TEMPORARY
 
         # state parameters
@@ -1194,7 +1197,7 @@ class PhotosyntheticOrganElement(object):
 
     @property
     def nb_replications(self):
-        return sum(v <= self.index for v in self.cohorts)*0.5 + 1
+        return sum(int(v <= self.index) * self.cohorts_replications.get(v,0) for v in self.cohorts) + 1
 
     def calculate_integrative_variables(self):
         """Calculate the integrative variables of the element.
