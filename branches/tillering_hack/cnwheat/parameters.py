@@ -115,7 +115,7 @@ class HiddenZoneParameters(object):
     Internal parameters of hidden growing zones.
     """
     def __init__(self):
-        self.SIGMA = 5E-2 /3               #: Coefficient of surface diffusion. Used in Fick's law (g m-2 s-1).
+        self.SIGMA = 5E-2 /4               #: Coefficient of surface diffusion. Used in Fick's law (g m-2 s-1).
         self.VMAX_SFRUCTAN_RELATIVE = 10 #6   #: Maximal rate of fructan synthesis in the division zone relative to the rate in mature tissus (:math:`\mu` mol C s-1 g-1 MS)
         self.VMAX_SFRUCTAN_POT = 0.015
         self.K_SFRUCTAN = 5000.            #: Affinity coefficient of fructan synthesis (:math:`\mu` mol C g-1 MS)
@@ -245,13 +245,13 @@ class RootsParameters(object):
         self.LAMBDA_LATS = 1.6517E-03        #: Parameter for estimating the rate of nitrates uptake at low soil N concentration; LATS (g :math:`\mu` mol-1)
 
         # Nitrate export
-        self.K_NITRATE_EXPORT = 1E-6 * 70    #: Relative rate of nitrate export from roots (s-1)
+        self.K_NITRATE_EXPORT = 1E-6 * 100 #* 70    #: Relative rate of nitrate export from roots (s-1)
 
         # Amino acids
         self.VMAX_AMINO_ACIDS = 0.001        #: Maximal rate of amino acid synthesis (:math:`\mu` mol N s-1 g-1 MS)
         self.K_AMINO_ACIDS_NITRATES = 3      #: Affinity coefficient of amino acid synthesis from nitrates (:math:`\mu` mol N g-1 MS)
         self.K_AMINO_ACIDS_SUCROSE = 350#*2     #: Affinity coefficient of amino acid synthesis from sucrose (:math:`\mu` mol C g-1 MS)
-        self.K_AMINO_ACIDS_EXPORT = 3E-5 * 52  #: Relative rate of amino acids export from roots (s-1)
+        self.K_AMINO_ACIDS_EXPORT = 3E-5 * 60 #* 52  #: Relative rate of amino acids export from roots (s-1)
 
         # Exudation
         self.C_EXUDATION = 0.20              #: Proportion of C exudated from C sucrose unloaded to roots (Keith et al., 1986)
