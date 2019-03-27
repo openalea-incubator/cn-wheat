@@ -302,6 +302,7 @@ class HiddenZone(Organ):
         """
         conc_sucrose_phloem = (sucrose_phloem / mstruct_axis)
         conc_sucrose_HZ = (sucrose / self.mstruct)
+        #sigma = 1.1e-5
         conductance = parameters.HIDDEN_ZONE_PARAMETERS.SIGMA * parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.BETA * self.mstruct**(2/3) * T_effect_conductivity  # TODO: choix valeurs param / flux phloem-hgz
 
         return (conc_sucrose_phloem - conc_sucrose_HZ)* conductance * parameters.SECOND_TO_HOUR_RATE_CONVERSION

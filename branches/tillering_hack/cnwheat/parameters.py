@@ -115,7 +115,7 @@ class HiddenZoneParameters(object):
     Internal parameters of hidden growing zones.
     """
     def __init__(self):
-        self.SIGMA = 5E-2 /2               #: Coefficient of surface diffusion. Used in Fick's law (g m-2 s-1).
+        self.SIGMA = 5E-2 /3               #: Coefficient of surface diffusion. Used in Fick's law (g m-2 s-1).
         self.VMAX_SFRUCTAN_RELATIVE = 10 #6   #: Maximal rate of fructan synthesis in the division zone relative to the rate in mature tissus (:math:`\mu` mol C s-1 g-1 MS)
         self.VMAX_SFRUCTAN_POT = 0.015
         self.K_SFRUCTAN = 5000.            #: Affinity coefficient of fructan synthesis (:math:`\mu` mol C g-1 MS)
@@ -251,18 +251,18 @@ class RootsParameters(object):
         self.VMAX_AMINO_ACIDS = 0.001        #: Maximal rate of amino acid synthesis (:math:`\mu` mol N s-1 g-1 MS)
         self.K_AMINO_ACIDS_NITRATES = 3      #: Affinity coefficient of amino acid synthesis from nitrates (:math:`\mu` mol N g-1 MS)
         self.K_AMINO_ACIDS_SUCROSE = 350#*2     #: Affinity coefficient of amino acid synthesis from sucrose (:math:`\mu` mol C g-1 MS)
-        self.K_AMINO_ACIDS_EXPORT = 3E-5 * 52   #: Relative rate of amino acids export from roots (s-1)
+        self.K_AMINO_ACIDS_EXPORT = 3E-5 * 52  #: Relative rate of amino acids export from roots (s-1)
 
         # Exudation
         self.C_EXUDATION = 0.20              #: Proportion of C exudated from C sucrose unloaded to roots (Keith et al., 1986)
 
         # Cytokinins
-        self.VMAX_S_CYTOKININS = 4.5E-04 *0.8#*1.3 /2    #: Maximal rate of cytokinins synthesis (UA g-1 mstruct s-1)
+        self.VMAX_S_CYTOKININS = 4.5E-04# *0.8#*1.3 /2    #: Maximal rate of cytokinins synthesis (UA g-1 mstruct s-1)
         self.K_NITRATES_CYTOKININS = 50#200     #: Affinity coefficient of cytokinins synthesis for nitrates (:math:`\mu` mol N nitrates g-1 mstruct)
         self.K_SUCROSE_CYTOKININS = 1000#600#800 #1250     #: Affinity coefficient of cytokinins synthesis for sucrose (:math:`\mu` mol C sucrose g-1 mstruct)
         self.N_SUC_CYTOKININS = 3#3 #4 #10           #: A parameter for cytokinins synthesis (dimensionless)
         self.N_NIT_CYTOKININS = 1#0.7          #: A parameter for cytokinins synthesis (dimensionless)
-        self.K_CYTOKININS_EXPORT = 2E-4      #: Relative rate of cytokinins export from roots (s-1)
+        self.K_CYTOKININS_EXPORT = 2E-4 /4 #/3     #: Relative rate of cytokinins export from roots (s-1)
 
 
 #: The instance of class :class:`cnwheat.parameters.RootsParameters` for current process
@@ -326,8 +326,7 @@ class PhotosyntheticOrganParameters(object):
         self.N_DPROTEINS = 2.1               #: A coefficient for the regulation of protein degradation by cytokines (dimensionless)
 
         # cytokinins
-        self.DELTA_D_CYTOKININS = 3.E-6      #: Relative rate of cytokinins degradation (s-1)
-
+        self.DELTA_D_CYTOKININS = 3.E-6 *3      #: Relative rate of cytokinins degradation (s-1)
 
 #: The instance of class :class:`cnwheat.parameters.PhotosyntheticOrganParameters` for current process
 PHOTOSYNTHETIC_ORGAN_PARAMETERS = PhotosyntheticOrganParameters()
