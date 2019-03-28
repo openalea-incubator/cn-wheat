@@ -1482,8 +1482,10 @@ class PhotosyntheticOrganElement(object):
         k_proteins = (PhotosyntheticOrgan.PARAMETERS.VMAX_DPROTEINS * PhotosyntheticOrgan.PARAMETERS.K_DPROTEINS**PhotosyntheticOrgan.PARAMETERS.N_DPROTEINS) /\
                      (conc_cytokinins**PhotosyntheticOrgan.PARAMETERS.N_DPROTEINS + PhotosyntheticOrgan.PARAMETERS.K_DPROTEINS**PhotosyntheticOrgan.PARAMETERS.N_DPROTEINS)
         # k_proteins = 1e-07
-
-        return k_proteins * T_effect_Vmax , max(0, k_proteins * (proteins / (self.mstruct*self.__class__.PARAMETERS.ALPHA))) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
+        conc_proteins = proteins / (self.mstruct*self.__class__.PARAMETERS.ALPHA)
+        Vmax = 8000
+        K = 6000
+        return k_proteins * T_effect_Vmax , max(0, k_proteins * conc_proteins * Vmax / (conc_proteins + K) ) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
 
     def calculate_Loading_Amino_Acids(self, amino_acids, amino_acids_phloem, mstruct_axis, T_effect_conductivity):
         """Rate of amino acids loading to phloem (:math:`\mu mol` N amino acids h-1).

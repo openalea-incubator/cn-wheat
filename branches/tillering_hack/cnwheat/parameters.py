@@ -115,7 +115,7 @@ class HiddenZoneParameters(object):
     Internal parameters of hidden growing zones.
     """
     def __init__(self):
-        self.SIGMA = 5E-2 /4               #: Coefficient of surface diffusion. Used in Fick's law (g m-2 s-1).
+        self.SIGMA = 5E-2 /2               #: Coefficient of surface diffusion. Used in Fick's law (g m-2 s-1).
         self.VMAX_SFRUCTAN_RELATIVE = 10 #6   #: Maximal rate of fructan synthesis in the division zone relative to the rate in mature tissus (:math:`\mu` mol C s-1 g-1 MS)
         self.VMAX_SFRUCTAN_POT = 0.015
         self.K_SFRUCTAN = 5000.            #: Affinity coefficient of fructan synthesis (:math:`\mu` mol C g-1 MS)
@@ -326,7 +326,7 @@ class PhotosyntheticOrganParameters(object):
         self.N_DPROTEINS = 2.1               #: A coefficient for the regulation of protein degradation by cytokines (dimensionless)
 
         # cytokinins
-        self.DELTA_D_CYTOKININS = 3.E-6 *3      #: Relative rate of cytokinins degradation (s-1)
+        self.DELTA_D_CYTOKININS = 3.E-6 *4      #: Relative rate of cytokinins degradation (s-1)
 
 #: The instance of class :class:`cnwheat.parameters.PhotosyntheticOrganParameters` for current process
 PHOTOSYNTHETIC_ORGAN_PARAMETERS = PhotosyntheticOrganParameters()
