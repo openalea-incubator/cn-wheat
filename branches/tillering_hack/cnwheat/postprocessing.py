@@ -56,7 +56,8 @@ AXES_INDEXES = cnwheat_simulation.Simulation.AXES_INDEXES
 #: concatenation of :attr:`T_INDEX` and :attr:`AXES_INDEXES`
 AXES_T_INDEXES = cnwheat_simulation.Simulation.AXES_T_INDEXES
 #: axes post-processing variables
-AXES_POSTPROCESSING_VARIABLES = ['C_N_ratio','C_N_ratio_shoot','N_content','N_content_shoot','N_content_roots','N_content_mstruct','N_content_mstruct_shoot','N_content_mstruct_roots',
+AXES_POSTPROCESSING_VARIABLES = ['C_N_ratio','C_N_ratio_shoot','N_content','N_content_shoot','N_content_roots','N_content_mstruct','N_content_mstruct_shoot','N_content_total_DM_shoot',
+                                 'N_content_mstruct_roots',
                                  'sum_N_g','sum_N_g_shoot','sum_dry_mass','sum_dry_mass_shoot','sum_dry_mass_roots',
                                  'dry_mass_phloem', 'shoot_roots_ratio','shoot_roots_mstruct_ratio','Total_Photosynthesis','Tillers_Photosynthesis','Tillers_Photosynthesis_An',
                                  'NNI','NS','NS_shoot','NS_roots','mstruct_shoot']
@@ -98,7 +99,7 @@ ELEMENTS_INDEXES = cnwheat_simulation.Simulation.ELEMENTS_INDEXES
 ELEMENTS_T_INDEXES = cnwheat_simulation.Simulation.ELEMENTS_T_INDEXES
 #: elements post-processing variables
 ELEMENTS_POSTPROCESSING_VARIABLES = ['Conc_Amino_Acids', 'Conc_Fructan', 'Conc_Nitrates', 'Conc_Proteins', 'Conc_Starch', 'Conc_Sucrose', 'Conc_TriosesP', 'Cont_Fructan_DM',
-                                     'Conc_cytokinins', 'R_maintenance', 'Surfacic N','Surfacic_NS','NS','N_content','nb_replications']
+                                     'Conc_cytokinins', 'R_maintenance', 'Surfacic N','Surfacic_NS','NS','N_content','N_content_total_DM','nb_replications']
 ELEMENTS_RUN_VARIABLES_ADDITIONAL = ['length','PARa']
 #: concatenation of :attr:`ELEMENTS_T_INDEXES`, :attr:`ELEMENTS_RUN_VARIABLES <cnwheat.simulation.Simulation.ELEMENTS_RUN_VARIABLES>` and :attr:`ELEMENTS_POSTPROCESSING_VARIABLES`
 ELEMENTS_RUN_POSTPROCESSING_VARIABLES = ELEMENTS_T_INDEXES + cnwheat_simulation.Simulation.ELEMENTS_RUN_VARIABLES + ELEMENTS_RUN_VARIABLES_ADDITIONAL + ELEMENTS_POSTPROCESSING_VARIABLES
@@ -808,6 +809,14 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
                                                                  elements_df.fillna(0)['amino_acids'],
                                                                  elements_df.fillna(0)['proteins'],
                                                                  elements_df['mstruct'])
+        elements_df['sum_dry_mass_total'] = Element.calculate_dry_mass(elements_df.fillna(0)['triosesP'],
+                                                                 elements_df.fillna(0)['sucrose'],
+                                                                 elements_df.fillna(0)['starch'],
+                                                                 elements_df.fillna(0)['fructan'],
+                                                                 elements_df.fillna(0)['nitrates'],
+                                                                 elements_df.fillna(0)['amino_acids'],
+                                                                 elements_df.fillna(0)['proteins'],
+                                                                 elements_df['max_mstruct'])
         elements_df['C_g'] = Element.calculate_C_g(elements_df.fillna(0)['triosesP'],
                                                    elements_df.fillna(0)['sucrose'],
                                                    elements_df.fillna(0)['starch'],
@@ -835,6 +844,7 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
         pp_elements_df.loc[:, 'NS'] = Element.calculate_ratio_non_structural(elements_df['sum_dry_mass'],
                                                                                          elements_df['mstruct'])
         pp_elements_df.loc[:, 'N_content'] = elements_df['N_g'] / elements_df['sum_dry_mass'] * 100
+        pp_elements_df.loc[:, 'N_content_total_DM'] = elements_df['N_g'] / elements_df['sum_dry_mass_total'] * 100
 
         grouped = elements_df.groupby('organ')
         for organ_type, parameters_class in \
@@ -932,10 +942,13 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
             # Total shoot
             hz_df_MS['sum_dry_mass_tillers'] = hz_df_MS['sum_dry_mass'] * hz_df_MS['nb_replications']
             elt_df_MS['sum_dry_mass_tillers'] = elt_df_MS['sum_dry_mass'] * elt_df_MS['nb_replications']
+            elt_df_MS['sum_dry_mass_total_tillers'] = elt_df_MS['sum_dry_mass_total'] * elt_df_MS['nb_replications']
             sum_dry_mass_shoot = sum_dry_mass_phloem_shoot + \
                                  hz_df_MS.groupby(['t', 'plant', 'axis'])['sum_dry_mass_tillers'].agg('sum') + \
                                  elt_df_MS.groupby(['t', 'plant', 'axis'])['sum_dry_mass_tillers'].agg('sum')
-
+            sum_dry_mass_total_shoot = sum_dry_mass_phloem_shoot + \
+                                 hz_df_MS.groupby(['t', 'plant', 'axis'])['sum_dry_mass_tillers'].agg('sum') + \
+                                 elt_df_MS.groupby(['t', 'plant', 'axis'])['sum_dry_mass_total_tillers'].agg('sum')
             # Total root
             sum_dry_mass_roots = sum_dry_mass_phloem_roots + dry_mass_roots
 
@@ -956,6 +969,7 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
                              hz_df_MS.groupby(['t', 'plant', 'axis'])['N_g_tillers'].agg('sum') +
                              elt_df_MS.groupby(['t', 'plant', 'axis'])['N_g_tillers'].agg('sum'))
             N_content_shoot = sum_N_g_shoot / sum_dry_mass_shoot * 100
+            N_content_total_DM_shoot = sum_N_g_shoot / sum_dry_mass_total_shoot * 100
             N_content_mstruct_shoot = sum_N_g_shoot / sum_mstruct_shoot * 100
 
             N_content_roots = (N_content*sum_dry_mass - N_content_shoot*sum_dry_mass_shoot)/sum_dry_mass_roots
@@ -1001,6 +1015,7 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
             pp_axes_df.loc[:, 'N_content_roots'] = N_content_roots.values[1:len(N_content_roots)]
             pp_axes_df.loc[:, 'N_content_mstruct'] = N_content_mstruct.values[1:len(N_content_mstruct)]
             pp_axes_df.loc[:, 'N_content_mstruct_shoot'] = N_content_mstruct_shoot.values[1:len(N_content_mstruct_shoot)]
+            pp_axes_df.loc[:, 'N_content_total_DM_shoot'] = N_content_total_DM_shoot.values[1:len(N_content_total_DM_shoot)]
             pp_axes_df.loc[:, 'N_content_mstruct_roots'] = N_content_mstruct_roots.values[1:len(N_content_mstruct_roots)]
             pp_axes_df.loc[:, 'sum_N_g'] = sum_N_g.values[1:len(sum_N_g)]
             pp_axes_df.loc[:, 'sum_N_g_shoot'] = sum_N_g_shoot.values[1:len(sum_N_g_shoot)]
@@ -1079,7 +1094,7 @@ def generate_graphs(axes_df=None, hiddenzones_df=None, organs_df=None, elements_
                                        'Conc_cytokinins': u'[cytokinins] (UA g$^{-1}$ mstruct)', 'D_cytokinins':u'Cytokinin degradation (UA g$^{-1}$ mstruct)',
                                        'cytokinins_import': u'Cytokinin import (UA)', 'Surfacic N': u'Surfacic N (g m$^{-2}$)',
                                        'Surfacic_NS': u'Surfacic Non Structural mass (g m$^{-2}$)', 'NS': u'Ratio of Non Structural mass',
-                                       'N_content':u'N content in the green tissues (% DM)',
+                                       'N_content':u'N content in the green tissues (% DM)','N_content_total_DM':u'N content in the green + senesced tissues (% DM)',
                                         'length': u'Length (m)'}
     
         for org_ph in (['blade'], ['sheath'], ['internode'], ['peduncle', 'ear']):
@@ -1162,6 +1177,7 @@ def generate_graphs(axes_df=None, hiddenzones_df=None, organs_df=None, elements_
     graph_variables_axes = {'mstruct':'Axis mstruct (g)',
                             'C_N_ratio' : u'C/N mass ratio','C_N_ratio_shoot' : u'C/N mass ratio of the shoot',
                             'N_content' : u'N content in the axis (% DM)','N_content_shoot':u'N content in the shoot (% DM)',
+                            'N_content_total_DM_shoot': u'N content in the shoot acounting for partly senesced leaves (% DM)',
                             'N_content_roots': u'N content in the roots (% DM)',
                             'N_content_mstruct'      : u'N content in the axis (% mstruct)', 'N_content_mstruct_shoot': u'N content in the shoot (% mstruct)',
                             'N_content_mstruct_roots': u'N content in the roots (% mstruct)',
