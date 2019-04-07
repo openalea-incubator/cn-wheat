@@ -326,7 +326,7 @@ class HiddenZone(Organ):
         conductance = parameters.HIDDEN_ZONE_PARAMETERS.SIGMA * parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.BETA * self.mstruct**(2/3) * T_effect_conductivity
         return (conc_amino_acids_phloem - conc_amino_acids_HZ) * conductance * parameters.SECOND_TO_HOUR_RATE_CONVERSION
 
-    def calculate_S_proteins(self, amino_acids, T_effect_Vmax): # TODO : ON ne va pas chercher les paramètres au bon endroit
+    def calculate_S_proteins(self, manual_parameters, amino_acids, T_effect_Vmax): # TODO : ON ne va pas chercher les paramètres au bon endroit
         """Rate of protein synthesis (:math:`\mu mol` N proteins h-1 g-1 MS).
         Michaelis-Menten function of amino acids.
 
@@ -337,7 +337,7 @@ class HiddenZone(Organ):
         :Returns Type:
             :class:`float`
         """
-        VMAX = parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.VMAX_SPROTEINS * 25 * (1-self.ratio_DZ) + parameters.HIDDEN_ZONE_PARAMETERS.VMAX_SPROTEINS * self.ratio_DZ
+        VMAX = parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.VMAX_SPROTEINS * 25 * (1-self.ratio_DZ) + manual_parameters.get( 'HZ.VMAX_SPROTEINS', parameters.HIDDEN_ZONE_PARAMETERS.VMAX_SPROTEINS) * self.ratio_DZ
         return ( (VMAX * max(0, (amino_acids / self.mstruct)) ) / (parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.K_SPROTEINS + max(0, (amino_acids / self.mstruct)))) * \
                  parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
 
@@ -879,7 +879,7 @@ class Roots(Organ):
         return T_effect_Vmax * Roots.PARAMETERS.VMAX_AMINO_ACIDS / ((1 + Roots.PARAMETERS.K_AMINO_ACIDS_NITRATES/(nitrates/(self.mstruct*Roots.PARAMETERS.ALPHA))) *
                                                     (1 + Roots.PARAMETERS.K_AMINO_ACIDS_SUCROSE/(sucrose/(self.mstruct*Roots.PARAMETERS.ALPHA)))) * parameters.SECOND_TO_HOUR_RATE_CONVERSION
 
-    def calculate_Export_Nitrates(self, nitrates, regul_transpiration):
+    def calculate_Export_Nitrates(self, manual_parameters, nitrates, regul_transpiration):
         """Total export of nitrates from roots to shoot organs
         Export is calculated as a function on nitrate concentration and culm transpiration.
 
@@ -892,11 +892,11 @@ class Roots(Organ):
             :class:`float`
         """
 
-        f_nitrates = (nitrates / (self.mstruct * Roots.PARAMETERS.ALPHA)) * Roots.PARAMETERS.K_NITRATE_EXPORT           #: :math:`\mu mol` g-1 s-1
+        f_nitrates = (nitrates / (self.mstruct * Roots.PARAMETERS.ALPHA)) * manual_parameters.get('RT.K_NITRATE_EXPORT' ,Roots.PARAMETERS.K_NITRATE_EXPORT)           #: :math:`\mu mol` g-1 s-1
         Export_Nitrates = f_nitrates * self.mstruct * regul_transpiration * parameters.SECOND_TO_HOUR_RATE_CONVERSION   #: Nitrate export regulation by transpiration (:math:`\mu mol` N)
         return max( min(Export_Nitrates, nitrates), 0.)
 
-    def calculate_Export_Amino_Acids(self, amino_acids, regul_transpiration):
+    def calculate_Export_Amino_Acids(self, manual_parameters, amino_acids, regul_transpiration):
         """Total export of amino acids from roots to shoot organs
         Amino acids export is calculated as a function of nitrate export using the ratio amino acids:nitrates in roots.
 
@@ -909,7 +909,7 @@ class Roots(Organ):
         :Returns Type:
             :class:`float`
         """
-        f_amino_acids = (amino_acids/(self.mstruct * Roots.PARAMETERS.ALPHA)) * Roots.PARAMETERS.K_AMINO_ACIDS_EXPORT
+        f_amino_acids = (amino_acids/(self.mstruct * Roots.PARAMETERS.ALPHA)) * manual_parameters.get('RT.K_AMINO_ACIDS_EXPORT' , Roots.PARAMETERS.K_AMINO_ACIDS_EXPORT)
         Export_Amino_Acids = f_amino_acids * self.mstruct * regul_transpiration * parameters.SECOND_TO_HOUR_RATE_CONVERSION  #: Amino acids export regulation by plant transpiration (
         # :math:`\mu
         # mol` N)
@@ -938,7 +938,7 @@ class Roots(Organ):
             N_exudation =  min( (amino_acids_roots/sucrose_roots), 0.2) * C_exudation
         return C_exudation, N_exudation
 
-    def calculate_S_cytokinins(self, sucrose_roots, nitrates_roots, T_effect_Vmax):
+    def calculate_S_cytokinins(self, manual_parameters, sucrose_roots, nitrates_roots, T_effect_Vmax):
         """ Rate of cytokinin synthesis (AU cytokinins g-1 mstruct h-1).
         Cytokinin synthesis regulated by both root sucrose and nitrates. As a signal molecule, cytokinins are assumed have a neglected effect on sucrose.
         Thus, no cost in C is applied to the sucrose pool.
@@ -955,10 +955,10 @@ class Roots(Organ):
         conc_Nitrates = max(0, (nitrates_roots/self.mstruct))
         f_sucrose = conc_sucrose**Roots.PARAMETERS.N_SUC_CYTOKININS/(conc_sucrose**Roots.PARAMETERS.N_SUC_CYTOKININS + Roots.PARAMETERS.K_SUCROSE_CYTOKININS**Roots.PARAMETERS.N_SUC_CYTOKININS)
         f_nitrates = conc_Nitrates**Roots.PARAMETERS.N_NIT_CYTOKININS/(conc_Nitrates**Roots.PARAMETERS.N_NIT_CYTOKININS + Roots.PARAMETERS.K_NITRATES_CYTOKININS**Roots.PARAMETERS.N_NIT_CYTOKININS)
-        S_cytokinins = Roots.PARAMETERS.VMAX_S_CYTOKININS * f_sucrose * f_nitrates * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
+        S_cytokinins = manual_parameters.get('RT.VMAX_S_CYTOKININS', Roots.PARAMETERS.VMAX_S_CYTOKININS) * f_sucrose * f_nitrates * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
         return S_cytokinins
 
-    def calculate_Export_cytokinins(self, cytokinins, regul_transpiration):
+    def calculate_Export_cytokinins(self, manual_parameters, cytokinins, regul_transpiration):
         """Total export of cytokinin from roots to shoot organs
         Cytokinin export is calculated as a function of cytokinin concentration and culm transpiration.
 
@@ -970,7 +970,7 @@ class Roots(Organ):
         :Returns Type:
             :class:`float`
         """
-        f_cytokinins = (cytokinins / (self.mstruct*Roots.PARAMETERS.ALPHA)) * Roots.PARAMETERS.K_CYTOKININS_EXPORT
+        f_cytokinins = (cytokinins / (self.mstruct*Roots.PARAMETERS.ALPHA)) * manual_parameters.get('RT.K_CYTOKININS_EXPORT' , Roots.PARAMETERS.K_CYTOKININS_EXPORT)
         Export_cytokinins = f_cytokinins * self.mstruct * regul_transpiration * parameters.SECOND_TO_HOUR_RATE_CONVERSION  #: Cytokinin export regulation by plant transpiration (AU)
 
         return  max( min(Export_cytokinins, cytokinins), 0.)
@@ -1450,7 +1450,7 @@ class PhotosyntheticOrganElement(object):
                                       parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
         return calculate_S_amino_acids
 
-    def calculate_S_proteins(self, amino_acids, T_effect_Vmax):
+    def calculate_S_proteins(self, manual_parameters, amino_acids, T_effect_Vmax):
         """Rate of protein synthesis (:math:`\mu mol` N proteins h-1 g-1 MS).
         Michaelis-Menten function of amino acids.
 
@@ -1461,11 +1461,11 @@ class PhotosyntheticOrganElement(object):
         :Returns Type:
             :class:`float`
         """
-        calculate_S_proteins = (((max(0, amino_acids) / (self.mstruct*self.__class__.PARAMETERS.ALPHA)) * PhotosyntheticOrgan.PARAMETERS.VMAX_SPROTEINS) /
+        calculate_S_proteins = (((max(0, amino_acids) / (self.mstruct*self.__class__.PARAMETERS.ALPHA)) * manual_parameters.get( 'ELT.VMAX_SPROTEINS', PhotosyntheticOrgan.PARAMETERS.VMAX_SPROTEINS) ) /
                                 ((max(0, amino_acids) / (self.mstruct*self.__class__.PARAMETERS.ALPHA)) + PhotosyntheticOrgan.PARAMETERS.K_SPROTEINS)) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
         return calculate_S_proteins
 
-    def calculate_D_Proteins(self, proteins, cytokinins, T_effect_Vmax):
+    def calculate_D_Proteins(self, manual_parameters, proteins, cytokinins, T_effect_Vmax):
         """Rate of protein degradation (:math:`\mu mol` N proteins s-1 g-1 MS h-1).
         First order kinetic regulated by cytokinins concentration.
 
@@ -1483,7 +1483,7 @@ class PhotosyntheticOrganElement(object):
                      (conc_cytokinins**PhotosyntheticOrgan.PARAMETERS.N_DPROTEINS + PhotosyntheticOrgan.PARAMETERS.K_DPROTEINS**PhotosyntheticOrgan.PARAMETERS.N_DPROTEINS)
         # k_proteins = 1e-07
         conc_proteins = proteins / (self.mstruct*self.__class__.PARAMETERS.ALPHA)
-        Vmax = 8000
+        Vmax = manual_parameters.get( 'VMAX_DPROTEINS' ,8000)
         K = 6000
         return k_proteins * T_effect_Vmax , max(0, k_proteins * conc_proteins * Vmax / (conc_proteins + K) ) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
 
@@ -1553,7 +1553,7 @@ class PhotosyntheticOrganElement(object):
             cytokinins_import = 0
         return cytokinins_import
 
-    def calculate_D_cytokinins(self, cytokinins, is_growing, T_effect_Vmax):
+    def calculate_D_cytokinins(self, manual_parameters, cytokinins, is_growing, T_effect_Vmax):
         """Rate of cytokinins degradation (AU g-1 mstruct h-1).
         First order kinetic. Vary with organ temperature.
 
@@ -1566,7 +1566,7 @@ class PhotosyntheticOrganElement(object):
             :class:`float`
         """
         # will be null if the element is growing (1-is_growing) *
-        return  max(0, PhotosyntheticOrgan.PARAMETERS.DELTA_D_CYTOKININS * (cytokinins/(self.mstruct*self.__class__.PARAMETERS.ALPHA))) * \
+        return  max(0, manual_parameters.get( 'ELT.DELTA_D_CYTOKININS',PhotosyntheticOrgan.PARAMETERS.DELTA_D_CYTOKININS) * (cytokinins/(self.mstruct*self.__class__.PARAMETERS.ALPHA))) * \
                parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
 
     # COMPARTMENTS

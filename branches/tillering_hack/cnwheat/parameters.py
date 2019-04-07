@@ -124,7 +124,7 @@ class HiddenZoneParameters(object):
         self.VMAX_DFRUCTAN = 0.035 *2        #: Maximal rate of fructan degradation (:math:`\mu` mol C s-1 g-1 MS)
         self.K_DFRUCTAN = 100.             #: Affinity coefficient of fructan degradation (:math:`\mu` mol C g-1 MS)
         self.delta_Dproteins = 0.25e-6     #: Relative rate of proteins degradation (s-1)
-        self.VMAX_SPROTEINS = 0.0015 * 200 #* 180 #: Maximal rate of protein synthesis (:math:`\mu` mol N s-1 g-1 MS)
+        self.VMAX_SPROTEINS = 0.0015 * 230 #* 180 #: Maximal rate of protein synthesis (:math:`\mu` mol N s-1 g-1 MS)
 
 
 #: The instance of class :class:`cnwheat.parameters.HiddenZoneParameters` for current process
@@ -245,7 +245,7 @@ class RootsParameters(object):
         self.LAMBDA_LATS = 1.6517E-03        #: Parameter for estimating the rate of nitrates uptake at low soil N concentration; LATS (g :math:`\mu` mol-1)
 
         # Nitrate export
-        self.K_NITRATE_EXPORT = 1E-6 * 100 #* 70    #: Relative rate of nitrate export from roots (s-1)
+        self.K_NITRATE_EXPORT = 1E-6 * 120 #* 70    #: Relative rate of nitrate export from roots (s-1)
 
         # Amino acids
         self.VMAX_AMINO_ACIDS = 0.001        #: Maximal rate of amino acid synthesis (:math:`\mu` mol N s-1 g-1 MS)
@@ -257,7 +257,7 @@ class RootsParameters(object):
         self.C_EXUDATION = 0.20              #: Proportion of C exudated from C sucrose unloaded to roots (Keith et al., 1986)
 
         # Cytokinins
-        self.VMAX_S_CYTOKININS = 4.5E-04 * 2 # *0.8#*1.3 /2    #: Maximal rate of cytokinins synthesis (UA g-1 mstruct s-1)
+        self.VMAX_S_CYTOKININS = 4.5E-04*2 # *0.8#*1.3 /2    #: Maximal rate of cytokinins synthesis (UA g-1 mstruct s-1)
         self.K_NITRATES_CYTOKININS = 50#200     #: Affinity coefficient of cytokinins synthesis for nitrates (:math:`\mu` mol N nitrates g-1 mstruct)
         self.K_SUCROSE_CYTOKININS = 1200#600#800 #1250     #: Affinity coefficient of cytokinins synthesis for sucrose (:math:`\mu` mol C sucrose g-1 mstruct)
         self.N_SUC_CYTOKININS = 3#3 #4 #10           #: A parameter for cytokinins synthesis (dimensionless)
@@ -319,14 +319,14 @@ class PhotosyntheticOrganParameters(object):
         self.K_AMINO_ACIDS_TRIOSESP = 0.2    #: Affinity coefficient of amino acid synthesis from triosesP (:math:`\mu` mol C g-1 MS)
 
         # Proteins
-        self.VMAX_SPROTEINS = 0.0015 *2 *2 # 0.004        #: Maximal rate of protein synthesis (:math:`\mu` mol N s-1 g-1 MS)
+        self.VMAX_SPROTEINS = 0.0015 *2 *1.5 # 0.004        #: Maximal rate of protein synthesis (:math:`\mu` mol N s-1 g-1 MS)
         self.K_SPROTEINS = 100 *2.5  #380             #: Affinity coefficient of protein synthesis (:math:`\mu` mol N g-1 MS)
         self.VMAX_DPROTEINS = 2.5E-6         #: Maximal rate of protein degradation (:math:`\mu` mol g-1 mstruct s-1)
         self.K_DPROTEINS = 50                #: Affinity coefficient with cytokinins for protein degradation (UA g-1 mstruct)
         self.N_DPROTEINS = 2.1               #: A coefficient for the regulation of protein degradation by cytokines (dimensionless)
 
         # cytokinins
-        self.DELTA_D_CYTOKININS = 3.E-6 *4      #: Relative rate of cytokinins degradation (s-1)
+        self.DELTA_D_CYTOKININS = 3.E-6 *5      #: Relative rate of cytokinins degradation (s-1)
 
 #: The instance of class :class:`cnwheat.parameters.PhotosyntheticOrganParameters` for current process
 PHOTOSYNTHETIC_ORGAN_PARAMETERS = PhotosyntheticOrganParameters()

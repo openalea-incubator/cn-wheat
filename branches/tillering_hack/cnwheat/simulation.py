@@ -3,6 +3,7 @@
 from __future__ import division  # use "//" to do integer division
 import logging
 
+import pandas as pd
 import numpy as np
 from scipy.integrate import solve_ivp
 
@@ -316,6 +317,8 @@ class Simulation(object):
 
         self.respiration_model = respiration_model  #: the model of respiration to use
 
+        self.parameters = ''
+
         self.population = model.Population()  #: the population to simulate on
 
         #: The inputs of the soils.
@@ -374,7 +377,7 @@ class Simulation(object):
         
         self.nfe_total = 0 #: cumulative number of RHS function evaluations
 
-    def initialize(self, population, soils, Tair=12, Tsoil=12):
+    def initialize(self, population, soils, cnwheat_parameters=pd.DataFrame(), Tair=12, Tsoil=12):
         """
         Initialize:
 
@@ -397,6 +400,8 @@ class Simulation(object):
         logger = logging.getLogger(__name__)
 
         logger.info('Initialization of the simulation...')
+
+        self.parameters = cnwheat_parameters
 
         # clean the attributes of the simulation
         del self.population.plants[:]
@@ -474,7 +479,7 @@ class Simulation(object):
             logger.exception(message)
             raise SimulationInitializationError(message)
 
-        # Update soil and air temperature using weater data
+        # Update soil and air temperature using weather data
         for soil_id, soil_inputs in self.soils.iteritems():
             self.soils[soil_id].Tsoil = Tsoil
         for plant in self.population.plants:
@@ -740,9 +745,9 @@ class Simulation(object):
                 axis.roots.Uptake_Nitrates, axis.roots.HATS_LATS = axis.roots.calculate_Uptake_Nitrates(soil.Conc_Nitrates_Soil, axis.roots.nitrates, axis.roots.sucrose, soil.T_effect_Vmax)
                 soil_contributors.append((axis.roots.Uptake_Nitrates, plant.index))  #: TODO TEMP!!!
                 axis.roots.R_Nnit_upt = self.respiration_model.RespirationModel.R_Nnit_upt(axis.roots.Uptake_Nitrates, axis.roots.sucrose)
-                axis.roots.Export_Nitrates = axis.roots.calculate_Export_Nitrates(axis.roots.nitrates, axis.roots.regul_transpiration)
-                axis.roots.Export_Amino_Acids = axis.roots.calculate_Export_Amino_Acids(axis.roots.amino_acids, axis.roots.regul_transpiration)
-                axis.roots.Export_cytokinins = axis.roots.calculate_Export_cytokinins(axis.roots.cytokinins, axis.roots.regul_transpiration)
+                axis.roots.Export_Nitrates = axis.roots.calculate_Export_Nitrates(self.parameters, axis.roots.nitrates, axis.roots.regul_transpiration)
+                axis.roots.Export_Amino_Acids = axis.roots.calculate_Export_Amino_Acids(self.parameters, axis.roots.amino_acids, axis.roots.regul_transpiration)
+                axis.roots.Export_cytokinins = axis.roots.calculate_Export_cytokinins(self.parameters, axis.roots.cytokinins, axis.roots.regul_transpiration)
 
                 # compute the derivative of each photosynthetic organ element compartment
                 for phytomer in axis.phytomers:
@@ -804,10 +809,10 @@ class Simulation(object):
                             element.S_Amino_Acids = element.calculate_S_amino_acids(element.nitrates, element.triosesP, plant.T_effect_Vmax)
                             element.R_Nnit_red, element.S_Amino_Acids = self.respiration_model.RespirationModel.R_Nnit_red(element.S_Amino_Acids, element.sucrose,
                                                                                                                            element.mstruct * element.__class__.PARAMETERS.ALPHA)
-                            element.S_Proteins = element.calculate_S_proteins(element.amino_acids, plant.T_effect_Vmax)
-                            element.k_proteins, element.D_Proteins = element.calculate_D_Proteins(element.proteins, element.cytokinins, plant.T_effect_Vmax)
+                            element.S_Proteins = element.calculate_S_proteins(self.parameters, element.amino_acids, plant.T_effect_Vmax)
+                            element.k_proteins, element.D_Proteins = element.calculate_D_Proteins(self.parameters, element.proteins, element.cytokinins, plant.T_effect_Vmax)
                             element.cytokinins_import = element.calculate_cytokinins_import(axis.roots.Export_cytokinins, element.Transpiration, axis.Total_Transpiration)
-                            element.D_cytokinins = element.calculate_D_cytokinins(element.cytokinins, element.is_growing, plant.T_effect_Vmax)
+                            element.D_cytokinins = element.calculate_D_cytokinins(self.parameters, element.cytokinins, element.is_growing, plant.T_effect_Vmax)
 
                             # compartments derivatives
                             starch_derivative = element.calculate_starch_derivative(element.S_Starch, element.D_Starch)
@@ -848,7 +853,7 @@ class Simulation(object):
                         hiddenzone.D_Fructan = hiddenzone.calculate_D_Fructan(hiddenzone.sucrose, hiddenzone.fructan, plant.T_effect_Vmax)
                         #
                         # # Synthesis proteins
-                        hiddenzone.S_Proteins = hiddenzone.calculate_S_proteins(hiddenzone.amino_acids, plant.T_effect_Vmax)
+                        hiddenzone.S_Proteins = hiddenzone.calculate_S_proteins(self.parameters, hiddenzone.amino_acids, plant.T_effect_Vmax)
 
                         # Degradation proteins
                         hiddenzone.D_Proteins = hiddenzone.calculate_D_Proteins(hiddenzone.proteins, plant.T_effect_Vmax)
@@ -898,7 +903,7 @@ class Simulation(object):
                 axis.roots.R_Nnit_red, axis.roots.S_Amino_Acids = self.respiration_model.RespirationModel.R_Nnit_red(axis.roots.S_Amino_Acids, axis.roots.sucrose,
                                                                                                                      axis.roots.mstruct * model.Roots.PARAMETERS.ALPHA, root=True)
                 axis.roots.C_exudation, axis.roots.N_exudation = axis.roots.calculate_exudation(axis.roots.Unloading_Sucrose, axis.roots.sucrose, axis.roots.amino_acids, axis.phloem.amino_acids )
-                axis.roots.S_cytokinins = axis.roots.calculate_S_cytokinins(axis.roots.sucrose, axis.roots.nitrates, soil.T_effect_Vmax )
+                axis.roots.S_cytokinins = axis.roots.calculate_S_cytokinins(self.parameters, axis.roots.sucrose, axis.roots.nitrates, soil.T_effect_Vmax )
 
                 # compartments derivatives
                 axis.roots.R_residual, _ = self.respiration_model.RespirationModel.R_residual(axis.roots.sucrose, axis.roots.mstruct * model.Roots.PARAMETERS.ALPHA, axis.roots.Total_Organic_Nitrogen,
@@ -988,9 +993,9 @@ class Simulation(object):
                 axis.roots.Uptake_Nitrates, axis.roots.HATS_LATS = axis.roots.calculate_Uptake_Nitrates(soil.Conc_Nitrates_Soil, axis.roots.nitrates, axis.roots.sucrose, soil.T_effect_Vmax)
                 # soil_contributors.append((axis.roots.Uptake_Nitrates, plant.index)) # TODO: TEMP!!!
                 axis.roots.R_Nnit_upt = self.respiration_model.RespirationModel.R_Nnit_upt(axis.roots.Uptake_Nitrates, axis.roots.sucrose)
-                axis.roots.Export_Nitrates = axis.roots.calculate_Export_Nitrates(axis.roots.nitrates, axis.roots.regul_transpiration)
-                axis.roots.Export_Amino_Acids = axis.roots.calculate_Export_Amino_Acids(axis.roots.amino_acids, axis.roots.regul_transpiration)
-                axis.roots.Export_cytokinins = axis.roots.calculate_Export_cytokinins(axis.roots.cytokinins, axis.roots.regul_transpiration)
+                axis.roots.Export_Nitrates = axis.roots.calculate_Export_Nitrates(self.parameters, axis.roots.nitrates, axis.roots.regul_transpiration)
+                axis.roots.Export_Amino_Acids = axis.roots.calculate_Export_Amino_Acids(self.parameters, axis.roots.amino_acids, axis.roots.regul_transpiration)
+                axis.roots.Export_cytokinins = axis.roots.calculate_Export_cytokinins(self.parameters, axis.roots.cytokinins, axis.roots.regul_transpiration)
 
                 for phytomer in axis.phytomers:
                     # Hidden zone
@@ -1019,7 +1024,7 @@ class Simulation(object):
                         hiddenzone.D_Fructan = hiddenzone.calculate_D_Fructan(hiddenzone.sucrose, hiddenzone.fructan, plant.T_effect_Vmax)
 
                         # Synthesis proteins
-                        hiddenzone.S_Proteins = hiddenzone.calculate_S_proteins(hiddenzone.amino_acids, plant.T_effect_Vmax)
+                        hiddenzone.S_Proteins = hiddenzone.calculate_S_proteins(self.parameters, hiddenzone.amino_acids, plant.T_effect_Vmax)
 
                         # Degradation proteins
                         hiddenzone.D_Proteins = hiddenzone.calculate_D_Proteins(hiddenzone.proteins, plant.T_effect_Vmax)
@@ -1070,10 +1075,10 @@ class Simulation(object):
                             element.S_Amino_Acids = element.calculate_S_amino_acids(element.nitrates, element.triosesP, plant.T_effect_Vmax)
                             element.R_Nnit_red, element.S_Amino_Acids = self.respiration_model.RespirationModel.R_Nnit_red(element.S_Amino_Acids, element.sucrose,
                                                                                                                            element.mstruct * element.__class__.PARAMETERS.ALPHA)
-                            element.S_Proteins = element.calculate_S_proteins(element.amino_acids, plant.T_effect_Vmax)
-                            element.k_proteins, element.D_Proteins = element.calculate_D_Proteins(element.proteins, element.cytokinins, plant.T_effect_Vmax)
+                            element.S_Proteins = element.calculate_S_proteins(self.parameters, element.amino_acids, plant.T_effect_Vmax)
+                            element.k_proteins, element.D_Proteins = element.calculate_D_Proteins(self.parameters, element.proteins, element.cytokinins, plant.T_effect_Vmax)
                             element.cytokinins_import = element.calculate_cytokinins_import(axis.roots.Export_cytokinins, element.Transpiration, axis.Total_Transpiration)
-                            element.D_cytokinins = element.calculate_D_cytokinins(element.cytokinins, element.is_growing, plant.T_effect_Vmax)
+                            element.D_cytokinins = element.calculate_D_cytokinins(self.parameters, element.cytokinins, element.is_growing, plant.T_effect_Vmax)
 
                             element.R_residual, _ = self.respiration_model.RespirationModel.R_residual(element.sucrose, element.mstruct * element.__class__.PARAMETERS.ALPHA,
                                                                                                        element.Total_Organic_Nitrogen, element.Ts)
@@ -1110,7 +1115,7 @@ class Simulation(object):
                 axis.roots.R_Nnit_red, axis.roots.S_Amino_Acids = self.respiration_model.RespirationModel.R_Nnit_red(axis.roots.S_Amino_Acids, axis.roots.sucrose,
                                                                                                                      axis.roots.mstruct * model.Roots.PARAMETERS.ALPHA, root=True)
                 axis.roots.C_exudation, axis.roots.N_exudation = axis.roots.calculate_exudation(axis.roots.Unloading_Sucrose, axis.roots.sucrose, axis.roots.amino_acids, axis.phloem.amino_acids)
-                axis.roots.S_cytokinins = axis.roots.calculate_S_cytokinins(axis.roots.sucrose, axis.roots.nitrates, soil.T_effect_Vmax )
+                axis.roots.S_cytokinins = axis.roots.calculate_S_cytokinins(self.parameters, axis.roots.sucrose, axis.roots.nitrates, soil.T_effect_Vmax )
 
                 axis.roots.R_residual, _ = self.respiration_model.RespirationModel.R_residual(axis.roots.sucrose, axis.roots.mstruct * model.Roots.PARAMETERS.ALPHA, axis.roots.Total_Organic_Nitrogen,
                                                                                               soil.Tsoil)
