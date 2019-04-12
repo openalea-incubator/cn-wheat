@@ -2,6 +2,7 @@
 
 from __future__ import division  # use "//" to do integer division
 import numpy as np
+from math import exp
 
 import parameters
 
@@ -30,7 +31,6 @@ import parameters
         $URL$
         $Id$
 """
-
 
 class EcophysiologicalConstants:
     """
@@ -136,6 +136,7 @@ class Plant(object):
         f_deactivation = (1 + np.exp((Tref * deltaS - deltaHd) / (Tref * R * 1E-3))) / (1 + np.exp((Tk * deltaS - deltaHd) / (Tk * R * 1E-3)))  #: Energy of deactivation (normalized to unity)
 
         return f_activation * f_deactivation
+
 
 class Axis(object):
     """
@@ -531,6 +532,35 @@ class Phloem(Organ):
 
         return amino_acids_derivative
 
+def modified_Arrhenius_equation(temperature):
+    """ Return value of equation from Johnson and Lewin (1946) for temperature. The equation is modified to return zero below zero degree.
+
+    :Parameters:
+        - `temperature` (:class:`float`) - t (degree Celsius)
+
+    :Returns:
+        Return value of Eyring equation from Johnson and Lewin (1946) for temperature. The equation is modified to return zero below zero degree.
+    :Returns Type:
+        :class:`float`
+    """
+
+    # Parameters for temperature responses
+    Temp_Ea_R = 8900  # Parameter Ea/R in Eyring equation from Johnson and Lewin (1946) - Parameter value fitted from Kemp and Blacklow (1982) (K)
+    Temp_DS_R = 68.432  # Parameter deltaS/R in Eyring equation from Johnson and Lewin (1946) - Parameter value fitted from Kemp and Blacklow (1982) (dimensionless)
+    Temp_DH_R = 20735.5  # Parameter deltaH/R in Eyring equation from Johnson and Lewin (1946) - Parameter value fitted from Kemp and Blacklow (1982) (K)
+    Temp_Ttransition = 9  # Below this temperature f = linear function of temperature instead of Arrhenius-like(°C)
+
+    Arrhenius_equation = lambda T: T * exp(-Temp_Ea_R / T) / (1 + exp(Temp_DS_R - Temp_DH_R / T))
+    temperature_K = temperature + 273.15
+
+    if temperature < 0:
+        res = 0
+    elif temperature < Temp_Ttransition:
+        res = temperature * Arrhenius_equation(Temp_Ttransition + 273.15) / Temp_Ttransition
+    else:
+        res = Arrhenius_equation(temperature_K)
+
+    return res
 
 class Grains(Organ): # TODO : temperature effects ?
     """
@@ -585,19 +615,38 @@ class Grains(Organ): # TODO : temperature effects ?
         """
         return (structure*1E-6*EcophysiologicalConstants.C_MOLAR_MASS) / EcophysiologicalConstants.RATIO_C_mstruct
 
-    def calculate_RGR_Structure(self, sucrose_phloem, mstruct_axis):
+    def calculate_temperature_effect_on_growth(self, Tair):
+        """Effect of the temperature on elongation.
+        Return value of equation from Johnson and Lewin (1946) for temperature. The equation is modified to return zero below zero degree.
+        Identical to modified_Arrhenius_equation in ElongWheat.
+        Should multiply the rate at 20°C
+
+        :Parameters:
+            - `Tair` (:class:`float`) - Air temperature(°C)
+        :Returns:
+            Correction to apply to RGR Structure of the grains
+        :Returns Type:
+            :class:`float`
+        """
+
+        Temp_Tref = 20  # Arbitrary reference temperature (°C)
+        return modified_Arrhenius_equation(Tair) / modified_Arrhenius_equation(Temp_Tref)
+
+    def calculate_RGR_Structure(self, sucrose_phloem, mstruct_axis, T_effect_growth):
         """Relative Growth Rate of grain structure, regulated by sucrose concentration in phloem.
 
         :Parameters:
             - `sucrose_phloem` (:class:`float`) - Sucrose amount in phloem (:math:`\mu mol` C)
             - `mstruct_axis` (:class:`float`) -The structural dry mass of the axis (g)
+            - `T_effect_growth` (:class:`float`) - Effect of the temperature on the growth rate at 20°C (AU)
+
         :Returns:
             RGR of grain structure (dimensionless?)
         :Returns Type:
             :class:`float`
         """
         return ((max(0, sucrose_phloem) / (mstruct_axis * Axis.PARAMETERS.ALPHA)) * Grains.PARAMETERS.VMAX_RGR) / ((max(0, sucrose_phloem) / (mstruct_axis * Axis.PARAMETERS.ALPHA))
-                                                                                                                   + Grains.PARAMETERS.K_RGR)
+                                                                                                                   + Grains.PARAMETERS.K_RGR) * T_effect_growth
 
     # FLUXES
 
@@ -619,7 +668,7 @@ class Grains(Organ): # TODO : temperature effects ?
             S_grain_structure = 0
         return S_grain_structure
 
-    def calculate_S_grain_starch(self, sucrose_phloem, mstruct_axis):
+    def calculate_S_grain_starch(self, sucrose_phloem, mstruct_axis, T_effect_Vmax):
         """Rate of starch synthesis in grains (i.e. grain filling) (:math:`\mu mol` C starch g-1 mstruct h-1).
         Michaelis-Menten function of sucrose concentration in the phloem.
 
@@ -637,7 +686,7 @@ class Grains(Organ): # TODO : temperature effects ?
             S_grain_starch = 0
         else:                                                           #: Grain filling
             S_grain_starch = (((max(0, sucrose_phloem)/(mstruct_axis * Axis.PARAMETERS.ALPHA)) * Grains.PARAMETERS.VMAX_STARCH) /
-                              ((max(0, sucrose_phloem)/(mstruct_axis * Axis.PARAMETERS.ALPHA)) + Grains.PARAMETERS.K_STARCH)) * parameters.SECOND_TO_HOUR_RATE_CONVERSION
+                              ((max(0, sucrose_phloem)/(mstruct_axis * Axis.PARAMETERS.ALPHA)) + Grains.PARAMETERS.K_STARCH)) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
         return S_grain_starch
 
     def calculate_S_proteins(self, S_grain_structure, S_grain_starch, amino_acids_phloem, sucrose_phloem, structural_dry_mass):

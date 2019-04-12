@@ -183,15 +183,15 @@ class GrainsParameters(object):
         self.ALPHA = 1                                   #: Proportion of structural mass containing substrate
 
         # Structure parameters
-        self.VMAX_RGR = 1.5e-06                          #: Maximal value of the Relative Growth Rate of grain structure (s-1) #TODO : Add temperature effect (delta_teq ?)
+        self.VMAX_RGR = 1.5e-06                          #: Maximal value of the Relative Growth Rate of grain structure (s-1 at 20°C)
         self.K_RGR = 300                                 #: Affinity coefficient of the Relative Growth Rate of grain structure (:math:`\mu` mol C)
 
         # Starch parameters
-        self.VMAX_STARCH = 0.35                          #: Maximal rate of grain filling of starch (:math:`\mu` mol C s-1 g-1 MS) #TODO : Add temperature effect (delta_teq ?)
+        self.VMAX_STARCH = 0.35                          #: Maximal rate of grain filling of starch (:math:`\mu` mol C s-1 at 20°C g-1 MS)
         self.K_STARCH = 400                              #: Affinity coefficient of grain filling of starch (:math:`\mu` mol C g-1 MS)
 
-        self.FILLING_INIT = 360 * 3600                   #: Time (s) at which phloem loading switch from grain structure to accumulation of starch # TODO : use thermal time
-        self.FILLING_END = 900 * 3600                    #: Time (s) at which grains filling stops. (Bertheloot et al., 2011) # TODO : use thermal time
+        self.FILLING_INIT = 360 * 3600                   #: Time (s at 20°C) at which phloem loading switch from grain structure to accumulation of starch
+        self.FILLING_END = 900 * 3600                    #: Time (s at 20°C) at which grains filling stops. (Bertheloot et al., 2011)
 
 
 #: The instance of class :class:`cnwheat.parameters.GrainsParameters` for current process
