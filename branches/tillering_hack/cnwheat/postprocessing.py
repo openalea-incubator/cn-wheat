@@ -816,7 +816,7 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
                                                                  elements_df.fillna(0)['nitrates'],
                                                                  elements_df.fillna(0)['amino_acids'],
                                                                  elements_df.fillna(0)['proteins'],
-                                                                 elements_df['max_mstruct'])
+                                                                 elements_df['max_mstruct']+elements_df['Nresidual'])
         elements_df['C_g'] = Element.calculate_C_g(elements_df.fillna(0)['triosesP'],
                                                    elements_df.fillna(0)['sucrose'],
                                                    elements_df.fillna(0)['starch'],
@@ -828,7 +828,10 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
                                                    elements_df.fillna(0)['amino_acids'],
                                                    elements_df.fillna(0)['proteins'],
                                                    elements_df['Nstruct'])
-
+        elements_df['N_g_total'] = Element.calculate_N_g(elements_df.fillna(0)['nitrates'],
+                                                   elements_df.fillna(0)['amino_acids'],
+                                                   elements_df.fillna(0)['proteins'],
+                                                   elements_df['Nstruct']+elements_df['Nresidual'] )
         pp_elements_df = pd.concat([elements_df, pd.DataFrame(columns=ELEMENTS_POSTPROCESSING_VARIABLES)],sort=False)
         pp_elements_df.loc[:, 'Conc_TriosesP'] = Element.calculate_conc_triosesP(elements_df['triosesP'], elements_df['mstruct'])
         pp_elements_df.loc[:, 'Conc_Starch'] = Element.calculate_conc_starch(elements_df['starch'], elements_df['mstruct'])
@@ -844,7 +847,7 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
         pp_elements_df.loc[:, 'NS'] = Element.calculate_ratio_non_structural(elements_df['sum_dry_mass'],
                                                                                          elements_df['mstruct'])
         pp_elements_df.loc[:, 'N_content'] = elements_df['N_g'] / elements_df['sum_dry_mass'] * 100
-        pp_elements_df.loc[:, 'N_content_total_DM'] = elements_df['N_g'] / elements_df['sum_dry_mass_total'] * 100
+        pp_elements_df.loc[:, 'N_content_total_DM'] = elements_df['N_g_total'] / elements_df['sum_dry_mass_total'] * 100
 
         grouped = elements_df.groupby('organ')
         for organ_type, parameters_class in \
@@ -959,17 +962,24 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
             # N content
             hz_df_MS['N_g_tillers'] = hz_df_MS['N_g'] * hz_df_MS['nb_replications']
             elt_df_MS['N_g_tillers'] = elt_df_MS['N_g'] * elt_df_MS['nb_replications']
+            elt_df_MS['N_g_total_tillers'] = elt_df_MS['N_g_total'] * elt_df_MS['nb_replications']
             sum_N_g = (organs_df[organs_df['axis'] == 'MS'].groupby(['t', 'plant', 'axis'])['N_g'].agg('sum') +
                        hz_df_MS.groupby(['t', 'plant', 'axis'])['N_g_tillers'].agg('sum') +
                        elt_df_MS.groupby(['t', 'plant', 'axis'])['N_g_tillers'].agg('sum'))
+            sum_N_g_total = (organs_df[organs_df['axis'] == 'MS'].groupby(['t', 'plant', 'axis'])['N_g'].agg('sum') +
+                       hz_df_MS.groupby(['t', 'plant', 'axis'])['N_g_tillers'].agg('sum') +
+                       elt_df_MS.groupby(['t', 'plant', 'axis'])['N_g_total_tillers'].agg('sum'))
             N_content = sum_N_g / sum_dry_mass * 100
             N_content_mstruct = sum_N_g / sum_mstruct * 100
 
             sum_N_g_shoot = (sum_N_g_phloem_shoot +
                              hz_df_MS.groupby(['t', 'plant', 'axis'])['N_g_tillers'].agg('sum') +
                              elt_df_MS.groupby(['t', 'plant', 'axis'])['N_g_tillers'].agg('sum'))
+            sum_N_g_total_shoot = (sum_N_g_phloem_shoot +
+                             hz_df_MS.groupby(['t', 'plant', 'axis'])['N_g_tillers'].agg('sum') +
+                             elt_df_MS.groupby(['t', 'plant', 'axis'])['N_g_total_tillers'].agg('sum'))
             N_content_shoot = sum_N_g_shoot / sum_dry_mass_shoot * 100
-            N_content_total_DM_shoot = sum_N_g_shoot / sum_dry_mass_total_shoot * 100
+            N_content_total_DM_shoot = sum_N_g_total_shoot / sum_dry_mass_total_shoot * 100
             N_content_mstruct_shoot = sum_N_g_shoot / sum_mstruct_shoot * 100
 
             N_content_roots = (N_content*sum_dry_mass - N_content_shoot*sum_dry_mass_shoot)/sum_dry_mass_roots
