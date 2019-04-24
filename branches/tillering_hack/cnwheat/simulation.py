@@ -567,7 +567,7 @@ class Simulation(object):
             message = "Integration failed: %s".format(sol.message)
             logger.exception(message)
             raise SimulationRunError(message)
-        
+
         self._update_model(sol.y[:,-1])
         
         if logger.isEnabledFor(logging.DEBUG):
@@ -680,7 +680,7 @@ class Simulation(object):
         if logger.isEnabledFor(logging.DEBUG):
             t_abs = t + self.t_offset
             logger.debug('t = {}'.format(t_abs))
-        
+
         self.nfe_total += 1
 
         compartments_logger = logging.getLogger('cnwheat.compartments')
@@ -904,7 +904,7 @@ class Simulation(object):
                 axis.roots.R_Nnit_red, axis.roots.S_Amino_Acids = self.respiration_model.RespirationModel.R_Nnit_red(axis.roots.S_Amino_Acids, axis.roots.sucrose,
                                                                                                                      axis.roots.mstruct * model.Roots.PARAMETERS.ALPHA, root=True)
                 axis.roots.C_exudation, axis.roots.N_exudation = axis.roots.calculate_exudation(axis.roots.Unloading_Sucrose, axis.roots.sucrose, axis.roots.amino_acids, axis.phloem.amino_acids )
-                axis.roots.S_cytokinins = axis.roots.calculate_S_cytokinins(self.parameters, axis.roots.sucrose, axis.roots.nitrates, soil.T_effect_Vmax )
+                axis.roots.S_cytokinins = axis.roots.calculate_S_cytokinins(self.parameters, axis.roots.sucrose, axis.roots.nitrates, axis.roots.amino_acids, soil.T_effect_Vmax )
 
                 # compartments derivatives
                 axis.roots.R_residual, _ = self.respiration_model.RespirationModel.R_residual(axis.roots.sucrose, axis.roots.mstruct * model.Roots.PARAMETERS.ALPHA, axis.roots.Total_Organic_Nitrogen,
@@ -1117,7 +1117,7 @@ class Simulation(object):
                 axis.roots.R_Nnit_red, axis.roots.S_Amino_Acids = self.respiration_model.RespirationModel.R_Nnit_red(axis.roots.S_Amino_Acids, axis.roots.sucrose,
                                                                                                                      axis.roots.mstruct * model.Roots.PARAMETERS.ALPHA, root=True)
                 axis.roots.C_exudation, axis.roots.N_exudation = axis.roots.calculate_exudation(axis.roots.Unloading_Sucrose, axis.roots.sucrose, axis.roots.amino_acids, axis.phloem.amino_acids)
-                axis.roots.S_cytokinins = axis.roots.calculate_S_cytokinins(self.parameters, axis.roots.sucrose, axis.roots.nitrates, soil.T_effect_Vmax )
+                axis.roots.S_cytokinins = axis.roots.calculate_S_cytokinins(self.parameters, axis.roots.sucrose, axis.roots.nitrates, axis.roots.amino_acids, soil.T_effect_Vmax )
 
                 axis.roots.R_residual, _ = self.respiration_model.RespirationModel.R_residual(axis.roots.sucrose, axis.roots.mstruct * model.Roots.PARAMETERS.ALPHA, axis.roots.Total_Organic_Nitrogen,
                                                                                               soil.Tsoil)

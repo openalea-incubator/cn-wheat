@@ -987,7 +987,7 @@ class Roots(Organ):
             N_exudation =  min( (amino_acids_roots/sucrose_roots), 0.2) * C_exudation
         return C_exudation, N_exudation
 
-    def calculate_S_cytokinins(self, manual_parameters, sucrose_roots, nitrates_roots, T_effect_Vmax):
+    def calculate_S_cytokinins(self, manual_parameters, sucrose_roots, nitrates_roots, amino_acids_roots, T_effect_Vmax):
         """ Rate of cytokinin synthesis (AU cytokinins g-1 mstruct h-1).
         Cytokinin synthesis regulated by both root sucrose and nitrates. As a signal molecule, cytokinins are assumed have a neglected effect on sucrose.
         Thus, no cost in C is applied to the sucrose pool.
@@ -1002,8 +1002,10 @@ class Roots(Organ):
         """
         conc_sucrose = max(0, (sucrose_roots/self.mstruct))
         conc_Nitrates = max(0, (nitrates_roots/self.mstruct))
+        conc_Amino_Acids = max(0, (amino_acids_roots/self.mstruct))
         f_sucrose = conc_sucrose**Roots.PARAMETERS.N_SUC_CYTOKININS/(conc_sucrose**Roots.PARAMETERS.N_SUC_CYTOKININS + Roots.PARAMETERS.K_SUCROSE_CYTOKININS**Roots.PARAMETERS.N_SUC_CYTOKININS)
         f_nitrates = conc_Nitrates**Roots.PARAMETERS.N_NIT_CYTOKININS/(conc_Nitrates**Roots.PARAMETERS.N_NIT_CYTOKININS + Roots.PARAMETERS.K_NITRATES_CYTOKININS**Roots.PARAMETERS.N_NIT_CYTOKININS)
+        f_AA = conc_Amino_Acids/(conc_Amino_Acids + Roots.PARAMETERS.K_AMINO_ACIDS_CYTOKININS)
         S_cytokinins = manual_parameters.get('RT.VMAX_S_CYTOKININS', Roots.PARAMETERS.VMAX_S_CYTOKININS) * f_sucrose * f_nitrates * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
         return S_cytokinins
 

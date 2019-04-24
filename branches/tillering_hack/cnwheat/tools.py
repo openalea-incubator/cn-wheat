@@ -199,6 +199,7 @@ def plot_cnwheat_ouputs(outputs, x_name, y_name, x_label='', y_label='', title=N
         ax.plot(outputs_group[x_name], outputs_group[y_name], **kwargs)
 
     ax.set_ylim(bottom=0.)
+    ax.set_xlim(right=2500)
 
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
