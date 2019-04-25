@@ -1000,11 +1000,13 @@ class Roots(Organ):
         :Returns Type:
             :class:`float`
         """
+        N_NIT_CYTOKININS =  manual_parameters.get('RT.N_NIT_CYTOKININS', Roots.PARAMETERS.N_NIT_CYTOKININS)
+        K_NITRATES_CYTOKININS =  manual_parameters.get('RT.K_NITRATES_CYTOKININS', Roots.PARAMETERS.K_NITRATES_CYTOKININS)
         conc_sucrose = max(0, (sucrose_roots/self.mstruct))
         conc_Nitrates = max(0, (nitrates_roots/self.mstruct))
         conc_Amino_Acids = max(0, (amino_acids_roots/self.mstruct))
         f_sucrose = conc_sucrose**Roots.PARAMETERS.N_SUC_CYTOKININS/(conc_sucrose**Roots.PARAMETERS.N_SUC_CYTOKININS + Roots.PARAMETERS.K_SUCROSE_CYTOKININS**Roots.PARAMETERS.N_SUC_CYTOKININS)
-        f_nitrates = conc_Nitrates**Roots.PARAMETERS.N_NIT_CYTOKININS/(conc_Nitrates**Roots.PARAMETERS.N_NIT_CYTOKININS + Roots.PARAMETERS.K_NITRATES_CYTOKININS**Roots.PARAMETERS.N_NIT_CYTOKININS)
+        f_nitrates = conc_Nitrates**N_NIT_CYTOKININS/(conc_Nitrates**N_NIT_CYTOKININS + K_NITRATES_CYTOKININS**N_NIT_CYTOKININS)
         f_AA = conc_Amino_Acids/(conc_Amino_Acids + Roots.PARAMETERS.K_AMINO_ACIDS_CYTOKININS)
 
         opt_regul_AA = manual_parameters.get('RT.REGUL_S_CYTOKININS_AA', 0)
