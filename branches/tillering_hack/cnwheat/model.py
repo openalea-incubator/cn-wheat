@@ -1006,7 +1006,14 @@ class Roots(Organ):
         f_sucrose = conc_sucrose**Roots.PARAMETERS.N_SUC_CYTOKININS/(conc_sucrose**Roots.PARAMETERS.N_SUC_CYTOKININS + Roots.PARAMETERS.K_SUCROSE_CYTOKININS**Roots.PARAMETERS.N_SUC_CYTOKININS)
         f_nitrates = conc_Nitrates**Roots.PARAMETERS.N_NIT_CYTOKININS/(conc_Nitrates**Roots.PARAMETERS.N_NIT_CYTOKININS + Roots.PARAMETERS.K_NITRATES_CYTOKININS**Roots.PARAMETERS.N_NIT_CYTOKININS)
         f_AA = conc_Amino_Acids/(conc_Amino_Acids + Roots.PARAMETERS.K_AMINO_ACIDS_CYTOKININS)
-        S_cytokinins = manual_parameters.get('RT.VMAX_S_CYTOKININS', Roots.PARAMETERS.VMAX_S_CYTOKININS) * f_sucrose * f_nitrates * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
+
+        opt_regul_AA = manual_parameters.get('RT.REGUL_S_CYTOKININS_AA', 0)
+        if opt_regul_AA == 1:
+            f_N = f_AA
+        else:
+            f_N = f_nitrates
+
+        S_cytokinins = manual_parameters.get('RT.VMAX_S_CYTOKININS', Roots.PARAMETERS.VMAX_S_CYTOKININS) * f_sucrose * f_N * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
         return S_cytokinins
 
     def calculate_Export_cytokinins(self, manual_parameters, cytokinins, regul_transpiration):
