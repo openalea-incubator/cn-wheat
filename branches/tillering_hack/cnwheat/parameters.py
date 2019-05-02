@@ -245,24 +245,25 @@ class RootsParameters(object):
         self.LAMBDA_LATS = 1.6517E-03        #: Parameter for estimating the rate of nitrates uptake at low soil N concentration; LATS (g :math:`\mu` mol-1)
 
         # Nitrate export
-        self.K_NITRATE_EXPORT = 1E-6 * 120 #: Relative rate of nitrate export from roots (s-1)
+        self.K_NITRATE_EXPORT = 1E-6 * 120   #: Relative rate of nitrate export from roots (s-1)
 
         # Amino acids
         self.VMAX_AMINO_ACIDS = 0.001        #: Maximal rate of amino acid synthesis (:math:`\mu` mol N s-1 g-1 MS)
         self.K_AMINO_ACIDS_NITRATES = 3      #: Affinity coefficient of amino acid synthesis from nitrates (:math:`\mu` mol N g-1 MS)
-        self.K_AMINO_ACIDS_SUCROSE = 350#*2     #: Affinity coefficient of amino acid synthesis from sucrose (:math:`\mu` mol C g-1 MS)
-        self.K_AMINO_ACIDS_EXPORT = 3E-5 * 60 #* 52  #: Relative rate of amino acids export from roots (s-1)
+        self.K_AMINO_ACIDS_SUCROSE = 350     #: Affinity coefficient of amino acid synthesis from sucrose (:math:`\mu` mol C g-1 MS)
+        self.K_AMINO_ACIDS_EXPORT = 3E-5 * 60 #: Relative rate of amino acids export from roots (s-1)
 
         # Exudation
-        self.C_EXUDATION = 0.20              #: Proportion of C exudated from C sucrose unloaded to roots (Keith et al., 1986)
+        self.C_EXUDATION = 0.20               #: Proportion of C exudated from C sucrose unloaded to roots (Keith et al., 1986)
 
         # Cytokinins
         self.VMAX_S_CYTOKININS = 4.5E-04*2    #: Maximal rate of cytokinins synthesis (UA g-1 mstruct s-1)
-        self.K_NITRATES_CYTOKININS = 50#200     #: Affinity coefficient of cytokinins synthesis for nitrates (:math:`\mu` mol N nitrates g-1 mstruct)
+        self.K_NITRATES_CYTOKININS = 50       #: Affinity coefficient of cytokinins synthesis for nitrates (:math:`\mu` mol N nitrates g-1 mstruct)
         self.K_AMINO_ACIDS_CYTOKININS = 12
-        self.K_SUCROSE_CYTOKININS = 1200#600#800 #1250     #: Affinity coefficient of cytokinins synthesis for sucrose (:math:`\mu` mol C sucrose g-1 mstruct)
-        self.N_SUC_CYTOKININS = 3#3 #4 #10           #: A parameter for cytokinins synthesis (dimensionless)
-        self.N_NIT_CYTOKININS = 1#0.7          #: A parameter for cytokinins synthesis (dimensionless)
+        self.K_SUCROSE_CYTOKININS = 1200      #: Affinity coefficient of cytokinins synthesis for sucrose (:math:`\mu` mol C sucrose g-1 mstruct)
+        self.N_SUC_CYTOKININS = 3             #: A parameter for cytokinins synthesis (dimensionless)
+        self.N_NIT_CYTOKININS = 1             #: A parameter for cytokinins synthesis (dimensionless)
+        self.N_AMINO_ACIDS_CYTOKININS = 1
         self.K_CYTOKININS_EXPORT = 2E-4 /3     #: Relative rate of cytokinins export from roots (s-1)
 
 
