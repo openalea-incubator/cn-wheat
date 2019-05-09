@@ -99,7 +99,7 @@ ELEMENTS_INDEXES = cnwheat_simulation.Simulation.ELEMENTS_INDEXES
 ELEMENTS_T_INDEXES = cnwheat_simulation.Simulation.ELEMENTS_T_INDEXES
 #: elements post-processing variables
 ELEMENTS_POSTPROCESSING_VARIABLES = ['Conc_Amino_Acids', 'Conc_Fructan', 'Conc_Nitrates', 'Conc_Proteins', 'Conc_Starch', 'Conc_Sucrose', 'Conc_TriosesP', 'Cont_Fructan_DM',
-                                     'Conc_cytokinins', 'R_maintenance', 'Surfacic N','Surfacic_NS','NS','N_content','N_content_total_DM', 'N_tot','nb_replications']
+                                     'Conc_cytokinins', 'R_maintenance', 'Surfacic N','Surfacic_NS','NS','N_content','N_content_total_DM', 'N_tot','nb_replications','SLA','SLN']
 ELEMENTS_RUN_VARIABLES_ADDITIONAL = ['length','PARa']
 #: concatenation of :attr:`ELEMENTS_T_INDEXES`, :attr:`ELEMENTS_RUN_VARIABLES <cnwheat.simulation.Simulation.ELEMENTS_RUN_VARIABLES>` and :attr:`ELEMENTS_POSTPROCESSING_VARIABLES`
 ELEMENTS_RUN_POSTPROCESSING_VARIABLES = ELEMENTS_T_INDEXES + cnwheat_simulation.Simulation.ELEMENTS_RUN_VARIABLES + ELEMENTS_RUN_VARIABLES_ADDITIONAL + ELEMENTS_POSTPROCESSING_VARIABLES
@@ -601,8 +601,8 @@ class Element:
         return cytokinins/mstruct
 
     @staticmethod
-    def calculate_surfacic_nitrogen(nitrates, amino_acids, proteins, Nstruct, green_area):
-        """Surfacic content of nitrogen
+    def calculate_SLN(nitrates, amino_acids, proteins, Nstruct, green_area):
+        """ Surfacic Leaf Nitrogen (SLN, g.m-2)
 
         : Parameters:
             - `nitrates` (:class:`float`) - amount of nitrates (:math:`\mu mol` N)
@@ -612,7 +612,7 @@ class Element:
             - `green_area` (:class:`float`) - green area (m-2)
 
         : Returns:
-            Surfacic nitrogen (g m-2)
+             Surfacic Leaf Nitrogen (SLN, g.m-2)
 
         :Returns Type:
             :class:`float`
@@ -622,8 +622,24 @@ class Element:
         return mass_N_tot / green_area
 
     @staticmethod
-    def calculate_surfacic_non_structural(dry_mass,mstruct, green_area):
-        """Surfacic content of nitrogen
+    def calculate_SLA(dry_mass, green_area):
+        """Specific Leaf Area (SLA, m2.kg-1)
+
+        : Parameters:
+            - `dry_mass` (:class:`float`) - Dry mass (g)
+            - `green_area` (:class:`float`) - green area (m-2)
+
+        : Returns:
+            Specific Leaf Area (SLA, m2.kg-1)
+
+        :Returns Type:
+            :class:`float`
+        """
+        return green_area/(dry_mass * 10**-3)
+
+    @staticmethod
+    def calculate_surfacic_non_structural(dry_mass, mstruct, green_area):
+        """Surfacic content of non structural mass
 
         : Parameters:
             - `dry_mass` (:class:`float`) - Dry mass (g)
@@ -636,7 +652,7 @@ class Element:
         :Returns Type:
             :class:`float`
         """
-        return (dry_mass - mstruct)+ green_area
+        return (dry_mass - mstruct)/ green_area
 
     @staticmethod
     def calculate_ratio_non_structural(dry_mass,mstruct):
@@ -850,6 +866,9 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
         pp_elements_df.loc[:, 'N_content'] = elements_df['N_g'] / elements_df['sum_dry_mass'] * 100
         pp_elements_df.loc[:, 'N_content_total_DM'] = elements_df['N_g_total'] / elements_df['sum_dry_mass_total'] * 100
         pp_elements_df.loc[:, 'N_tot'] = elements_df['N_g_total']
+        pp_elements_df.loc[:, 'SLN'] = Element.calculate_SLN(elements_df['nitrates'], elements_df['amino_acids'], elements_df['proteins'],
+                                                                                         elements_df['Nstruct'], elements_df['green_area'])
+        pp_elements_df.loc[:, 'SLA'] = Element.calculate_SLA(elements_df['sum_dry_mass'], elements_df['green_area'])
 
         grouped = elements_df.groupby('organ')
         for organ_type, parameters_class in \
@@ -1108,6 +1127,7 @@ def generate_graphs(axes_df=None, hiddenzones_df=None, organs_df=None, elements_
                                        'Surfacic_NS': u'Surfacic Non Structural mass (g m$^{-2}$)', 'NS': u'Ratio of Non Structural mass',
                                        'N_content':u'N content in the green tissues (% DM)','N_content_total_DM':u'N content in the green + senesced tissues (% DM)',
                                        'N_tot':u'N mass (g)',
+                                       'SLA':u'Specific Leaf Area (m$^{2}$.kg$^{-1}$)', 'SLN':u'Surfacic Leaf Nitrogen (g.m$^{-2}$)',
                                         'length': u'Length (m)'}
     
         for org_ph in (['blade'], ['sheath'], ['internode'], ['peduncle', 'ear']):
@@ -1169,8 +1189,8 @@ def generate_graphs(axes_df=None, hiddenzones_df=None, organs_df=None, elements_
     if hiddenzones_df is not None:
         graph_variables_hiddenzones = {'Conc_Sucrose': u'[Sucrose] (µmol g$^{-1}$ mstruct)', 'Conc_Amino_Acids': u'[Amino Acids] (µmol g$^{-1}$ mstruct)',
                                        'Conc_Proteins': u'[Proteins] (g g$^{-1}$ mstruct)', 'Conc_Fructan': u'[Fructan] (µmol g$^{-1}$ mstruct)', 'Cont_Fructan_DM':u'Fructan content (% DM)',
-                                       'Unloading_Sucrose': u'Sucrose unloading (µmol C)',
-                                       'Unloading_Amino_Acids': u'Amino_acids unloading (µmol N)', 'mstruct': u'Structural mass (g)', 'Nstruct': u'Structural N mass (g)',
+                                       'Unloading_Sucrose': u'Rate of Sucrose unloading (µmol C h${-1}$)',
+                                       'Unloading_Amino_Acids': u'Rate of Amino_acids unloading (µmol N h${-1}$)', 'mstruct': u'Structural mass (g)', 'Nstruct': u'Structural N mass (g)',
                                        'leaf_L': u'Leaf length in hz (m)', 'delta_leaf_L': u'delta of leaf length (m)', 'internode_L': u'Internode length in hz (m)',
                                        'leaf_pseudostem_length': u'leaf pseudostem length (m)'}
     
