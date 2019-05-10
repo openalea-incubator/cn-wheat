@@ -288,7 +288,7 @@ class HiddenZone(Organ):
     # FLUXES
 
     def calculate_Unloading_Sucrose(self, sucrose, sucrose_phloem, mstruct_axis, T_effect_conductivity):
-        """Rate of sucrose Unloading from phloem to the hidden zone (:math:`\mu mol` C sucrose unloaded g-1 mstruct h-1).
+        """Rate of sucrose Unloading from phloem to the hidden zone (:math:`\mu mol` C sucrose unloaded h-1).
         Transport-resistance equation
 
         :Parameters:
@@ -309,7 +309,7 @@ class HiddenZone(Organ):
         return (conc_sucrose_phloem - conc_sucrose_HZ)* conductance * parameters.SECOND_TO_HOUR_RATE_CONVERSION
 
     def calculate_Unloading_Amino_Acids(self, amino_acids, amino_acids_phloem, mstruct_axis, T_effect_conductivity): # TODO : ON ne va pas chercher les paramètres au bon endroit
-        """Rate of amino acids Unloading from phloem to the hidden zone (:math:`\mu mol` N amino acids unloaded g-1 mstruct h-1).
+        """Rate of amino acids Unloading from phloem to the hidden zone (:math:`\mu mol` N amino acids unloaded h-1).
         Transport-resistance equation
 
         :Parameters:
@@ -909,7 +909,7 @@ class Roots(Organ):
         HATS_LATS = (HATS + LATS) * self.mstruct * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax #( self.mstruct ** (3/4) )
 
         # Regulations
-        regul_C = (sucrose_roots/self.mstruct) / ((sucrose_roots/self.mstruct) + Roots.PARAMETERS.K_C)                   #: Nitrate uptake regulation by root C
+        regul_C = (sucrose_roots/self.mstruct)**0.8 / ((sucrose_roots/self.mstruct)**0.8 + Roots.PARAMETERS.K_C**0.8)                   #: Nitrate uptake regulation by root C
         net_nitrate_uptake = HATS_LATS * Roots.PARAMETERS.NET_INFLUX_UPTAKE_RATIO * regul_C                              #: Net nitrate uptake (:math:`\mu mol` N nitrates uptaked by roots)
         return net_nitrate_uptake, HATS_LATS
 
