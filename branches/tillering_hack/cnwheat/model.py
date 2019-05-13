@@ -909,7 +909,7 @@ class Roots(Organ):
         HATS_LATS = (HATS + LATS) * self.mstruct * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax #( self.mstruct ** (3/4) )
 
         # Regulations
-        regul_C = (sucrose_roots/self.mstruct)**0.8 / ((sucrose_roots/self.mstruct)**0.8 + Roots.PARAMETERS.K_C**0.8)                   #: Nitrate uptake regulation by root C
+        regul_C = (sucrose_roots/self.mstruct) / ((sucrose_roots/self.mstruct) + Roots.PARAMETERS.K_C)                   #: Nitrate uptake regulation by root C
         net_nitrate_uptake = HATS_LATS * Roots.PARAMETERS.NET_INFLUX_UPTAKE_RATIO * regul_C                              #: Net nitrate uptake (:math:`\mu mol` N nitrates uptaked by roots)
         return net_nitrate_uptake, HATS_LATS
 
