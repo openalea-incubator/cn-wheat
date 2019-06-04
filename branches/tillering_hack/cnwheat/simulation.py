@@ -858,9 +858,16 @@ class Simulation(object):
                         # Degradation proteins
                         hiddenzone.D_Proteins = hiddenzone.calculate_D_Proteins(hiddenzone.proteins, plant.T_effect_Vmax)
 
+                        # Residual respiration
+                        hiddenzone.R_residual, hiddenzone.R_maintenance = self.respiration_model.RespirationModel.R_residual(hiddenzone.sucrose,
+                                                                                                                             hiddenzone.mstruct * hiddenzone.__class__.PARAMETERS.ALPHA,
+                                                                                                                             hiddenzone.Total_Organic_Nitrogen,
+                                                                                                                             plant.Tair)
+
                         # compute the derivatives of the hidden zone
                         y_derivatives[self.initial_conditions_mapping[hiddenzone]['sucrose']] = hiddenzone.calculate_sucrose_derivative(hiddenzone.Unloading_Sucrose, hiddenzone.S_Fructan,
-                                                                                                                                        hiddenzone.D_Fructan, hiddenzone_Loading_Sucrose_contribution)
+                                                                                                                                        hiddenzone.D_Fructan,
+                                                                                                                                        hiddenzone_Loading_Sucrose_contribution, hiddenzone.R_residual)
                         y_derivatives[self.initial_conditions_mapping[hiddenzone]['amino_acids']] = hiddenzone.calculate_amino_acids_derivative(hiddenzone.Unloading_Amino_Acids, hiddenzone.S_Proteins,
                                                                                                                                                 hiddenzone.D_Proteins,
                                                                                                                                                 hiddenzone_Loading_Amino_Acids_contribution)
@@ -898,7 +905,7 @@ class Simulation(object):
 
                 # compute the derivative of each compartment of roots
                 # flows
-                axis.roots.Unloading_Sucrose = axis.roots.calculate_Unloading_Sucrose(axis.roots.sucrose, axis.phloem.sucrose, axis.mstruct, plant.T_effect_conductivity)
+                axis.roots.Unloading_Sucrose = axis.roots.calculate_Unloading_Sucrose(self.parameters, axis.roots.sucrose, axis.phloem.sucrose, axis.mstruct, plant.T_effect_conductivity)
                 axis.roots.Unloading_Amino_Acids = axis.roots.calculate_Unloading_Amino_Acids(axis.roots.Unloading_Sucrose, axis.phloem.sucrose, axis.phloem.amino_acids)
                 axis.roots.S_Amino_Acids = axis.roots.calculate_S_amino_acids(axis.roots.nitrates, axis.roots.sucrose, soil.T_effect_Vmax )
                 axis.roots.R_Nnit_red, axis.roots.S_Amino_Acids = self.respiration_model.RespirationModel.R_Nnit_red(axis.roots.S_Amino_Acids, axis.roots.sucrose,
@@ -1030,6 +1037,12 @@ class Simulation(object):
                         # Degradation proteins
                         hiddenzone.D_Proteins = hiddenzone.calculate_D_Proteins(hiddenzone.proteins, plant.T_effect_Vmax)
 
+                        # Residual respiration
+                        hiddenzone.R_residual, hiddenzone.R_maintenance = self.respiration_model.RespirationModel.R_residual(hiddenzone.sucrose,
+                                                                                                                             hiddenzone.mstruct * hiddenzone.__class__.PARAMETERS.ALPHA,
+                                                                                                                             hiddenzone.Total_Organic_Nitrogen,
+                                                                                                                             plant.Tair)
+
                     # photosynthetic organs
                     for organ in (phytomer.chaff, phytomer.peduncle, phytomer.lamina, phytomer.internode, phytomer.sheath):
 
@@ -1111,7 +1124,7 @@ class Simulation(object):
 
                 # roots
                 # flows
-                axis.roots.Unloading_Sucrose = axis.roots.calculate_Unloading_Sucrose(axis.roots.sucrose, axis.phloem.sucrose, axis.mstruct, plant.T_effect_conductivity)
+                axis.roots.Unloading_Sucrose = axis.roots.calculate_Unloading_Sucrose(self.parameters, axis.roots.sucrose, axis.phloem.sucrose, axis.mstruct, plant.T_effect_conductivity)
                 axis.roots.Unloading_Amino_Acids = axis.roots.calculate_Unloading_Amino_Acids(axis.roots.Unloading_Sucrose, axis.phloem.sucrose, axis.phloem.amino_acids)
                 axis.roots.S_Amino_Acids = axis.roots.calculate_S_amino_acids(axis.roots.nitrates, axis.roots.sucrose, soil.T_effect_Vmax )
                 axis.roots.R_Nnit_red, axis.roots.S_Amino_Acids = self.respiration_model.RespirationModel.R_Nnit_red(axis.roots.S_Amino_Acids, axis.roots.sucrose,

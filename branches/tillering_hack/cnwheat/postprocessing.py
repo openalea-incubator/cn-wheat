@@ -88,7 +88,7 @@ HIDDENZONE_INDEXES = cnwheat_simulation.Simulation.HIDDENZONE_INDEXES
 #: concatenation of :attr:`T_INDEX` and :attr:`HIDDENZONE_INDEXES`
 HIDDENZONE_T_INDEXES = cnwheat_simulation.Simulation.HIDDENZONE_T_INDEXES
 #: hidden zones post-processing variables
-HIDDENZONE_POSTPROCESSING_VARIABLES = ['Conc_Amino_Acids', 'Conc_Fructan', 'Conc_Proteins', 'Conc_Sucrose', 'RER','nb_replications','Cont_Fructan_DM']
+HIDDENZONE_POSTPROCESSING_VARIABLES = ['Conc_Amino_Acids', 'Conc_Fructan', 'Conc_Proteins', 'Conc_Sucrose', 'RER','nb_replications','Cont_Fructan_DM','Cont_Proteins_DM']
 HIDDENZONE_RUN_VARIABLES_ADDITIONAL = ['leaf_L', 'delta_leaf_L', 'internode_L', 'leaf_pseudostem_length', 'leaf_is_emerged','Respi_growth','sucrose_consumption_mstruct','AA_consumption_mstruct']
 #: concatenation of :attr:`HIDDENZONE_T_INDEXES`, :attr:`HIDDENZONE_RUN_VARIABLES <cnwheat.simulation.Simulation.HIDDENZONE_RUN_VARIABLES>` and :attr:`HIDDENZONE_POSTPROCESSING_VARIABLES`
 HIDDENZONE_RUN_POSTPROCESSING_VARIABLES = HIDDENZONE_T_INDEXES + cnwheat_simulation.Simulation.HIDDENZONE_RUN_VARIABLES + HIDDENZONE_RUN_VARIABLES_ADDITIONAL +HIDDENZONE_POSTPROCESSING_VARIABLES
@@ -321,7 +321,7 @@ class HiddenZone:
 
     @staticmethod
     def calculate_fructan_g(fructan):
-        """Dry mass
+        """Mass of fructans
 
         :Parameters:
             - `fructan` (:class:`float`) - Amount of fructans (:math:`\mu mol` C)
@@ -333,6 +333,21 @@ class HiddenZone:
         """
         C_MOLAR_MASS = cnwheat_model.EcophysiologicalConstants.C_MOLAR_MASS
         return (fructan * 1E-6 * C_MOLAR_MASS) / cnwheat_model.EcophysiologicalConstants.HEXOSE_MOLAR_MASS_C_RATIO
+
+    @staticmethod
+    def calculate_proteins_g(proteins):
+        """Mass of proteins
+
+        :Parameters:
+            - `proteins` (:class:`float`) - Amount of proteins (:math:`\mu mol` N)
+            - ...
+        :Returns:
+            Dry mass (g)
+        :Returns Type:
+            :class:`float`
+        """
+        N_MOLAR_MASS = cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS
+        return (proteins * 1E-6 * N_MOLAR_MASS) / cnwheat_model.EcophysiologicalConstants.PROTEINS_MOLAR_MASS_N_RATIO
 
     @staticmethod
     def calculate_Conc_Amino_Acids(amino_acids, mstruct):
@@ -920,6 +935,7 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
         pp_hiddenzones_df.loc[:, 'Conc_Proteins'] = HiddenZone.calculate_conc_protein(hiddenzones_df['proteins'], hiddenzones_df['mstruct'])
         pp_hiddenzones_df.loc[:, 'Conc_Sucrose'] = HiddenZone.calculate_conc_sucrose(hiddenzones_df['sucrose'], hiddenzones_df['mstruct'])
         pp_hiddenzones_df.loc[:, 'Cont_Fructan_DM'] = HiddenZone.calculate_fructan_g(hiddenzones_df['fructan']) / hiddenzones_df['sum_dry_mass'] * 100
+        pp_hiddenzones_df.loc[:, 'Cont_Proteins_DM'] = HiddenZone.calculate_proteins_g(hiddenzones_df['proteins']) / hiddenzones_df['sum_dry_mass'] * 100
         if set(hiddenzones_df.columns).issuperset(['delta_leaf_L', 'leaf_L']):
             # this is temporary: those post-processing should be done in model "elong-wheat"
             pp_hiddenzones_df.loc[:, 'RER'] = HiddenZone.calculate_RER(hiddenzones_df['delta_leaf_L'], hiddenzones_df['leaf_L'], delta_t)
@@ -1189,6 +1205,7 @@ def generate_graphs(axes_df=None, hiddenzones_df=None, organs_df=None, elements_
     if hiddenzones_df is not None:
         graph_variables_hiddenzones = {'Conc_Sucrose': u'[Sucrose] (µmol g$^{-1}$ mstruct)', 'Conc_Amino_Acids': u'[Amino Acids] (µmol g$^{-1}$ mstruct)',
                                        'Conc_Proteins': u'[Proteins] (g g$^{-1}$ mstruct)', 'Conc_Fructan': u'[Fructan] (µmol g$^{-1}$ mstruct)', 'Cont_Fructan_DM':u'Fructan content (% DM)',
+                                       'Cont_Proteins_DM': u'Protein content (% DM)',
                                        'Unloading_Sucrose': u'Rate of Sucrose unloading (µmol C h${-1}$)',
                                        'Unloading_Amino_Acids': u'Rate of Amino_acids unloading (µmol N h${-1}$)', 'mstruct': u'Structural mass (g)', 'Nstruct': u'Structural N mass (g)',
                                        'leaf_L': u'Leaf length in hz (m)', 'delta_leaf_L': u'delta of leaf length (m)', 'internode_L': u'Internode length in hz (m)',

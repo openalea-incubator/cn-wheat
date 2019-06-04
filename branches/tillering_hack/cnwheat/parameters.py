@@ -115,6 +115,7 @@ class HiddenZoneParameters(object):
     Internal parameters of hidden growing zones.
     """
     def __init__(self):
+        self.ALPHA = 1                     #: Proportion of structural mass containing substrate
         self.SIGMA = 5E-2 /2               #: Coefficient of surface diffusion. Used in Fick's law (g m-2 s-1).
         self.VMAX_SFRUCTAN_RELATIVE = 10 #6   #: Maximal rate of fructan synthesis in the division zone relative to the rate in mature tissus (:math:`\mu` mol C s-1 g-1 MS)
         self.VMAX_SFRUCTAN_POT = 0.015

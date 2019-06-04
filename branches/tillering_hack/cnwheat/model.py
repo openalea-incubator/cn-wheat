@@ -281,9 +281,35 @@ class HiddenZone(Organ):
         self.D_Fructan = None                       #: fructan degradation (:math:`\mu mol` C g-1 mstruct)
         self.D_Proteins = None                      #: protein degradation (:math:`\mu mol` N g-1 mstruct)
 
+        # intermediate variables
+        self.R_residual = None  #: Residual maintenance respiration (cost from protein turn-over, cell ion gradients, futile cycles...) (:math:`\mu mol` C respired)
+
+        # Integrated variables
+        self.Total_Organic_Nitrogen = None          #: current total nitrogen amount (:math:`\mu mol` N)
+
     @property
     def nb_replications(self):
         return sum( int(v <= self.index) * self.cohorts_replications.get(v,0) for v in self.cohorts) + 1
+
+    def calculate_integrative_variables(self):
+        self.Total_Organic_Nitrogen = self.calculate_Total_Organic_Nitrogen(self.amino_acids, self.proteins, self.Nstruct)
+
+    # VARIABLES
+
+    def calculate_Total_Organic_Nitrogen(self, amino_acids, proteins, Nstruct):
+        """Total amount of organic N (amino acids + proteins + Nstruct).
+        Used to calculate residual respiration.
+
+        :Parameters:
+            - `amino_acids` (:class:`float`) - Amount of amino acids (:math:`\mu mol` N)
+            - `proteins` (:class:`float`) - Amount of proteins (:math:`\mu mol` N)
+            - `Nstruct` (:class:`float`) - Structural N mass (g)
+        :Returns:
+            Total amount of organic N (:math:`\mu mol` N)
+        :Returns Type:
+            :class:`float`
+        """
+        return amino_acids + proteins + (Nstruct / EcophysiologicalConstants.N_MOLAR_MASS)*1E6
 
     # FLUXES
 
@@ -303,7 +329,6 @@ class HiddenZone(Organ):
         """
         conc_sucrose_phloem = (sucrose_phloem / mstruct_axis)
         conc_sucrose_HZ = (sucrose / self.mstruct)
-        #sigma = 1.1e-5
         conductance = parameters.HIDDEN_ZONE_PARAMETERS.SIGMA * parameters.PHOTOSYNTHETIC_ORGAN_PARAMETERS.BETA * self.mstruct**(2/3) * T_effect_conductivity  # TODO: choix valeurs param / flux phloem-hgz
 
         return (conc_sucrose_phloem - conc_sucrose_HZ)* conductance * parameters.SECOND_TO_HOUR_RATE_CONVERSION
@@ -411,7 +436,7 @@ class HiddenZone(Organ):
 
     # COMPARTMENTS
 
-    def calculate_sucrose_derivative(self, Unloading_Sucrose, S_Fructan, D_Fructan, hiddenzone_Loading_Sucrose_contribution):
+    def calculate_sucrose_derivative(self, Unloading_Sucrose, S_Fructan, D_Fructan, hiddenzone_Loading_Sucrose_contribution,R_residual):
         """delta sucrose of hidden zone.
 
         :Parameters:
@@ -419,12 +444,13 @@ class HiddenZone(Organ):
             - `S_Fructan` (:class:`float`) - Fructan synthesis (:math:`\mu mol` C g-1 mstruct)
             - `D_Fructan` (:class:`float`) - Fructan degradation (:math:`\mu mol` C g-1 mstruct)
             - `hiddenzone_Loading_Sucrose_contribution` (:class:`float`) - Sucrose imported from the emerged tissues (:math:`\mu mol` C)
+            - `R_residual` (:class:`float`) - Residual respiration (:math:`\mu mol` C)
         :Returns:
             delta sucrose (:math:`\mu mol` C sucrose)
         :Returns Type:
             :class:`float`
         """
-        return Unloading_Sucrose + (D_Fructan - S_Fructan) * self.mstruct + hiddenzone_Loading_Sucrose_contribution
+        return Unloading_Sucrose + (D_Fructan - S_Fructan) * self.mstruct + hiddenzone_Loading_Sucrose_contribution - R_residual
 
     def calculate_amino_acids_derivative(self, Unloading_Amino_Acids, S_Proteins, D_Proteins, hiddenzone_Loading_Amino_Acids_contribution):
         """delta amino acids of hidden zone.
@@ -830,12 +856,12 @@ class Roots(Organ):
         :Returns Type:
             :class:`float`
         """
-        return total_transpiration * Roots.PARAMETERS.CST_TRANSPIRATION #* total_surfacic_transpiration / (total_surfacic_transpiration + Roots.PARAMETERS.K_TRANSPIRATION)
+        return total_transpiration * Roots.PARAMETERS.CST_TRANSPIRATION
 
 
     # FLUXES
 
-    def calculate_Unloading_Sucrose(self, sucrose, sucrose_phloem, mstruct_axis, T_effect_conductivity):
+    def calculate_Unloading_Sucrose(self, manual_parameters, sucrose, sucrose_phloem, mstruct_axis, T_effect_conductivity):
         """Rate of sucrose Unloading from phloem to roots (:math:`\mu mol` C sucrose unloaded g-1 mstruct h-1).
         Michaelis-Menten function of the sucrose concentration in phloem.
 
@@ -855,7 +881,8 @@ class Roots(Organ):
         #: Gradient of sucrose between the roots and the phloem (:math:`\mu mol` C g-1 mstruct)
         diff_sucrose = conc_sucrose_phloem - conc_sucrose_roots
         #: Conductance depending on mstruct (g2 :math:`\mu mol`-1 s-1)
-        conductance = Roots.PARAMETERS.SIGMA_SUCROSE * Roots.PARAMETERS.BETA * self.mstruct ** (2/3) * T_effect_conductivity
+        sigma = manual_parameters.get("RT.SIGMA_SUCROSE", Roots.PARAMETERS.SIGMA_SUCROSE)
+        conductance = sigma * Roots.PARAMETERS.BETA * self.mstruct ** (2/3) * T_effect_conductivity
 
         return driving_sucrose_compartment * diff_sucrose * conductance * parameters.SECOND_TO_HOUR_RATE_CONVERSION
 
