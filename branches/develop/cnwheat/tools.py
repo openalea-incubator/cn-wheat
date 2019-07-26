@@ -238,7 +238,7 @@ def setup_logging(config_filepath='logging.json', level=logging.INFO,
     logging.getLogger('cnwheat.derivatives').disabled = not log_derivatives  # set to False to log the derivatives
 
 
-def compare_actual_to_desired(data_dirpath, actual_data_df, desired_data_filename, actual_data_filename=None, precision=4):
+def compare_actual_to_desired(data_dirpath, actual_data_df, desired_data_filename, actual_data_filename=None, precision=4, overwrite_desired_data=False):
     """Compare 
     
             difference = actual_data_df - desired_data_df
@@ -258,6 +258,7 @@ def compare_actual_to_desired(data_dirpath, actual_data_df, desired_data_filenam
     :param str desired_data_filename: The file name of the expected data.
     :param str actual_data_filename: If not None, save the computed data to `actual_data_filename`, in directory `data_dirpath`. Default is None.
     :param int precision: The precision to use for the comparison. Default is `4`.
+    :param bool overwrite_desired_data: If True the comparison between actual and desired data is not run. Instead, the desired data will be overwritten using actual data. To be used with caution.
     """
     
     relative_tolerance = 10**-precision
@@ -271,18 +272,23 @@ def compare_actual_to_desired(data_dirpath, actual_data_df, desired_data_filenam
         # save actual outputs to CSV file
         actual_data_filepath = os.path.join(data_dirpath, actual_data_filename)
         actual_data_df.to_csv(actual_data_filepath, na_rep='NA', index=False, float_format='%.{}f'.format(precision))
+    print (overwrite_desired_data)
+    if overwrite_desired_data:
+        desired_data_filepath = os.path.join(data_dirpath, desired_data_filename)
+        actual_data_df.to_csv(desired_data_filepath, na_rep='NA', index=False)
 
-    # keep only numerical data (np.testing can compare only numerical data) 
-    for column in ('axis', 'organ', 'element', 'is_growing'):
-        if column in desired_data_df.columns:
-            del desired_data_df[column]
-            del actual_data_df[column]
+    else:
+        # keep only numerical data (np.testing can compare only numerical data)
+        for column in ('axis', 'organ', 'element', 'is_growing'):
+            if column in desired_data_df.columns:
+                del desired_data_df[column]
+                del actual_data_df[column]
 
-    # convert the actual outputs to floats
-    actual_data_df = actual_data_df.astype(np.float)
-    
-    # compare actual data to desired data
-    np.testing.assert_allclose(actual_data_df.values, desired_data_df.values, relative_tolerance, absolute_tolerance)
+        # convert the actual outputs to floats
+        actual_data_df = actual_data_df.astype(np.float)
+
+        # compare actual data to desired data
+        np.testing.assert_allclose(actual_data_df.values, desired_data_df.values, relative_tolerance, absolute_tolerance)
 
 
 class ProgressBarError(Exception): pass

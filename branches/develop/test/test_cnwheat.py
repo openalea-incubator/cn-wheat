@@ -103,7 +103,7 @@ def force_senescence_and_photosynthesis(t, population, senescence_roots_data_gro
                         element.__dict__.update(photosynthesis_elements_data_to_use)
 
 
-def test_run():
+def test_run(overwrite_desired_data):
     # create the simulation
     simulation_ = cnwheat_simulation.Simulation(respiration_model=respiwheat_model, delta_t=3600, culm_density=CULM_DENSITY)
 
@@ -143,7 +143,7 @@ def test_run():
 
     # define the time grid to run the model on
     start_time = 0
-    stop_time = 2
+    stop_time = 48
     time_step = 1
     time_grid = range(start_time, stop_time + time_step, time_step)
 
@@ -159,6 +159,7 @@ def test_run():
         if t > 0:  # do not run the model at t = 0
             # run the model of CN exchanges ; the population is internally updated by the model
             simulation_.run()
+            print('t cnwheat is {}'.format(t))
 
         # convert outputs to dataframes
         _, axes_outputs_df, _, organs_outputs_df, hiddenzones_outputs_df, elements_outputs_df, soils_outputs_df = cnwheat_converter.to_dataframes(simulation_.population, simulation_.soils)
@@ -191,9 +192,9 @@ def test_run():
         outputs_df = pd.concat(outputs_df_list, ignore_index=True)
         outputs_df = outputs_df.loc[:, state_variables_names]  # compare only the values of the compartments
         print('Compare', actual_outputs_filename, 'to', desired_outputs_filename)
-        cnwheat_tools.compare_actual_to_desired(OUTPUTS_DIRPATH, outputs_df, desired_outputs_filename, actual_outputs_filename)
+        cnwheat_tools.compare_actual_to_desired(OUTPUTS_DIRPATH, outputs_df, desired_outputs_filename, actual_outputs_filename, overwrite_desired_data=overwrite_desired_data)
         print(actual_outputs_filename, 'OK!')
 
 
 if __name__ == '__main__':
-    test_run()
+    test_run(overwrite_desired_data=False)

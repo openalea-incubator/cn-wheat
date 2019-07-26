@@ -233,7 +233,7 @@ class Simulation(object):
     #: concatenation of :attr:`T_INDEX` and :attr:`HIDDENZONE_INDEXES`
     HIDDENZONE_T_INDEXES = T_INDEX + HIDDENZONE_INDEXES
     #: the parameters which define the state of the modeled system at hidden zone scale
-    HIDDENZONE_STATE_PARAMETERS = ['Nstruct', 'mstruct', 'ratio_DZ', 'ratio_EOZ']
+    HIDDENZONE_STATE_PARAMETERS = ['Nstruct', 'mstruct', 'ratio_DZ']
     #: the variables which define the state of the modeled system at hidden zone scale,
     #: formed be the concatenation of :attr:`HIDDENZONE_STATE_PARAMETERS` and the names
     #: of the compartments associated to each hidden zone (see :attr:`MODEL_COMPARTMENTS_NAMES`)

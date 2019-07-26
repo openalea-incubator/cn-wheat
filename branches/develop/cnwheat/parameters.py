@@ -120,7 +120,6 @@ class HiddenZoneParameters(object):
         self.SIGMA = 0.025                 #: Coefficient of surface diffusion. Used in Fick's law (g m-2 s-1).
         self.VMAX_SFRUCTAN_POT = 0.015     #: Potential maximal rate of fructan synthesis (:math:`\mu` mol C s-1 g-1 MS)
         self.VMAX_SFRUCTAN_RELATIVE = 10   #: Maximal rate of fructan synthesis in the division zone relative to the rate in mature tissus (:math:`\mu` mol C s-1 g-1 MS)
-        self.VMAX_SFRUCTAN_POT = 0.015     #: Potntial maximal rate of fructan synthesis in the division zone relative to the rate in mature tissus (:math:`\mu` mol C s-1 g-1 MS)
         self.K_SFRUCTAN = 5000.            #: Affinity coefficient of fructan synthesis (:math:`\mu` mol C g-1 MS)
         self.K_REGUL_SFRUCTAN = 0.001      #: Affinity coefficient of the regulation function of fructan synthesis (:math:`\mu` mol g-1 MS)
         self.N_REGUL_SFRUCTAN = 3.         #: Parameter of the regulation function of fructan synthesis (dimensionless)
@@ -259,7 +258,7 @@ class RootsParameters(object):
         self.N_EXUDATION_MAX = 0.2            #: Parameter used to limit the rate of N exudation (dimensionless)
 
         # Cytokinins
-        self.VMAX_S_CYTOKININS = 0.0018       #: Maximal rate of cytokinins synthesis (UA g-1 mstruct s-1)
+        self.VMAX_S_CYTOKININS = 0.0009       #: Maximal rate of cytokinins synthesis (UA g-1 mstruct s-1)
         self.K_NITRATES_CYTOKININS = 50       #: Affinity coefficient of cytokinins synthesis for nitrates (:math:`\mu` mol N nitrates g-1 mstruct)
         self.K_AMINO_ACIDS_CYTOKININS = 12
         self.K_SUCROSE_CYTOKININS = 1200      #: Affinity coefficient of cytokinins synthesis for sucrose (:math:`\mu` mol C sucrose g-1 mstruct)
@@ -328,8 +327,8 @@ class PhotosyntheticOrganParameters(object):
         self.VMAX_DPROTEINS_CYTOK = 2.5E-6   #: Maximal regulation of protein degradation by cytokinins (:math:`\mu` mol g-1 mstruct s-1)
         self.K_DPROTEINS_CYTOK = 50          #: Affinity coefficient with cytokinins for protein degradation (UA g-1 mstruct)
         self.N_DPROTEINS = 2.1               #: A coefficient for the regulation of protein degradation by cytokines (dimensionless)
-        self.VMAX_DPROTEINS = 2.5E-6         #: Maximal rate of protein degradation (:math:`\mu` mol g-1 mstruct s-1)
-        self.K_DPROTEINS = 50                #: Affinity coefficient for protein degradation (:math:`\mu` g-1 mstruct)
+        self.VMAX_DPROTEINS = 8000           #: Maximal rate of protein degradation (:math:`\mu` mol g-1 mstruct s-1)
+        self.K_DPROTEINS = 6000              #: Affinity coefficient for protein degradation (:math:`\mu` g-1 mstruct)
 
         # cytokinins
         self.DELTA_D_CYTOKININS = 1.5e-05    #: Relative rate of cytokinins degradation (s-1)
