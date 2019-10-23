@@ -63,5 +63,5 @@ to photosynthesis, N uptake, metabolite turnover, root exudation and tissue deat
     license="CeCILL-C",
     keywords="functional-structural plant model, wheat, ode, system integration, scipy, trophic status, carbon, nitrogen, metabolism, remobilisation, source-sink relation, resource allocation",
     url="https://sourcesup.renater.fr/projects/cn-wheat/",
-    download_url="https://sourcesup.renater.fr/frs/download.php/file/5378/cn-wheat_1.0.zip", install_requires=['pandas', 'numpy', 'scipy', 'matplotlib']
+    download_url="https://sourcesup.renater.fr/frs/download.php/file/5378/cn-wheat_1.0.zip", install_requires=['pandas', 'numpy', 'scipy', 'matplotlib', 'openalea']
 )

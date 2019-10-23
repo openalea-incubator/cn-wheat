@@ -74,7 +74,7 @@ def plot_cnwheat_ouputs(outputs, x_name, y_name, x_label='', y_label='', x_lim=N
     :param str x_name: x axis of the plot.
     :param str y_name: y axis of the plot.
     :param str x_label: The x label of the plot. Default is ''.
-    :param str y_label: The y label of the plot. Default is ''.
+    :param str or unicode y_label: The y label of the plot. Default is ''.
     :param float x_lim: the x-axis limit.
     :param str title: the title of the plot. If None (default), create a title which is the concatenation of `y_name` and each scales which cardinality is one.
     :param dict filters: A dictionary whose keys are the columns of `outputs` for which we want to apply a specific filter.
@@ -192,7 +192,8 @@ def plot_cnwheat_ouputs(outputs, x_name, y_name, x_label='', y_label='', x_lim=N
 
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
-    ax.legend(prop={'size': 10}, framealpha=0.5, loc='center left', bbox_to_anchor=(1, 0.815), borderaxespad=0.)
+    if kwargs['label']:
+        ax.legend(prop={'size': 10}, framealpha=0.5, loc='center left', bbox_to_anchor=(1, 0.815), borderaxespad=0.)
     ax.set_title(title)
     plt.tight_layout()
 

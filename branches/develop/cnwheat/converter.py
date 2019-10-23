@@ -116,8 +116,7 @@ def from_dataframes(organs_inputs=None, hiddenzones_inputs=None, elements_inputs
 
                 curr_metamers_indexes_for_hiddenzones = hiddenzones_inputs[(hiddenzones_inputs['plant'] == plant_index) & (hiddenzones_inputs['axis'] == axis_label)].metamer.unique()
                 curr_metamers_indexes_for_elements = elements_inputs[(elements_inputs['plant'] == plant_index) & (elements_inputs['axis'] == axis_label)].metamer.unique()
-                curr_metamers_indexes = np.unique(np.concatenate((curr_metamers_indexes_for_hiddenzones,
-                                                                  curr_metamers_indexes_for_elements)))
+                curr_metamers_indexes = np.unique(np.concatenate((curr_metamers_indexes_for_hiddenzones, curr_metamers_indexes_for_elements)))
                 for metamer_index in curr_metamers_indexes:
                     # create a new phytomer
                     phytomer = model.Phytomer(metamer_index)
