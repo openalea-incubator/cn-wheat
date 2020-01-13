@@ -10,6 +10,7 @@ from scipy.integrate import solve_ivp
 import model
 import tools
 
+
 """
     cnwheat.simulation
     ~~~~~~~~~~~~~~~~~~
@@ -556,8 +557,10 @@ class Simulation(object):
 
         # call :func:`scipy.integrate.solve_ivp` to integrate the system during 1 time step ;
         # :func:`scipy.integrate.solve_ivp` computes the derivatives of each function by calling :meth:`_calculate_all_derivatives`
-        sol = solve_ivp(fun=self._calculate_all_derivatives, t_span=np.array([0.0, self.time_step]), y0=self.initial_conditions, 
-                        method='BDF', t_eval=np.array([self.time_step]), dense_output=False)
+        # sol = solve_ivp(fun=self._calculate_all_derivatives, t_span=np.array([0.0, self.time_step]), y0=self.initial_conditions,
+        #                 method='BDF', t_eval=np.array([self.time_step]), dense_output=False)
+        sol = solve_ivp(fun=self._calculate_all_derivatives, t_span=np.array([0.0, self.time_step]), y0=self.initial_conditions,
+                        method='BDF', dense_output=False)
 
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("Run of the solver DONE")
@@ -796,6 +799,8 @@ class Simulation(object):
                                 element.Loading_Sucrose = element.calculate_Loading_Sucrose(element.sucrose, axis.phloem.sucrose, axis.mstruct, plant.T_effect_conductivity)
                                 element.Loading_Amino_Acids = element.calculate_Loading_Amino_Acids(element.amino_acids, axis.phloem.amino_acids, axis.mstruct, plant.T_effect_conductivity)
 
+                                # print element.__class__, ',', element.label, ',', element.index, ',', t, ',',element.Loading_Sucrose, ',', element.Loading_Amino_Acids
+
                             element.Regul_S_Fructan = element.calculate_Regul_S_Fructan(element.Loading_Sucrose)
                             element.S_Fructan = element.calculate_S_Fructan(element.sucrose, element.Regul_S_Fructan, plant.T_effect_Vmax)
                             element.D_Fructan = element.calculate_D_Fructan(element.sucrose, element.fructan, plant.T_effect_Vmax)
@@ -844,6 +849,8 @@ class Simulation(object):
 
                         # Unloading of AA from phloem
                         hiddenzone.Unloading_Amino_Acids = hiddenzone.calculate_Unloading_Amino_Acids(hiddenzone.amino_acids, axis.phloem.amino_acids, axis.mstruct, plant.T_effect_conductivity)
+
+                        print 'hz', ',', phytomer.index, ',', t, ',', hiddenzone.Unloading_Sucrose, ',', hiddenzone.Unloading_Amino_Acids
 
                         # Fructan synthesis
                         Regul_Sfructanes = hiddenzone.calculate_Regul_S_Fructan( hiddenzone.Unloading_Sucrose )
@@ -907,6 +914,9 @@ class Simulation(object):
                 # flows
                 axis.roots.Unloading_Sucrose = axis.roots.calculate_Unloading_Sucrose(self.parameters, axis.roots.sucrose, axis.phloem.sucrose, axis.mstruct, plant.T_effect_conductivity)
                 axis.roots.Unloading_Amino_Acids = axis.roots.calculate_Unloading_Amino_Acids(axis.roots.Unloading_Sucrose, axis.phloem.sucrose, axis.phloem.amino_acids)
+
+                print 'roots', ',', 0, ',', t, ',', axis.roots.Unloading_Sucrose, ',', axis.roots.Unloading_Amino_Acids
+
                 axis.roots.S_Amino_Acids = axis.roots.calculate_S_amino_acids(axis.roots.nitrates, axis.roots.sucrose, soil.T_effect_Vmax )
                 axis.roots.R_Nnit_red, axis.roots.S_Amino_Acids = self.respiration_model.RespirationModel.R_Nnit_red(axis.roots.S_Amino_Acids, axis.roots.sucrose,
                                                                                                                      axis.roots.mstruct * model.Roots.PARAMETERS.ALPHA, root=True)
