@@ -1260,12 +1260,12 @@ class PhotosyntheticOrganElement(object):
         :rtype: float
         """
         if Loading_Sucrose <= 0:
-            Vmax_Sfructans = PhotosyntheticOrgan.PARAMETERS.VMAX_SFRUCTAN_POT
+            Vmax_Sfructans = self.__class__.PARAMETERS.VMAX_SFRUCTAN_POT
         else:  # Regulation by sucrose loading
             rate_Loading_Sucrose_massic = Loading_Sucrose/self.mstruct/parameters.SECOND_TO_HOUR_RATE_CONVERSION
-            Vmax_Sfructans = ((PhotosyntheticOrgan.PARAMETERS.VMAX_SFRUCTAN_POT * PhotosyntheticOrgan.PARAMETERS.K_REGUL_SFRUCTAN**PhotosyntheticOrgan.PARAMETERS.N_REGUL_SFRUCTAN) /
-                              (max(0, rate_Loading_Sucrose_massic**PhotosyntheticOrgan.PARAMETERS.N_REGUL_SFRUCTAN) +
-                               PhotosyntheticOrgan.PARAMETERS.K_REGUL_SFRUCTAN**PhotosyntheticOrgan.PARAMETERS.N_REGUL_SFRUCTAN))
+            Vmax_Sfructans = ((self.__class__.PARAMETERS.VMAX_SFRUCTAN_POT * self.__class__.PARAMETERS.K_REGUL_SFRUCTAN**self.__class__.PARAMETERS.N_REGUL_SFRUCTAN) /
+                              (max(0, rate_Loading_Sucrose_massic**self.__class__.PARAMETERS.N_REGUL_SFRUCTAN) +
+                               self.__class__.PARAMETERS.K_REGUL_SFRUCTAN**self.__class__.PARAMETERS.N_REGUL_SFRUCTAN))
         return Vmax_Sfructans
 
     @staticmethod
@@ -1294,8 +1294,8 @@ class PhotosyntheticOrganElement(object):
         :return: Rate of Starch synthesis (:math:`\mu mol` C g-1 mstruct h-1)
         :rtype: float
         """
-        return (((max(0., triosesP) / (self.mstruct * self.__class__.PARAMETERS.ALPHA)) * PhotosyntheticOrgan.PARAMETERS.VMAX_STARCH) /
-                ((max(0., triosesP) / (self.mstruct * self.__class__.PARAMETERS.ALPHA)) + PhotosyntheticOrgan.PARAMETERS.K_STARCH)) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
+        return (((max(0., triosesP) / (self.mstruct * self.__class__.PARAMETERS.ALPHA)) * self.__class__.PARAMETERS.VMAX_STARCH) /
+                ((max(0., triosesP) / (self.mstruct * self.__class__.PARAMETERS.ALPHA)) + self.__class__.PARAMETERS.K_STARCH)) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
 
     def calculate_D_Starch(self, starch, T_effect_Vmax):
         """Rate of starch degradation (:math:`\mu mol` C starch g-1 mstruct h-1).
@@ -1307,7 +1307,7 @@ class PhotosyntheticOrganElement(object):
         :return: Starch degradation (:math:`\mu mol` C g-1 mstruct h-1)
         :rtype: float
         """
-        return max(0, PhotosyntheticOrgan.PARAMETERS.DELTA_DSTARCH * (starch / (self.mstruct*self.__class__.PARAMETERS.ALPHA))) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
+        return max(0, self.__class__.PARAMETERS.DELTA_DSTARCH * (starch / (self.mstruct*self.__class__.PARAMETERS.ALPHA))) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
 
     def calculate_S_Sucrose(self, triosesP, T_effect_Vmax):
         """Rate of sucrose synthesis (:math:`\mu mol` C sucrose g-1 mstruct h-1).
@@ -1319,8 +1319,8 @@ class PhotosyntheticOrganElement(object):
         :return: Rate of Sucrose synthesis (:math:`\mu mol` C g-1 mstruct h-1)
         :rtype: float
         """
-        return (((max(0., triosesP) / (self.mstruct*self.__class__.PARAMETERS.ALPHA)) * PhotosyntheticOrgan.PARAMETERS.VMAX_SUCROSE) /
-                ((max(0., triosesP) / (self.mstruct*self.__class__.PARAMETERS.ALPHA)) + PhotosyntheticOrgan.PARAMETERS.K_SUCROSE)) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
+        return (((max(0., triosesP) / (self.mstruct*self.__class__.PARAMETERS.ALPHA)) * self.__class__.PARAMETERS.VMAX_SUCROSE) /
+                ((max(0., triosesP) / (self.mstruct*self.__class__.PARAMETERS.ALPHA)) + self.__class__.PARAMETERS.K_SUCROSE)) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
 
     def calculate_Loading_Sucrose(self, sucrose, sucrose_phloem, mstruct_axis, T_effect_conductivity):
         """Rate of sucrose loading to phloem (:math:`\mu mol` C sucrose h-1).
@@ -1341,7 +1341,7 @@ class PhotosyntheticOrganElement(object):
         #: Gradient of sucrose between the element and the phloem (:math:`\mu mol` C g-1 mstruct)
         diff_sucrose = conc_sucrose_element - conc_sucrose_phloem
         #: Conductance depending on mstruct (g2 :math:`\mu mol`-1 s-1)
-        conductance = PhotosyntheticOrgan.PARAMETERS.SIGMA_SUCROSE * PhotosyntheticOrgan.PARAMETERS.BETA * self.mstruct**(2/3) * T_effect_conductivity
+        conductance = self.__class__.PARAMETERS.SIGMA_SUCROSE * self.__class__.PARAMETERS.BETA * self.mstruct**(2/3) * T_effect_conductivity
 
         return driving_sucrose_compartment * diff_sucrose * conductance * parameters.SECOND_TO_HOUR_RATE_CONVERSION
 
@@ -1363,7 +1363,7 @@ class PhotosyntheticOrganElement(object):
         #: Gradient of sucrose between the element and the hidden zone (:math:`\mu mol` C g-1 mstruct)
         diff_sucrose = conc_sucrose_element - conc_sucrose_hiddenzone
         #: Conductance depending on mstruct
-        conductance = HiddenZone.PARAMETERS.SIGMA * PhotosyntheticOrgan.PARAMETERS.BETA * mstruct_hiddenzone**(2/3) * T_effect_conductivity
+        conductance = HiddenZone.PARAMETERS.SIGMA * self.__class__.PARAMETERS.BETA * mstruct_hiddenzone**(2/3) * T_effect_conductivity
 
         return diff_sucrose * conductance * parameters.SECOND_TO_HOUR_RATE_CONVERSION
 
@@ -1379,7 +1379,7 @@ class PhotosyntheticOrganElement(object):
         :rtype: float
         """
         return ((max(0., sucrose) / (self.mstruct*self.__class__.PARAMETERS.ALPHA)) * Regul_S_Fructan) /\
-               ((max(0., sucrose) / (self.mstruct*self.__class__.PARAMETERS.ALPHA)) + PhotosyntheticOrgan.PARAMETERS.K_SFRUCTAN) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
+               ((max(0., sucrose) / (self.mstruct*self.__class__.PARAMETERS.ALPHA)) + self.__class__.PARAMETERS.K_SFRUCTAN) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
 
     def calculate_D_Fructan(self, sucrose, fructan, T_effect_Vmax):
         """Rate of fructan degradation (:math:`\mu mol` C fructan g-1 mstruct h-1).
@@ -1392,8 +1392,8 @@ class PhotosyntheticOrganElement(object):
         :return: Rate of Fructan degradation (:math:`\mu mol` C g-1 mstruct h-1)
         :rtype: float
         """
-        d_potential = ((PhotosyntheticOrgan.PARAMETERS.K_DFRUCTAN * PhotosyntheticOrgan.PARAMETERS.VMAX_DFRUCTAN) /
-                       ((max(0., sucrose) / (self.mstruct * self.__class__.PARAMETERS.ALPHA)) + PhotosyntheticOrgan.PARAMETERS.K_DFRUCTAN)) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
+        d_potential = ((self.__class__.PARAMETERS.K_DFRUCTAN * self.__class__.PARAMETERS.VMAX_DFRUCTAN) /
+                       ((max(0., sucrose) / (self.mstruct * self.__class__.PARAMETERS.ALPHA)) + self.__class__.PARAMETERS.K_DFRUCTAN)) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
         d_actual = min(d_potential, max(0., fructan))
         return d_actual
 
@@ -1447,9 +1447,9 @@ class PhotosyntheticOrganElement(object):
         if nitrates <= 0 or triosesP <= 0:
             calculate_S_amino_acids = 0
         else:
-            calculate_S_amino_acids = PhotosyntheticOrgan.PARAMETERS.VMAX_AMINO_ACIDS /\
-                                      ((1 + PhotosyntheticOrgan.PARAMETERS.K_AMINO_ACIDS_NITRATES / (nitrates / (self.mstruct*self.__class__.PARAMETERS.ALPHA))) *
-                                       (1 + PhotosyntheticOrgan.PARAMETERS.K_AMINO_ACIDS_TRIOSESP / (triosesP / (self.mstruct*self.__class__.PARAMETERS.ALPHA)))) * \
+            calculate_S_amino_acids = self.__class__.PARAMETERS.VMAX_AMINO_ACIDS /\
+                                      ((1 + self.__class__.PARAMETERS.K_AMINO_ACIDS_NITRATES / (nitrates / (self.mstruct*self.__class__.PARAMETERS.ALPHA))) *
+                                       (1 + self.__class__.PARAMETERS.K_AMINO_ACIDS_TRIOSESP / (triosesP / (self.mstruct*self.__class__.PARAMETERS.ALPHA)))) * \
                                       parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
         return calculate_S_amino_acids
 
@@ -1463,8 +1463,8 @@ class PhotosyntheticOrganElement(object):
         :return: Protein synthesis (:math:`\mu mol` N h-1 g-1 mstruct)
         :rtype: float
         """
-        calculate_S_proteins = (((max(0., amino_acids) / (self.mstruct * self.__class__.PARAMETERS.ALPHA)) * PhotosyntheticOrgan.PARAMETERS.VMAX_SPROTEINS) /
-                                ((max(0., amino_acids) / (self.mstruct * self.__class__.PARAMETERS.ALPHA)) + PhotosyntheticOrgan.PARAMETERS.K_SPROTEINS)
+        calculate_S_proteins = (((max(0., amino_acids) / (self.mstruct * self.__class__.PARAMETERS.ALPHA)) * self.__class__.PARAMETERS.VMAX_SPROTEINS) /
+                                ((max(0., amino_acids) / (self.mstruct * self.__class__.PARAMETERS.ALPHA)) + self.__class__.PARAMETERS.K_SPROTEINS)
                                 ) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
         return calculate_S_proteins
 
@@ -1482,10 +1482,10 @@ class PhotosyntheticOrganElement(object):
         conc_proteins = proteins / (self.mstruct*self.__class__.PARAMETERS.ALPHA)
         conc_cytokinins = max(0, cytokinins / self.mstruct)
 
-        regul_cytokinins = (PhotosyntheticOrgan.PARAMETERS.VMAX_DPROTEINS_CYTOK * PhotosyntheticOrgan.PARAMETERS.K_DPROTEINS_CYTOK**PhotosyntheticOrgan.PARAMETERS.N_DPROTEINS) /\
-                           (conc_cytokinins**PhotosyntheticOrgan.PARAMETERS.N_DPROTEINS + PhotosyntheticOrgan.PARAMETERS.K_DPROTEINS_CYTOK**PhotosyntheticOrgan.PARAMETERS.N_DPROTEINS)
+        regul_cytokinins = (self.__class__.PARAMETERS.VMAX_DPROTEINS_CYTOK * self.__class__.PARAMETERS.K_DPROTEINS_CYTOK**self.__class__.PARAMETERS.N_DPROTEINS) /\
+                           (conc_cytokinins**self.__class__.PARAMETERS.N_DPROTEINS + self.__class__.PARAMETERS.K_DPROTEINS_CYTOK**self.__class__.PARAMETERS.N_DPROTEINS)
 
-        return max(0, (conc_proteins * PhotosyntheticOrgan.PARAMETERS.VMAX_DPROTEINS / (conc_proteins + PhotosyntheticOrgan.PARAMETERS.K_DPROTEINS)) *
+        return max(0, (conc_proteins * self.__class__.PARAMETERS.VMAX_DPROTEINS / (conc_proteins + self.__class__.PARAMETERS.K_DPROTEINS)) *
                    parameters.SECOND_TO_HOUR_RATE_CONVERSION * regul_cytokinins * T_effect_Vmax)
 
     def calculate_Loading_Amino_Acids(self, amino_acids, amino_acids_phloem, mstruct_axis, T_effect_conductivity):
@@ -1507,7 +1507,7 @@ class PhotosyntheticOrganElement(object):
         #: Gradient of amino acids between the element and the phloem (:math:`\mu mol` N g-1 mstruct)
         diff_amino_acids = Conc_Amino_Acids_element - Conc_Amino_Acids_phloem
         #: Conductance depending on mstruct (g2 :math:`\mu mol`-1 s-1)
-        conductance = PhotosyntheticOrgan.PARAMETERS.SIGMA_AMINO_ACIDS * PhotosyntheticOrgan.PARAMETERS.BETA * self.mstruct**(2/3) * T_effect_conductivity
+        conductance = self.__class__.PARAMETERS.SIGMA_AMINO_ACIDS * self.__class__.PARAMETERS.BETA * self.mstruct**(2/3) * T_effect_conductivity
 
         return driving_amino_acids_compartment * diff_amino_acids * conductance * parameters.SECOND_TO_HOUR_RATE_CONVERSION
 
@@ -1528,7 +1528,7 @@ class PhotosyntheticOrganElement(object):
         #: Gradient of amino acids between the element and the hidden zone (:math:`\mu mol` N g-1 mstruct)
         diff_amino_acids = Conc_Amino_Acids_element - Conc_Amino_Acids_hiddenzone
         #: Conductance depending on mstruct
-        conductance = HiddenZone.PARAMETERS.SIGMA * PhotosyntheticOrgan.PARAMETERS.BETA * mstruct_hiddenzone**(2/3) * T_effect_conductivity
+        conductance = HiddenZone.PARAMETERS.SIGMA * self.__class__.PARAMETERS.BETA * mstruct_hiddenzone**(2/3) * T_effect_conductivity
 
         return diff_amino_acids * conductance * parameters.SECOND_TO_HOUR_RATE_CONVERSION
 
@@ -1560,7 +1560,7 @@ class PhotosyntheticOrganElement(object):
         :return: Rate of Cytokinin degradation (AU g-1 mstruct h-1)
         :rtype: float
         """
-        return max(0, PhotosyntheticOrgan.PARAMETERS.DELTA_D_CYTOKININS * (cytokinins / (self.mstruct * self.__class__.PARAMETERS.ALPHA))) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
+        return max(0, self.__class__.PARAMETERS.DELTA_D_CYTOKININS * (cytokinins / (self.mstruct * self.__class__.PARAMETERS.ALPHA))) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
 
     # COMPARTMENTS
 

@@ -65,7 +65,7 @@ CNWHEAT_CLASSES_TO_DATAFRAME_ORGANS_MAPPING = {model.Internode: 'internode', mod
 DATAFRAME_TO_CNWHEAT_ELEMENTS_NAMES_MAPPING = {'HiddenElement': 'enclosed_element', 'StemElement': 'exposed_element', 'LeafElement1': 'exposed_element'}
 
 
-def from_dataframes(organs_inputs=None, hiddenzones_inputs=None, elements_inputs=None, soils_inputs=None):
+def from_dataframes(organs_inputs=None, hiddenzones_inputs=None, elements_inputs=None, soils_inputs=None, update_parameters={}):
     """ If `organs_inputs`, `hiddenzones_inputs` and `elements_inputs` are not `None`,
     convert `organs_inputs`, `hiddenzones_inputs` and  `elements_inputs` to a :class:`population <model.Population>`.
     If `soils_inputs` is not `None`, convert `soils_inputs` to a dictionary of :class:`soils <model.Soil>`.
@@ -74,6 +74,8 @@ def from_dataframes(organs_inputs=None, hiddenzones_inputs=None, elements_inputs
     :param pandas.DataFrame hiddenzones_inputs: Hidden zones inputs, with one line by hidden zone.
     :param pandas.DataFrame elements_inputs: Elements inputs, with one line by element.
     :param pandas.DataFrame soils_inputs: Soils inputs, with one line by soil.
+    :param dict update_parameters: A dictionary with the parameters to update, should have the form {'Organ_label1': {'param1': value1, 'param2': value2}, ...}.
+
 
     :return:
         If `organs_inputs`, `hiddenzones_inputs` and `elements_inputs` are not `None`, return a :class:`population <model.Population>`,
@@ -111,6 +113,10 @@ def from_dataframes(organs_inputs=None, hiddenzones_inputs=None, elements_inputs
                         organ_attributes_values = organ_row[organ_attributes_names].tolist()
                         organ_attributes = dict(zip(organ_attributes_names, organ_attributes_values))
                         organ.__dict__.update(organ_attributes)
+                        # Update parameters if specified
+                        if organ_label in update_parameters:
+                            organ.PARAMETERS.__dict__.update(update_parameters[organ_label])
+
                         organ.initialize()
                         setattr(axis, axis_attribute_name, organ)
 
@@ -138,6 +144,11 @@ def from_dataframes(organs_inputs=None, hiddenzones_inputs=None, elements_inputs
                                 continue
                             # create a new organ
                             organ = phytomer_attribute_class(organ_label)
+
+                            # Update parameters if specified
+                            if 'PhotosyntheticOrgan' in update_parameters:
+                                organ.PARAMETERS.__dict__.update(update_parameters['PhotosyntheticOrgan'])
+
                             organ.initialize()
                             setattr(phytomer, phytomer_attribute_name, organ)
 
@@ -149,6 +160,10 @@ def from_dataframes(organs_inputs=None, hiddenzones_inputs=None, elements_inputs
                                 element_dict = element_inputs.loc[element_inputs.first_valid_index()].to_dict()
                                 # create a new element
                                 element = phytomer_attribute_element_class(mtg_element_label, **element_dict)
+
+                                # Add parameters from organ scale
+                                element.PARAMETERS.__dict__.update(organ.PARAMETERS.__dict__)
+
                                 setattr(organ, cnwheat_element_name, element)
 
                     if metamer_index in curr_metamers_indexes_for_hiddenzones:
@@ -160,6 +175,11 @@ def from_dataframes(organs_inputs=None, hiddenzones_inputs=None, elements_inputs
                         hiddenzone_dict = hiddenzone_inputs.loc[hiddenzone_inputs.first_valid_index()].to_dict()
                         # create a new hidden zone
                         hiddenzone = model.HiddenZone(CNWHEAT_CLASSES_TO_DATAFRAME_ORGANS_MAPPING[model.HiddenZone], **hiddenzone_dict)
+
+                        # Update parameters if specified
+                        if hiddenzone.label in update_parameters:
+                            hiddenzone.PARAMETERS.__dict__.update(update_parameters[hiddenzone.label])
+
                         hiddenzone.initialize()
                         phytomer.hiddenzone = hiddenzone
 
