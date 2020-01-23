@@ -821,10 +821,10 @@ class Simulation(object):
                         Regul_Sfructanes = hiddenzone.calculate_Regul_S_Fructan(hiddenzone.Unloading_Sucrose)
                         hiddenzone.S_Fructan = hiddenzone.calculate_S_Fructan(hiddenzone.sucrose, Regul_Sfructanes, plant.T_effect_Vmax)
 
-                        # # Fructan degradation
+                        # Fructan degradation
                         hiddenzone.D_Fructan = hiddenzone.calculate_D_Fructan(hiddenzone.sucrose, hiddenzone.fructan, plant.T_effect_Vmax)
-                        #
-                        # # Synthesis proteins
+
+                        # Synthesis proteins
                         hiddenzone.S_Proteins = hiddenzone.calculate_S_proteins(hiddenzone.amino_acids, plant.T_effect_Vmax)
 
                         # Degradation proteins
@@ -907,7 +907,7 @@ class Simulation(object):
 
         # compute the derivative of each compartment of soil
         soil.mineralisation = soil.calculate_mineralisation(soil.T_effect_Vmax)
-        y_derivatives[self.initial_conditions_mapping[soil]['nitrates']] = soil.calculate_nitrates_derivative(soil.mineralisation, soil_contributors, self.culm_density)
+        y_derivatives[self.initial_conditions_mapping[soil]['nitrates']] = soil.calculate_nitrates_derivative(soil.mineralisation, soil_contributors, self.culm_density, soil.constant_Conc_Nitrates)
 
         if self.show_progressbar:
             self.progressbar.update(t)

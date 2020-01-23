@@ -1717,6 +1717,7 @@ class Soil(object):
         # state parameters
         self.volume = volume                   #: volume of soil explored by roots (m3)
         self.Tsoil = Tsoil                     #: soil temperature (°C)
+        self.constant_Conc_Nitrates = False    #: If True, the model run with a constant soil nitrate concentration (bool)
 
         # state variables
         self.nitrates = nitrates               #: :math:`\mu mol` N nitrates
@@ -1775,17 +1776,21 @@ class Soil(object):
     # COMPARTMENTS
 
     @staticmethod
-    def calculate_nitrates_derivative(mineralisation, soil_contributors, culm_density):
+    def calculate_nitrates_derivative(mineralisation, soil_contributors, culm_density, constant_Conc_Nitrates):
         """delta soil nitrates.
 
         :param float mineralisation: N mineralisation in soil (:math:`\mu mol` m-2 N nitrates)
         :param (float, int) soil_contributors: A tuple with (Nitrate uptake per axis (:math:`\mu mol` N nitrates), the plant id)
         :param dict [plant_id, culm_density] culm_density: A dictionary of culm density (culm_density = {plant_id: culm_density, ...})
+        :param bool constant_Conc_Nitrates: If True, the model run with a constant soil nitrate concentration.
 
         :return: delta nitrates (:math:`\mu mol` N nitrates)
         :rtype: float
         """
-        Uptake_Nitrates = 0
-        for root_uptake, plant_id in soil_contributors:
-            Uptake_Nitrates += root_uptake * culm_density[plant_id]  # TODO: temporary, will be removed in next version
-        return mineralisation - Uptake_Nitrates
+        delta_Nitrates = 0
+        if not constant_Conc_Nitrates:
+            Uptake_Nitrates = 0
+            for root_uptake, plant_id in soil_contributors:
+                Uptake_Nitrates += root_uptake * culm_density[plant_id]  # TODO: temporary, will be removed in next version
+            delta_Nitrates = mineralisation - Uptake_Nitrates
+        return delta_Nitrates
