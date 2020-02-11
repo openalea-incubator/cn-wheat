@@ -65,7 +65,7 @@ CNWHEAT_CLASSES_TO_DATAFRAME_ORGANS_MAPPING = {model.Internode: 'internode', mod
 DATAFRAME_TO_CNWHEAT_ELEMENTS_NAMES_MAPPING = {'HiddenElement': 'enclosed_element', 'StemElement': 'exposed_element', 'LeafElement1': 'exposed_element'}
 
 
-def from_dataframes(organs_inputs=None, hiddenzones_inputs=None, elements_inputs=None, soils_inputs=None, update_parameters={}):
+def from_dataframes(organs_inputs=None, hiddenzones_inputs=None, elements_inputs=None, soils_inputs=None, update_parameters=None):
     """ If `organs_inputs`, `hiddenzones_inputs` and `elements_inputs` are not `None`,
     convert `organs_inputs`, `hiddenzones_inputs` and  `elements_inputs` to a :class:`population <model.Population>`.
     If `soils_inputs` is not `None`, convert `soils_inputs` to a dictionary of :class:`soils <model.Soil>`.
@@ -85,6 +85,9 @@ def from_dataframes(organs_inputs=None, hiddenzones_inputs=None, elements_inputs
     :rtype: (pandas.DataFrame, dict) or dict
 
     """
+
+    if update_parameters is None:
+        update_parameters = {}
 
     convert_dataframes_to_population = organs_inputs is not None and hiddenzones_inputs is not None and elements_inputs is not None
     convert_dataframe_to_soils_dict = soils_inputs is not None
