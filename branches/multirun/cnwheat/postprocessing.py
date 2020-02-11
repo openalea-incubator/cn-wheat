@@ -98,7 +98,8 @@ ELEMENTS_INDEXES = cnwheat_simulation.Simulation.ELEMENTS_INDEXES
 ELEMENTS_T_INDEXES = cnwheat_simulation.Simulation.ELEMENTS_T_INDEXES
 #: elements post-processing variables
 ELEMENTS_POSTPROCESSING_VARIABLES = ['Conc_Amino_Acids', 'Conc_Fructan', 'Conc_Nitrates', 'Conc_Proteins', 'Conc_Starch', 'Conc_Sucrose', 'Conc_TriosesP', 'Cont_Fructan_DM',
-                                     'Conc_cytokinins', 'R_maintenance', 'Surfacic N', 'Surfacic_NS', 'NS', 'N_content', 'N_content_total_DM', 'N_tot', 'nb_replications', 'SLA', 'SLN']
+                                     'Conc_cytokinins', 'R_maintenance', 'Surfacic N', 'Surfacic_NS', 'NS', 'N_content', 'N_content_total_DM', 'N_tot', 'nb_replications', 'SLA', 'SLN',
+                                     'SLN_nonstruct']
 ELEMENTS_RUN_VARIABLES_ADDITIONAL = ['length', 'PARa']
 #: concatenation of :attr:`ELEMENTS_T_INDEXES`, :attr:`ELEMENTS_RUN_VARIABLES <cnwheat.simulation.Simulation.ELEMENTS_RUN_VARIABLES>` and :attr:`ELEMENTS_POSTPROCESSING_VARIABLES`
 ELEMENTS_RUN_POSTPROCESSING_VARIABLES = ELEMENTS_T_INDEXES + cnwheat_simulation.Simulation.ELEMENTS_RUN_VARIABLES + ELEMENTS_RUN_VARIABLES_ADDITIONAL + ELEMENTS_POSTPROCESSING_VARIABLES
@@ -624,6 +625,21 @@ class Element:
         return mass_N_tot / green_area
 
     @staticmethod
+    def calculate_SLN_nonstruct(nitrates, amino_acids, proteins,  green_area):
+        """ Surfacic Leaf Nitrogen (SLN, g.m-2)
+
+        :param float nitrates: Amount of nitrates (:math:`\mu mol` N)
+        :param float amino_acids: Amount of amino_acids (:math:`\mu mol` N)
+        :param float proteins: Amount of proteins (:math:`\mu mol` N)        :param float Nstruct: Structural N (g)
+        :param float green_area: Green area (m-2)
+
+        :return: Surfacic Leaf Nitrogen (SLN, g.m-2)
+        :rtype: float
+        """
+        mass_N_tot = (nitrates + amino_acids + proteins)*1E-6 * cnwheat_model.EcophysiologicalConstants.N_MOLAR_MASS
+        return mass_N_tot / green_area
+
+    @staticmethod
     def calculate_SLA(dry_mass, green_area):
         """Specific Leaf Area (SLA, m2.kg-1)
 
@@ -834,7 +850,12 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
         pp_elements_df.loc[:, 'N_tot'] = elements_df['N_g_total']
         pp_elements_df.loc[:, 'SLN'] = Element.calculate_SLN(elements_df['nitrates'], elements_df['amino_acids'], elements_df['proteins'],
                                                              elements_df['Nstruct'], elements_df['green_area'])
+        pp_elements_df.loc[pp_elements_df['is_growing'] == 1., 'SLN'] = np.nan
+        pp_elements_df.loc[:, 'SLN_nonstruct'] = Element.calculate_SLN_nonstruct(elements_df['nitrates'], elements_df['amino_acids'], elements_df['proteins'],
+                                                             elements_df['green_area'])
+        pp_elements_df.loc[pp_elements_df['is_growing'] == 1., 'SLN_nonstruct'] = np.nan
         pp_elements_df.loc[:, 'SLA'] = Element.calculate_SLA(elements_df['sum_dry_mass'], elements_df['green_area'])
+        pp_elements_df.loc[pp_elements_df['is_growing'] == 1., 'SLA'] = np.nan
 
         grouped = elements_df.groupby('organ')
         for organ_type, parameters_class in \
@@ -1088,8 +1109,10 @@ def generate_graphs(axes_df=None, hiddenzones_df=None, organs_df=None, elements_
                                        'Nstruct': u'Structural N mass (g)', 'Conc_cytokinins': u'[cytokinins] (UA g$^{-1}$ mstruct)', 'D_cytokinins': u'Cytokinin degradation (UA g$^{-1}$ mstruct)',
                                        'cytokinins_import': u'Cytokinin import (UA)', 'Surfacic N': u'Surfacic N (g m$^{-2}$)', 'Surfacic_NS': u'Surfacic Non Structural mass (g m$^{-2}$)',
                                        'NS': u'Ratio of Non Structural mass', 'N_content': u'N content in the green tissues (% DM)',
-                                       'N_content_total_DM': u'N content in the green + senesced tissues (% DM)', 'N_tot': u'N mass (g)', 'SLA': u'Specific Leaf Area (m$^{2}$.kg$^{-1}$)',
-                                       'SLN': u'Surfacic Leaf Nitrogen (g.m$^{-2}$)', 'length': u'Length (m)'}
+                                       'N_content_total_DM': u'N content in the green + senesced tissues (% DM)', 'N_tot': u'N mass (g)',
+                                       'SLA': u'Specific Leaf Area (m$^{2}$.kg$^{-1}$)',
+                                       'SLN': u'Surfacic Leaf Nitrogen (g.m$^{-2}$)',
+                                       'SLN_nonstruct':u'Surfacic Leaf Non-structural Nitrogen (g.m$^{-2}$)', 'length': u'Length (m)'}
     
         for org_ph in (['blade'], ['sheath'], ['internode'], ['peduncle', 'ear']):
             for variable_name, variable_label in graph_variables_ph_elements.items():
