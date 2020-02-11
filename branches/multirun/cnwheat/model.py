@@ -857,7 +857,7 @@ class Roots(Organ):
         :return: Amino acids Unloading (:math:`\mu mol` N g-1 mstruct)
         :rtype: float
         """
-        if amino_acids_phloem <= 0 or sucrose_phloem <= 0:
+        if amino_acids_phloem <= 0 or sucrose_phloem <= 0 or Unloading_Sucrose <= 0:
             Unloading_Amino_Acids = 0
         else:
             Unloading_Amino_Acids = Unloading_Sucrose * (amino_acids_phloem / sucrose_phloem)
@@ -958,12 +958,15 @@ class Roots(Organ):
         :return: Rates of C exudated (:math:`\mu mol` C g-1 mstruct h-1) and N_exudation (:math:`\mu mol` N g-1 mstruct h-1)
         :rtype: (float, float)
         """
-        C_exudation = min(sucrose_roots, Unloading_Sucrose * Roots.PARAMETERS.C_EXUDATION)  #: C exudated (:math:`\mu mol` g-1 mstruct)
+        if sucrose_roots <=0 or Unloading_Sucrose <=0:
+            C_exudation = 0
+        else:
+            C_exudation = min(sucrose_roots, Unloading_Sucrose * Roots.PARAMETERS.C_EXUDATION)  #: C exudated (:math:`\mu mol` g-1 mstruct)
         if amino_acids_phloem <= 0 or amino_acids_roots <= 0 or sucrose_roots <= 0:
             N_exudation = 0
         else:
             N_exudation = min((amino_acids_roots / sucrose_roots), Roots.PARAMETERS.N_EXUDATION_MAX) * C_exudation
-        return C_exudation, N_exudation
+        return C_exudation, N_exudation #TODO: C_exudation and N_exudation should be renamed as the exudation of AA result in a loss of both C and N
 
     def calculate_S_cytokinins(self, sucrose_roots, nitrates_roots, T_effect_Vmax):
         """ Rate of cytokinin synthesis (AU cytokinins g-1 mstruct h-1).
@@ -1294,8 +1297,12 @@ class PhotosyntheticOrganElement(object):
         :return: Rate of Starch synthesis (:math:`\mu mol` C g-1 mstruct h-1)
         :rtype: float
         """
-        return (((max(0., triosesP) / (self.mstruct * self.__class__.PARAMETERS.ALPHA)) * self.__class__.PARAMETERS.VMAX_STARCH) /
-                ((max(0., triosesP) / (self.mstruct * self.__class__.PARAMETERS.ALPHA)) + self.__class__.PARAMETERS.K_STARCH)) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
+        if triosesP <= 0:
+            S_Starch = 0
+        else :
+            S_Starch = (((  triosesP / (self.mstruct * self.__class__.PARAMETERS.ALPHA)) * self.__class__.PARAMETERS.VMAX_STARCH) /
+                (( triosesP / (self.mstruct * self.__class__.PARAMETERS.ALPHA)) + self.__class__.PARAMETERS.K_STARCH)) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
+        return S_Starch
 
     def calculate_D_Starch(self, starch, T_effect_Vmax):
         """Rate of starch degradation (:math:`\mu mol` C starch g-1 mstruct h-1).
@@ -1319,8 +1326,12 @@ class PhotosyntheticOrganElement(object):
         :return: Rate of Sucrose synthesis (:math:`\mu mol` C g-1 mstruct h-1)
         :rtype: float
         """
-        return (((max(0., triosesP) / (self.mstruct*self.__class__.PARAMETERS.ALPHA)) * self.__class__.PARAMETERS.VMAX_SUCROSE) /
-                ((max(0., triosesP) / (self.mstruct*self.__class__.PARAMETERS.ALPHA)) + self.__class__.PARAMETERS.K_SUCROSE)) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
+        if triosesP <= 0:
+            S_Sucrose = 0
+        else :
+            S_Sucrose =  ((( triosesP / (self.mstruct*self.__class__.PARAMETERS.ALPHA)) * self.__class__.PARAMETERS.VMAX_SUCROSE) /
+                    (( triosesP / (self.mstruct*self.__class__.PARAMETERS.ALPHA)) + self.__class__.PARAMETERS.K_SUCROSE)) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
+        return S_Sucrose
 
     def calculate_Loading_Sucrose(self, sucrose, sucrose_phloem, mstruct_axis, T_effect_conductivity):
         """Rate of sucrose loading to phloem (:math:`\mu mol` C sucrose h-1).
