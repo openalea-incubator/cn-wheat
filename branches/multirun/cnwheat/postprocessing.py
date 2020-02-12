@@ -58,7 +58,8 @@ AXES_T_INDEXES = cnwheat_simulation.Simulation.AXES_T_INDEXES
 #: axes post-processing variables
 AXES_POSTPROCESSING_VARIABLES = ['C_N_ratio', 'C_N_ratio_shoot', 'N_content', 'N_content_shoot', 'N_content_roots', 'N_content_mstruct', 'N_content_mstruct_shoot', 'N_content_total_DM_shoot',
                                  'N_content_mstruct_roots', 'sum_N_g', 'sum_N_g_shoot', 'sum_dry_mass', 'sum_dry_mass_shoot', 'sum_dry_mass_roots', 'dry_mass_phloem', 'shoot_roots_ratio',
-                                 'shoot_roots_mstruct_ratio', 'Total_Photosynthesis', 'Tillers_Photosynthesis', 'Tillers_Photosynthesis_An', 'NNI', 'NS', 'NS_shoot', 'NS_roots', 'mstruct_shoot']
+                                 'shoot_roots_mstruct_ratio', 'Total_Photosynthesis', 'Tillers_Photosynthesis', 'Tillers_Photosynthesis_An', 'NNI', 'NS', 'NS_shoot', 'NS_roots', 'mstruct_shoot',
+                                 'C_respired_shoot','C_respired_roots']
 
 #: concatenation of :attr:`AXES_T_INDEXES`, :attr:`AXES_RUN_VARIABLES <cnwheat.simulation.Simulation.AXES_RUN_VARIABLES>` and :attr:`AXES_POSTPROCESSING_VARIABLES`
 AXES_RUN_POSTPROCESSING_VARIABLES = AXES_T_INDEXES + cnwheat_simulation.Simulation.AXES_RUN_VARIABLES + AXES_POSTPROCESSING_VARIABLES
@@ -920,8 +921,15 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
     # axes
     if axes_df is not None:
         pp_axes_df = pd.concat([axes_df, pd.DataFrame(columns=AXES_POSTPROCESSING_VARIABLES)], sort=False)
+
         # Integrated variables TODO : Homogeneiser la structure de ce bout de code
         if (hiddenzones_df is not None) and (organs_df is not None) and (elements_df is not None):
+
+            # Add missing row if any
+            axes_row_keys = organs_df[AXES_T_INDEXES].drop_duplicates()
+            pp_axes_df = pp_axes_df.merge(axes_row_keys, how='outer', on = AXES_T_INDEXES )
+            pp_axes_df.sort_values(AXES_T_INDEXES, inplace=True)  # Make sure axes_df is sorted
+            pp_axes_df.reset_index(drop=True, inplace=True)
 
             # Photosynthetic elements
 
@@ -1024,33 +1032,42 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
             NS_roots = (1 - sum_mstruct_roots / sum_dry_mass_roots) * 100
             NS = (1 - sum_mstruct / sum_dry_mass) * 100
 
+            # C_respired_shoot
+            hz_df_MS['Respi_growth_tillers'] = hz_df_MS['Respi_growth'].fillna(0) * hz_df_MS['nb_replications'].fillna(1)
+            C_respired_shoot =  pp_axes_df.sum_respi_shoot.fillna(0.) + hz_df_MS.groupby(AXES_T_INDEXES, as_index=False)['Respi_growth_tillers'].sum().Respi_growth_tillers
+
+            # C_respired_roots
+            C_respired_roots = pp_axes_df.sum_respi_roots.fillna(0.) + organs_df[(organs_df['organ'] == 'roots')]['Respi_growth'].reset_index(drop=True)
+
             # Add to axes df
-            pp_axes_df = pp_axes_df.sort_values(['t', 'plant', 'axis'])  # Make sure axes_df is sorted
-            pp_axes_df.loc[:, 'C_N_ratio'] = C_N_ratio.values[1:len(C_N_ratio)]
-            pp_axes_df.loc[:, 'C_N_ratio_shoot'] = C_N_ratio_shoot.values[1:len(C_N_ratio_shoot)]
-            pp_axes_df.loc[:, 'N_content'] = N_content.values[1:len(N_content)]
-            pp_axes_df.loc[:, 'N_content_shoot'] = N_content_shoot.values[1:len(N_content_shoot)]
-            pp_axes_df.loc[:, 'N_content_roots'] = N_content_roots.values[1:len(N_content_roots)]
-            pp_axes_df.loc[:, 'N_content_mstruct'] = N_content_mstruct.values[1:len(N_content_mstruct)]
-            pp_axes_df.loc[:, 'N_content_mstruct_shoot'] = N_content_mstruct_shoot.values[1:len(N_content_mstruct_shoot)]
-            pp_axes_df.loc[:, 'N_content_total_DM_shoot'] = N_content_total_DM_shoot.values[1:len(N_content_total_DM_shoot)]
-            pp_axes_df.loc[:, 'N_content_mstruct_roots'] = N_content_mstruct_roots.values[1:len(N_content_mstruct_roots)]
-            pp_axes_df.loc[:, 'sum_N_g'] = sum_N_g.values[1:len(sum_N_g)]
-            pp_axes_df.loc[:, 'sum_N_g_shoot'] = sum_N_g_shoot.values[1:len(sum_N_g_shoot)]
-            pp_axes_df.loc[:, 'sum_dry_mass'] = sum_dry_mass.values[1:len(sum_dry_mass)]
-            pp_axes_df.loc[:, 'sum_dry_mass_shoot'] = sum_dry_mass_shoot.values[1:len(sum_dry_mass_shoot)]
-            pp_axes_df.loc[:, 'sum_dry_mass_roots'] = sum_dry_mass_roots.values[1:len(sum_dry_mass_roots)]
-            pp_axes_df.loc[:, 'dry_mass_phloem'] = sum_dry_mass_phloem.values[1:len(sum_dry_mass_phloem)]
+            pp_axes_df.sort_values(AXES_T_INDEXES, inplace=True)  # Make sure axes_df is sorted
+            pp_axes_df.loc[:, 'C_N_ratio'] = C_N_ratio.values
+            pp_axes_df.loc[:, 'C_N_ratio_shoot'] = C_N_ratio_shoot.values
+            pp_axes_df.loc[:, 'N_content'] = N_content.values
+            pp_axes_df.loc[:, 'N_content_shoot'] = N_content_shoot.values
+            pp_axes_df.loc[:, 'N_content_roots'] = N_content_roots.values
+            pp_axes_df.loc[:, 'N_content_mstruct'] = N_content_mstruct.values
+            pp_axes_df.loc[:, 'N_content_mstruct_shoot'] = N_content_mstruct_shoot.values
+            pp_axes_df.loc[:, 'N_content_total_DM_shoot'] = N_content_total_DM_shoot.values
+            pp_axes_df.loc[:, 'N_content_mstruct_roots'] = N_content_mstruct_roots.values
+            pp_axes_df.loc[:, 'sum_N_g'] = sum_N_g.values
+            pp_axes_df.loc[:, 'sum_N_g_shoot'] = sum_N_g_shoot.values
+            pp_axes_df.loc[:, 'sum_dry_mass'] = sum_dry_mass.values
+            pp_axes_df.loc[:, 'sum_dry_mass_shoot'] = sum_dry_mass_shoot.values
+            pp_axes_df.loc[:, 'sum_dry_mass_roots'] = sum_dry_mass_roots.values
+            pp_axes_df.loc[:, 'dry_mass_phloem'] = sum_dry_mass_phloem.values
             pp_axes_df.loc[:, 'shoot_roots_ratio'] = pp_axes_df['sum_dry_mass_shoot'] / pp_axes_df['sum_dry_mass_roots']
-            pp_axes_df.loc[:, 'shoot_roots_mstruct_ratio'] = shoot_roots_mstruct_ratio.values[1:len(shoot_roots_mstruct_ratio)]
-            pp_axes_df.loc[:, 'Total_Photosynthesis'] = tot_photosynthesis.values[1:len(tot_photosynthesis)]
-            pp_axes_df.loc[:, 'Tillers_Photosynthesis'] = tillers_photosynthesis.values[1:len(tillers_photosynthesis)]
-            pp_axes_df.loc[:, 'Tillers_Photosynthesis_An'] = tillers_photosynthesis_An.values[1:len(tillers_photosynthesis_An)]
-            pp_axes_df.loc[:, 'NNI'] = NNI.values[1:len(NNI)]
-            pp_axes_df.loc[:, 'NS_roots'] = NS_roots.values[1:len(NS_roots)]
-            pp_axes_df.loc[:, 'NS_shoot'] = NS_shoot.values[1:len(NS_shoot)]
-            pp_axes_df.loc[:, 'NS'] = NS.values[1:len(NS)]
-            pp_axes_df.loc[:, 'mstruct_shoot'] = sum_mstruct_shoot.values[1:len(sum_mstruct_shoot)]
+            pp_axes_df.loc[:, 'shoot_roots_mstruct_ratio'] = shoot_roots_mstruct_ratio.values
+            pp_axes_df.loc[:, 'Total_Photosynthesis'] = tot_photosynthesis.values
+            pp_axes_df.loc[:, 'Tillers_Photosynthesis'] = tillers_photosynthesis.values
+            pp_axes_df.loc[:, 'Tillers_Photosynthesis_An'] = tillers_photosynthesis_An.values
+            pp_axes_df.loc[:, 'NNI'] = NNI.values
+            pp_axes_df.loc[:, 'NS_roots'] = NS_roots.values
+            pp_axes_df.loc[:, 'NS_shoot'] = NS_shoot.values
+            pp_axes_df.loc[:, 'NS'] = NS.values
+            pp_axes_df.loc[:, 'mstruct_shoot'] = sum_mstruct_shoot.values
+            pp_axes_df.loc[:, 'C_respired_shoot'] = C_respired_shoot
+            pp_axes_df.loc[:, 'C_respired_roots'] = C_respired_roots
 
         pp_axes_df = pp_axes_df.reindex(AXES_RUN_POSTPROCESSING_VARIABLES, axis=1, copy=False)
         pp_axes_df['plant'] = pp_axes_df['plant'].astype(int)

@@ -124,7 +124,7 @@ class Simulation(object):
     #: :class:`model.Organ`, :class:`model.HiddenZone`, :class:`model.PhotosyntheticOrganElement`,
     #: and :class:`model.Soil`.
     MODEL_COMPARTMENTS_NAMES = {model.Plant: [],
-                                model.Axis: [],
+                                model.Axis: ['C_exudated','sum_respi_shoot','sum_respi_roots'],
                                 model.Phytomer: [],
                                 model.Organ: ['age_from_flowering', 'amino_acids', 'cytokinins',
                                               'nitrates', 'proteins', 'starch', 'structure', 'sucrose'],
@@ -687,6 +687,12 @@ class Simulation(object):
             plant.T_effect_Vmax = plant.calculate_temperature_effect_on_Vmax(plant.Tair)
 
             for axis in plant.axes:
+
+                sum_respi_shoot = 0.0
+                axis.C_exudated = y[self.initial_conditions_mapping[axis]['C_exudated']]
+                axis.sum_respi_shoot = y[self.initial_conditions_mapping[axis]['sum_respi_shoot']]
+                axis.sum_respi_roots = y[self.initial_conditions_mapping[axis]['sum_respi_roots']]
+
                 # Phloem
                 phloem_contributors = []
                 axis.phloem.sucrose = y[self.initial_conditions_mapping[axis.phloem]['sucrose']]
@@ -791,6 +797,7 @@ class Simulation(object):
                             element.R_residual, element.R_maintenance = self.respiration_model.RespirationModel.R_residual(element.sucrose, element.mstruct * element.__class__.PARAMETERS.ALPHA,
                                                                                                                            element.Total_Organic_Nitrogen, element.Ts)
                             element.sum_respi = element.R_phloem_loading + element.R_Nnit_red + element.R_residual
+                            sum_respi_shoot += element.sum_respi * element.nb_replications
                             sucrose_derivative = element.calculate_sucrose_derivative(element.S_Sucrose, element.D_Starch, element.Loading_Sucrose, element.S_Fructan,
                                                                                       element.D_Fructan, element.sum_respi)
                             triosesP_derivative = element.calculate_triosesP_derivative(element.Photosynthesis, element.S_Sucrose, element.S_Starch, element.S_Amino_Acids)
@@ -835,6 +842,7 @@ class Simulation(object):
                                                                                                                              hiddenzone.mstruct * hiddenzone.__class__.PARAMETERS.ALPHA,
                                                                                                                              hiddenzone.Total_Organic_Nitrogen,
                                                                                                                              plant.Tair)
+                        sum_respi_shoot += hiddenzone.R_residual * hiddenzone.nb_replications
 
                         # compute the derivatives of the hidden zone
                         y_derivatives[self.initial_conditions_mapping[hiddenzone]['sucrose']] = hiddenzone.calculate_sucrose_derivative(hiddenzone.Unloading_Sucrose, hiddenzone.S_Fructan,
@@ -867,6 +875,7 @@ class Simulation(object):
                     axis.grains.R_grain_growth_struct, axis.grains.R_grain_growth_starch = self.respiration_model.RespirationModel.R_grain_growth(axis.grains.S_grain_structure,
                                                                                                                                                   axis.grains.S_grain_starch,
                                                                                                                                                   axis.grains.structural_dry_mass)
+                    sum_respi_shoot += axis.grains.R_grain_growth_struct +  axis.grains.R_grain_growth_starch
                     structure_derivative = axis.grains.calculate_structure_derivative(axis.grains.S_grain_structure, axis.grains.R_grain_growth_struct)
                     starch_derivative = axis.grains.calculate_starch_derivative(axis.grains.S_grain_starch, axis.grains.structural_dry_mass, axis.grains.R_grain_growth_starch)
                     proteins_derivative = axis.grains.calculate_proteins_derivative(axis.grains.S_Proteins)
@@ -905,6 +914,12 @@ class Simulation(object):
                 y_derivatives[self.initial_conditions_mapping[axis.phloem]['sucrose']] = sucrose_phloem_derivative
                 y_derivatives[self.initial_conditions_mapping[axis.phloem]['amino_acids']] = amino_acids_phloem_derivative
 
+                # compute the derivative of each compartment of axis
+                C_exudated = axis.calculate_C_exudated(axis.roots.C_exudation, axis.roots.N_exudation, axis.roots.mstruct)
+                y_derivatives[self.initial_conditions_mapping[axis]['C_exudated']] += C_exudated
+                y_derivatives[self.initial_conditions_mapping[axis]['sum_respi_roots']] += axis.roots.sum_respi
+                y_derivatives[self.initial_conditions_mapping[axis]['sum_respi_shoot']] += sum_respi_shoot
+
         # compute the derivative of each compartment of soil
         soil.mineralisation = soil.calculate_mineralisation(soil.T_effect_Vmax)
         y_derivatives[self.initial_conditions_mapping[soil]['nitrates']] = soil.calculate_nitrates_derivative(soil.mineralisation, soil_contributors, self.culm_density, soil.constant_Conc_Nitrates)
@@ -938,6 +953,11 @@ class Simulation(object):
             plant.T_effect_Vmax = plant.calculate_temperature_effect_on_Vmax(plant.Tair)
 
             for axis in plant.axes:
+
+                axis.C_exudated = compartments_values[self.initial_conditions_mapping[axis]['C_exudated']]
+                axis.sum_respi_shoot = compartments_values[self.initial_conditions_mapping[axis]['sum_respi_shoot']]
+                axis.sum_respi_roots = compartments_values[self.initial_conditions_mapping[axis]['sum_respi_roots']]
+
                 # Phloem
                 phloem_contributors = []
                 axis.phloem.sucrose = compartments_values[self.initial_conditions_mapping[axis.phloem]['sucrose']]
@@ -1102,6 +1122,7 @@ class Simulation(object):
                 axis.roots.R_residual, _ = self.respiration_model.RespirationModel.R_residual(axis.roots.sucrose, axis.roots.mstruct * model.Roots.PARAMETERS.ALPHA, axis.roots.Total_Organic_Nitrogen,
                                                                                               soil.Tsoil)
                 axis.roots.sum_respi = axis.roots.R_Nnit_upt + axis.roots.R_Nnit_red + axis.roots.R_residual
+
 
         # soil
         soil.mineralisation = soil.calculate_mineralisation(soil.T_effect_Vmax)

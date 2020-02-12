@@ -97,6 +97,18 @@ class AxisParameters(object):
 #: The instance of class :class:`cnwheat.parameters.AxisParameters` for current process
 AXIS_PARAMETERS = AxisParameters()
 
+class AxisInitCompartments(object):
+    """
+    Initial values for compartments of axis.
+    """
+    def __init__(self):
+        self.C_exudated = 0                 #: initial value of C exudated by the roots (:math:`\mu` mol C)
+        self.sum_respi_shoot = 0            #: initial value of C respired by the shoot (exept leaf and internode growth respiration) (:math:`\mu` mol C)
+        self.sum_respi_roots = 1E-3         #: initial value of C respired by the roots (exept root growth respiration) (:math:`\mu` mol C)
+
+
+#: The instance of class :class:`cnwheat.parameters.HiddenZoneInitCompartments` for current process
+AXIS_INIT_COMPARTMENTS = AxisInitCompartments()
 
 class PhytomerParameters(object):
     """

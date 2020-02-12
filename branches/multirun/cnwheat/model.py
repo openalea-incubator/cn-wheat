@@ -153,8 +153,11 @@ class Axis(object):
     """
 
     PARAMETERS = parameters.AXIS_PARAMETERS  #: the internal parameters of the axes
+    INIT_COMPARTMENTS = parameters.AXIS_INIT_COMPARTMENTS  #: the initial values of compartments and state parameters
 
-    def __init__(self, label=None, roots=None, phloem=None, grains=None, phytomers=None):
+    def __init__(self, label=None, roots=None, phloem=None, grains=None, phytomers=None, C_exudated=INIT_COMPARTMENTS.C_exudated, sum_respi_shoot=INIT_COMPARTMENTS.sum_respi_shoot,
+                 sum_respi_roots=INIT_COMPARTMENTS.sum_respi_roots):
+
         self.label = label    #: the label of the axis
         self.roots = roots    #: the roots
         self.phloem = phloem  #: the phloem
@@ -162,9 +165,15 @@ class Axis(object):
         if phytomers is None:
             phytomers = []
         self.phytomers = phytomers  #: the list of phytomers
-        self.mstruct = None         #: structural mass of the axis (g)
+
+        # state variables
+        self.C_exudated = C_exudated
+        self.sum_respi_shoot = sum_respi_shoot
+        self.sum_respi_roots = sum_respi_roots
+
         # integrative variables
         self.Total_Transpiration = None  #: the total transpiration (mmol s-1)
+        self.mstruct = None  #: structural mass of the axis (g)
 
     def calculate_integrative_variables(self):
         """Calculate the integrative variables of the axis recursively.
@@ -181,6 +190,22 @@ class Axis(object):
         for phytomer in self.phytomers:
             phytomer.calculate_integrative_variables()
             self.mstruct += phytomer.mstruct * phytomer.nb_replications
+
+    # COMPARTMENTS
+
+    @staticmethod
+    def calculate_C_exudated(C_exudation, N_exudation, roots_mstruct):
+        """delta sucrose
+
+        :param float C_exudation: Rates of sucrose exudated (:math:`\mu mol` C g-1 mstruct h-1)
+        :param float N_exudation: Rate of amino acids exudated (:math:`\mu mol` N g-1 mstruct h-1)
+        :param float roots_mstruct: RStructural mass of the roots (g)
+
+        :return: delta C loss by exudation (:math:`\mu mol` C)
+        :rtype: float
+        """
+        return (C_exudation + N_exudation * EcophysiologicalConstants.AMINO_ACIDS_C_RATIO/EcophysiologicalConstants.AMINO_ACIDS_N_RATIO) * roots_mstruct
+
 
 
 class Phytomer(object):
