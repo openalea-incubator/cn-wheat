@@ -850,8 +850,8 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
                 continue
             curr_organ_elements_df = elements_df.loc[group.index]
             pp_curr_organ_elements_df = pp_elements_df.loc[group.index]
-            R_residual = np.array(respiwheat_model.RespirationModel.R_residual(curr_organ_elements_df['sucrose'], curr_organ_elements_df['mstruct'] * parameters_class.ALPHA,
-                                                                               curr_organ_elements_df['Total_Organic_Nitrogen'], curr_organ_elements_df['Ts']))
+            R_residual = np.vectorize(respiwheat_model.RespirationModel.R_residual)(curr_organ_elements_df['sucrose'], curr_organ_elements_df['mstruct'] * parameters_class.ALPHA,
+                                                                                    curr_organ_elements_df['Total_Organic_Nitrogen'], curr_organ_elements_df['Ts'])
             pp_curr_organ_elements_df.loc[:, 'R_maintenance'] = R_residual[0]
         pp_elements_df = pp_elements_df.reindex(columns=ELEMENTS_RUN_POSTPROCESSING_VARIABLES, copy=False)
         pp_elements_df[['plant', 'metamer']] = pp_elements_df[['plant', 'metamer']].astype(int)
