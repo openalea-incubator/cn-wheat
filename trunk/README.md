@@ -286,7 +286,7 @@ an email to <cn-wheat-request@groupes.renater.fr>.
 
 ## Authors
 
-**Romain BARILLOT** and **Camille CHAMBON** - see file [AUTHORS](AUTHORS) for details
+See file [AUTHORS](AUTHORS) for details
 
 ## License
 
