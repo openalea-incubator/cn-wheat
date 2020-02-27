@@ -1,4 +1,12 @@
 # -*- coding: latin-1 -*-
+import ez_setup
+import pkg_resources
+
+import sys
+from setuptools import setup, find_packages
+
+import cnwheat
+
 """
 
     setup
@@ -27,15 +35,7 @@
         $Id$
 """
 
-import ez_setup
-import pkg_resources
-
 ez_setup.use_setuptools()
-
-import sys
-from setuptools import setup, find_packages
-
-import cnwheat
 
 if sys.version_info < (2, 7):
     print('ERROR: CN-Wheat requires at least Python 2.7 to run.')
@@ -44,23 +44,23 @@ if sys.version_info < (2, 7):
 if sys.version_info >= (3, 0):
     print('WARNING: CN-Wheat has not been tested with Python 3.')
 
-pkg_resources.require('numpy>=1.11.0', 'pandas>=0.18.0', 'scipy>=0.16.1', 
-                      'matplotlib>=1.5.2rc2', 'sphinx>=1.4.8', 'nose>=1.3.7', 
+pkg_resources.require('numpy>=1.11.0', 'pandas>=0.18.0', 'scipy>=0.16.1',
+                      'matplotlib>=1.5', 'sphinx>=1.4.8', 'nose>=1.3.7',
                       'coverage>=4.4.1', 'Respi-Wheat')
 
 setup(
-    name = "CN-Wheat",
+    name="CN-Wheat",
     version=cnwheat.__version__,
-    packages = find_packages(),
-    include_package_data = True,
-    author = "C.Chambon, R.Barillot",
-    author_email = "camille.chambon@inra.fr, romain.barillot@inra.fr",
-    description = "CN-Wheat is a model of CN distribution for wheat",
-    long_description = """CN-Wheat is a Functional-Structural Plant Model which 
+    packages=find_packages(),
+    include_package_data=True,
+    author="R.Barillot, C.Chambon, M.Gauthier and B.Andrieu",
+    author_email="romain.barillot@inrae.fr, camille.chambon@inrae.fr, bruno.andrieu@inrae.fr, marion.gauthier@inrae.fr",
+    description="CN-Wheat is a model of CN distribution for wheat",
+    long_description="""CN-Wheat is a Functional-Structural Plant Model which 
 simulates the distribution of carbon and nitrogen into wheat culms in relation 
 to photosynthesis, N uptake, metabolite turnover, root exudation and tissue death.""",
-    license = "CeCILL-C",
-    keywords = "functional-structural plant model, wheat, ode, system integration, scipy", 
-    url = "https://sourcesup.renater.fr/projects/cn-wheat/",
-    download_url = "https://sourcesup.renater.fr/frs/download.php/latestzip/2088/CN-Wheat-Stable-latest.zip",
+    license="CeCILL-C",
+    keywords="functional-structural plant model, wheat, ode, system integration, scipy",
+    url="https://sourcesup.renater.fr/projects/cn-wheat/",
+    download_url="https://sourcesup.renater.fr/frs/download.php/latestzip/2088/CN-Wheat-Stable-latest.zip", install_requires=['pandas']
 )
