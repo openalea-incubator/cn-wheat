@@ -1,5 +1,4 @@
 # -*- coding: latin-1 -*-
-
 import numpy as np
 import pandas as pd
 
@@ -104,7 +103,6 @@ def from_dataframes(organs_inputs=None, hiddenzones_inputs=None, elements_inputs
             for axis_label in curr_axes_labels:
                 # create a new axis
                 axis = model.Axis(axis_label)
-
                 curr_organs_inputs = organs_inputs[(organs_inputs['plant'] == plant_index) & (organs_inputs['axis'] == axis_label)]
                 for axis_attribute_name, axis_attribute_class in (('roots', model.Roots), ('phloem', model.Phloem), ('grains', model.Grains)):
                     organ_label = CNWHEAT_CLASSES_TO_DATAFRAME_ORGANS_MAPPING[axis_attribute_class]
@@ -314,4 +312,3 @@ def to_dataframes(population=None, soils=None):
         return all_plants_df, all_axes_df, all_phytomers_df, all_organs_df, all_hiddenzones_df, all_elements_df
     else:
         return all_soils_df
-

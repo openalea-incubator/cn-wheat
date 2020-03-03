@@ -273,7 +273,9 @@ def compare_actual_to_desired(data_dirpath, actual_data_df, desired_data_filenam
         # save actual outputs to CSV file
         actual_data_filepath = os.path.join(data_dirpath, actual_data_filename)
         actual_data_df.to_csv(actual_data_filepath, na_rep='NA', index=False, float_format='%.{}f'.format(precision))
+
     if overwrite_desired_data:
+        warnings.warn('!!! Unit test is running with overwrite_desired_data !!!')
         desired_data_filepath = os.path.join(data_dirpath, desired_data_filename)
         actual_data_df.to_csv(desired_data_filepath, na_rep='NA', index=False)
 

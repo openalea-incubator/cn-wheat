@@ -97,6 +97,7 @@ class AxisParameters(object):
 #: The instance of class :class:`cnwheat.parameters.AxisParameters` for current process
 AXIS_PARAMETERS = AxisParameters()
 
+
 class AxisInitCompartments(object):
     """
     Initial values for compartments of axis.
@@ -109,6 +110,7 @@ class AxisInitCompartments(object):
 
 #: The instance of class :class:`cnwheat.parameters.HiddenZoneInitCompartments` for current process
 AXIS_INIT_COMPARTMENTS = AxisInitCompartments()
+
 
 class PhytomerParameters(object):
     """
@@ -249,7 +251,7 @@ class RootsParameters(object):
 
         # Nitrate uptake
         self.NET_INFLUX_UPTAKE_RATIO = 0.6   #: ratio (net uptake : nitrate influx)
-        self.MIN_INFLUX_FOR_UPTAKE = 3.02E-03 #: Minimum influx rate below wich no net absorption happens (:math:`\mu` mol C sucrose g-1 mstruct s-1)
+        self.MIN_INFLUX_FOR_UPTAKE = 3.02E-03  #: Minimum influx rate below wich no net absorption happens (:math:`\mu` mol C sucrose g-1 mstruct s-1)
         self.A_VMAX_HATS = -0.00004          #: Parameter for estimating the maximal rate of nitrates uptake at saturating soil N concentration;HATS (:math:`\mu` mol g-1 s-1)
         self.B_VMAX_HATS = 0.0549            #: Parameter for estimating the maximal rate of nitrates uptake at saturating soil N concentration;HATS (g :math:`\mu` mol-1)
         self.A_K_HATS = -85.324              #: Parameter for estimating the affinity coefficient of nitrates uptake at saturating soil N concentration;HATS (:math:`\mu` mol m-3)
