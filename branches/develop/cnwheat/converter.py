@@ -1,5 +1,4 @@
 # -*- coding: latin-1 -*-
-
 import numpy as np
 import pandas as pd
 
@@ -290,4 +289,3 @@ def to_dataframes(population=None, soils=None):
         return all_plants_df, all_axes_df, all_phytomers_df, all_organs_df, all_hiddenzones_df, all_elements_df
     else:
         return all_soils_df
-

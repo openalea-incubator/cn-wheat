@@ -73,11 +73,11 @@ class Population(object):
             plants = []
         self.plants = plants  #: the list of plants
 
-    def calculate_integrative_variables(self):
+    def calculate_aggregated_variables(self):
         """Calculate the integrative variables of the population recursively.
         """
         for plant in self.plants:
-            plant.calculate_integrative_variables()
+            plant.calculate_aggregated_variables()
 
 
 class Plant(object):
@@ -96,11 +96,11 @@ class Plant(object):
         self.axes = axes   #: the list of axes
         self.cohorts = []  #: list of cohort values - Hack to treat tillering cases : TEMPORARY
 
-    def calculate_integrative_variables(self):
+    def calculate_aggregated_variables(self):
         """Calculate the integrative variables of the plant recursively.
         """
         for axis in self.axes:
-            axis.calculate_integrative_variables()
+            axis.calculate_aggregated_variables()
 
     @staticmethod
     def calculate_temperature_effect_on_conductivity(Tair):
@@ -166,20 +166,20 @@ class Axis(object):
         # integrative variables
         self.Total_Transpiration = None  #: the total transpiration (mmol s-1)
 
-    def calculate_integrative_variables(self):
+    def calculate_aggregated_variables(self):
         """Calculate the integrative variables of the axis recursively.
         """
         self.mstruct = 0
         if self.roots is not None:
-            self.roots.calculate_integrative_variables()
+            self.roots.calculate_aggregated_variables()
             self.mstruct += self.roots.mstruct
         if self.phloem is not None:
-            self.phloem.calculate_integrative_variables()
+            self.phloem.calculate_aggregated_variables()
         if self.grains is not None:
-            self.grains.calculate_integrative_variables()
+            self.grains.calculate_aggregated_variables()
             self.mstruct += self.grains.structural_dry_mass
         for phytomer in self.phytomers:
-            phytomer.calculate_integrative_variables()
+            phytomer.calculate_aggregated_variables()
             self.mstruct += phytomer.mstruct * phytomer.nb_replications
 
 
@@ -196,7 +196,8 @@ class Phytomer(object):
 
     PARAMETERS = parameters.PHYTOMER_PARAMETERS  #: the internal parameters of the phytomers
 
-    def __init__(self, index=None, chaff=None, peduncle=None, lamina=None, internode=None, sheath=None, hiddenzone=None, cohorts=[], cohorts_replications=None):
+    def __init__(self, index=None, chaff=None, peduncle=None, lamina=None, internode=None, sheath=None, hiddenzone=None, cohorts=None, cohorts_replications=None):
+
         self.index = index  #: the index of the phytomer
         self.chaff = chaff  #: the chaff
         self.peduncle = peduncle  #: the peduncle
@@ -205,16 +206,17 @@ class Phytomer(object):
         self.sheath = sheath  #: the sheath
         self.hiddenzone = hiddenzone  #: the hidden zone
         self.mstruct = None  #: the structural mass of the phytomer (g)
-        self.cohorts = cohorts  #: list of cohort values - Hack to treat tillering cases : TEMPORARY. Devrait être porté à l'échelle de la plante uniquement mais je ne vois pas comment faire mieux
+        if cohorts is None:
+            self.cohorts = []  #: list of cohort values - Hack to treat tillering cases : TEMPORARY. Devrait être porté à l'échelle de la plante uniquement mais je ne vois pas comment faire mieux
         self.cohorts_replications = cohorts_replications  #: dictionary of number of replications per cohort rank
 
-    def calculate_integrative_variables(self):
+    def calculate_aggregated_variables(self):
         """Calculate the integrative variables of the phytomer recursively.
         """
         self.mstruct = 0
         for organ_ in (self.chaff, self.peduncle, self.lamina, self.internode, self.sheath, self.hiddenzone):
             if organ_ is not None:
-                organ_.calculate_integrative_variables()
+                organ_.calculate_aggregated_variables()
                 self.mstruct += organ_.mstruct
 
     @property
@@ -237,7 +239,7 @@ class Organ(object):
         """
         pass
 
-    def calculate_integrative_variables(self):
+    def calculate_aggregated_variables(self):
         """Calculate the integrative variables of the organ recursively.
         """
         pass
@@ -253,11 +255,12 @@ class HiddenZone(Organ):
 
     def __init__(self, label='hiddenzone',  mstruct=INIT_COMPARTMENTS.mstruct, Nstruct=INIT_COMPARTMENTS.Nstruct,
                  sucrose=INIT_COMPARTMENTS.sucrose, fructan=INIT_COMPARTMENTS.fructan, amino_acids=INIT_COMPARTMENTS.amino_acids, proteins=INIT_COMPARTMENTS.proteins,
-                 ratio_DZ=INIT_COMPARTMENTS.ratio_DZ, ratio_EOZ=INIT_COMPARTMENTS.ratio_EOZ, cohorts=[], cohorts_replications=None, index=None):
+                 ratio_DZ=INIT_COMPARTMENTS.ratio_DZ, ratio_EOZ=INIT_COMPARTMENTS.ratio_EOZ, cohorts=None, cohorts_replications=None, index=None):
 
         super(HiddenZone, self).__init__(label)
 
-        self.cohorts = cohorts  #: list of cohort values - Hack to treat tillering cases : TEMPORARY. Devrait être porté à l'échelle de la plante uniquement mais je ne vois pas comment faire mieux
+        if cohorts is None:
+            self.cohorts = []  #: list of cohort values - Hack to treat tillering cases : TEMPORARY. Devrait être porté à l'échelle de la plante uniquement mais je ne vois pas comment faire mieux
         self.cohorts_replications = cohorts_replications  #: dictionary of number of replications per cohort rank
         self.index = index  #: the index of the phytomer TEMPORARY
 
@@ -293,7 +296,7 @@ class HiddenZone(Organ):
     def nb_replications(self):
         return sum(int(v <= self.index) * self.cohorts_replications.get(v, 0) for v in self.cohorts) + 1
 
-    def calculate_integrative_variables(self):
+    def calculate_aggregated_variables(self):
         self.Total_Organic_Nitrogen = self.calculate_Total_Organic_Nitrogen(self.amino_acids, self.proteins, self.Nstruct)
 
     # VARIABLES
@@ -790,7 +793,7 @@ class Roots(Organ):
         self.HATS_LATS = None                  #: Nitrate influx (:math:`\mu mol` N)
         self.sum_respi = None                  #: Sum of respirations for roots i.e. related to N uptake, amino acids synthesis and residual (:math:`\mu mol` C)
 
-    def calculate_integrative_variables(self):
+    def calculate_aggregated_variables(self):
         self.Total_Organic_Nitrogen = self.calculate_Total_Organic_Nitrogen(self.amino_acids, self.Nstruct)
 
     # VARIABLES
@@ -1080,11 +1083,11 @@ class PhotosyntheticOrgan(Organ):
         self.enclosed_element = enclosed_element  #: the enclosed element
         self.mstruct = None                       #: the structural dry mass
 
-    def calculate_integrative_variables(self):
+    def calculate_aggregated_variables(self):
         self.mstruct = 0
         for element in (self.exposed_element, self.enclosed_element):
             if element is not None:
-                element.calculate_integrative_variables()
+                element.calculate_aggregated_variables()
                 self.mstruct += element.mstruct
 
 
@@ -1158,9 +1161,11 @@ class PhotosyntheticOrganElement(object):
     def __init__(self, label=None, green_area=INIT_COMPARTMENTS.green_area, mstruct=INIT_COMPARTMENTS.mstruct, Nstruct=INIT_COMPARTMENTS.Nstruct,
                  triosesP=INIT_COMPARTMENTS.triosesP, starch=INIT_COMPARTMENTS.starch, sucrose=INIT_COMPARTMENTS.sucrose, fructan=INIT_COMPARTMENTS.fructan,
                  nitrates=INIT_COMPARTMENTS.nitrates, amino_acids=INIT_COMPARTMENTS.amino_acids, proteins=INIT_COMPARTMENTS.proteins, cytokinins=INIT_COMPARTMENTS.cytokinins,
-                 Tr=INIT_COMPARTMENTS.Tr, Ag=INIT_COMPARTMENTS.Ag, Ts=INIT_COMPARTMENTS.Ts, is_growing=INIT_COMPARTMENTS.is_growing, cohorts=[], cohorts_replications=None, index=None):
+                 Tr=INIT_COMPARTMENTS.Tr, Ag=INIT_COMPARTMENTS.Ag, Ts=INIT_COMPARTMENTS.Ts, is_growing=INIT_COMPARTMENTS.is_growing, cohorts=None, cohorts_replications=None, index=None):
 
         self.label = label                   #: the label of the element
+        if cohorts is None:
+            cohorts = []
         self.cohorts = cohorts  #: list of cohort values - Hack to treat tillering cases : TEMPORARY. Devrait être porté à l'échelle de la plante uniquement mais je ne vois pas comment faire mieux
         self.cohorts_replications = cohorts_replications  #: dictionary of number of replications per cohort rank
         self.index = index  #: the index of the phytomer TEMPORARY
@@ -1219,7 +1224,7 @@ class PhotosyntheticOrganElement(object):
     def nb_replications(self):
         return sum(int(v <= self.index) * self.cohorts_replications.get(v, 0) for v in self.cohorts) + 1
 
-    def calculate_integrative_variables(self):
+    def calculate_aggregated_variables(self):
         """Calculate the integrative variables of the element.
         """
         self.Total_Organic_Nitrogen = self.calculate_Total_Organic_Nitrogen(self.amino_acids, self.proteins, self.Nstruct)
