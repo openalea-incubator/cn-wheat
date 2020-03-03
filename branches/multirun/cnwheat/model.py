@@ -174,14 +174,17 @@ class Axis(object):
         # integrative variables
         self.Total_Transpiration = None  #: the total transpiration (mmol s-1)
         self.mstruct = None  #: structural mass of the axis (g)
+        self.senesced_mstruct = None  #: senesced structural mass of the axis (g)
 
     def calculate_integrative_variables(self):
         """Calculate the integrative variables of the axis recursively.
         """
         self.mstruct = 0
+        self.senesced_mstruct = 0
         if self.roots is not None:
             self.roots.calculate_integrative_variables()
             self.mstruct += self.roots.mstruct
+            self.senesced_mstruct += self.roots.senesced_mstruct
         if self.phloem is not None:
             self.phloem.calculate_integrative_variables()
         if self.grains is not None:
@@ -190,6 +193,7 @@ class Axis(object):
         for phytomer in self.phytomers:
             phytomer.calculate_integrative_variables()
             self.mstruct += phytomer.mstruct * phytomer.nb_replications
+            self.senesced_mstruct += phytomer.senesced_mstruct * phytomer.nb_replications
 
     # COMPARTMENTS
 
@@ -230,6 +234,7 @@ class Phytomer(object):
         self.sheath = sheath  #: the sheath
         self.hiddenzone = hiddenzone  #: the hidden zone
         self.mstruct = None  #: the structural mass of the phytomer (g)
+        self.senesced_mstruct = None  #: senesced structural mass of the phytomer (g)
         self.cohorts = cohorts  #: list of cohort values - Hack to treat tillering cases : TEMPORARY. Devrait être porté à l'échelle de la plante uniquement mais je ne vois pas comment faire mieux
         self.cohorts_replications = cohorts_replications  #: dictionary of number of replications per cohort rank
 
@@ -237,11 +242,13 @@ class Phytomer(object):
         """Calculate the integrative variables of the phytomer recursively.
         """
         self.mstruct = 0
+        self.senesced_mstruct = 0
         for organ_ in (self.chaff, self.peduncle, self.lamina, self.internode, self.sheath, self.hiddenzone):
             if organ_ is not None:
                 organ_.calculate_integrative_variables()
                 self.mstruct += organ_.mstruct
-
+                if hasattr(organ_, 'senesced_mstruct'):
+                    self.senesced_mstruct += organ_.senesced_mstruct
     @property
     def nb_replications(self):
         return sum(int(v <= self.index) * self.cohorts_replications.get(v, 0) for v in self.cohorts) + 1
@@ -775,13 +782,15 @@ class Roots(Organ):
     PARAMETERS = parameters.ROOTS_PARAMETERS                #: the internal parameters of the roots
     INIT_COMPARTMENTS = parameters.ROOTS_INIT_COMPARTMENTS  #: the initial values of compartments and state parameters
 
-    def __init__(self, label='roots', mstruct=INIT_COMPARTMENTS.mstruct, Nstruct=INIT_COMPARTMENTS.Nstruct, sucrose=INIT_COMPARTMENTS.sucrose, nitrates=INIT_COMPARTMENTS.nitrates,
+    def __init__(self, label='roots', mstruct=INIT_COMPARTMENTS.mstruct, senesced_mstruct=INIT_COMPARTMENTS.senesced_mstruct, Nstruct=INIT_COMPARTMENTS.Nstruct, sucrose=INIT_COMPARTMENTS.sucrose,
+                 nitrates=INIT_COMPARTMENTS.nitrates,
                  amino_acids=INIT_COMPARTMENTS.amino_acids, cytokinins=INIT_COMPARTMENTS.cytokinins):
 
         super(Roots, self).__init__(label)
 
         # state parameters
         self.mstruct = mstruct                 #: Structural mass (g)
+        self.senesced_mstruct = senesced_mstruct  #: Senesced structural mass (g)
         self.Nstruct = Nstruct                 #: Structural N mass (g)
 
         # state variables
@@ -906,21 +915,25 @@ class Roots(Organ):
         conc_nitrates_roots = nitrates_roots / self.mstruct
 
         #: High Affinity Transport System (HATS)
-        VMAX_HATS_MAX = Roots.PARAMETERS.A_VMAX_HATS * np.exp(-Roots.PARAMETERS.LAMBDA_VMAX_HATS * conc_nitrates_roots)  #: Maximal rate of nitrates influx at saturating soil N concentration;HATS (:math:`\mu mol` N nitrates g-1 mstruct s-1)
-        K_HATS = Roots.PARAMETERS.A_K_HATS * np.exp(-Roots.PARAMETERS.LAMBDA_K_HATS * conc_nitrates_roots)  #: Affinity coefficient of nitrates influx at saturating soil N concentration;HATS (:math:`\mu mol` m-3)
+        VMAX_HATS_MAX = max( 0., Roots.PARAMETERS.A_VMAX_HATS * conc_nitrates_roots + Roots.PARAMETERS.B_VMAX_HATS)  #: Maximal rate of nitrates influx at saturating soil N concentration;HATS (:math:`\mu   mol` N nitrates g-1 mstruct s-1)
+        K_HATS =  max( 0., Roots.PARAMETERS.A_K_HATS * conc_nitrates_roots + Roots.PARAMETERS.B_K_HATS)   #: Affinity coefficient of nitrates influx at saturating soil N concentration;HATS (:math:`\mu mol` m-3)
         HATS = (VMAX_HATS_MAX * Conc_Nitrates_Soil) / (K_HATS + Conc_Nitrates_Soil)                         #: Rate of nitrate influx by HATS (:math:`\mu mol` N nitrates uptaked s-1 g-1 mstruct)
 
         #: Low Affinity Transport System (LATS)
-        K_LATS = Roots.PARAMETERS.A_LATS * np.exp(-Roots.PARAMETERS.LAMBDA_LATS * conc_nitrates_roots)  #: Rate constant for nitrates influx at low soil N concentration; LATS (m3 g-1 mstruct s-1)
+        K_LATS = max(0., Roots.PARAMETERS.A_LATS * conc_nitrates_roots + Roots.PARAMETERS.B_LATS)  #: Rate constant for nitrates influx at low soil N concentration; LATS (m3 g-1 mstruct s-1)
         LATS = (K_LATS * Conc_Nitrates_Soil)                                                            #: Rate of nitrate influx by LATS (:math:`\mu mol` N nitrates g-1 mstruct)
 
         #: Nitrate influx (:math:`\mu mol` N)
-        HATS_LATS = (HATS + LATS) * self.mstruct * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
+        HATS_LATS = (HATS + LATS)
+        nitrate_influx = HATS_LATS * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax * self.mstruct
 
         # Regulations
         regul_C = (sucrose_roots/self.mstruct) / ((sucrose_roots/self.mstruct) + Roots.PARAMETERS.K_C)  #: Nitrate uptake regulation by root C
-        net_nitrate_uptake = HATS_LATS * Roots.PARAMETERS.NET_INFLUX_UPTAKE_RATIO * regul_C             #: Net nitrate uptake (:math:`\mu mol` N nitrates uptaked by roots)
-        return net_nitrate_uptake, HATS_LATS
+        if HATS_LATS < Roots.PARAMETERS.MIN_INFLUX_FOR_UPTAKE:
+            net_nitrate_uptake = 0
+        else:
+            net_nitrate_uptake = nitrate_influx * Roots.PARAMETERS.NET_INFLUX_UPTAKE_RATIO * regul_C             #: Net nitrate uptake (:math:`\mu mol` N nitrates uptaked by roots)
+        return net_nitrate_uptake, nitrate_influx
 
     def calculate_S_amino_acids(self, nitrates, sucrose, T_effect_Vmax):
         """Rate of amino acid synthesis in roots (:math:`\mu mol` N amino acids g-1 mstruct h-1).
@@ -1107,13 +1120,16 @@ class PhotosyntheticOrgan(Organ):
         self.exposed_element = exposed_element    #: the exposed element
         self.enclosed_element = enclosed_element  #: the enclosed element
         self.mstruct = None                       #: the structural dry mass
+        self.senesced_mstruct = None              #: senesced structural dry mass
 
     def calculate_integrative_variables(self):
         self.mstruct = 0
+        self.senesced_mstruct = 0
         for element in (self.exposed_element, self.enclosed_element):
             if element is not None:
                 element.calculate_integrative_variables()
                 self.mstruct += element.mstruct
+                self.senesced_mstruct += element.senesced_mstruct
 
 
 class Chaff(PhotosyntheticOrgan):
@@ -1183,7 +1199,7 @@ class PhotosyntheticOrganElement(object):
     PARAMETERS = parameters.PHOTOSYNTHETIC_ORGAN_ELEMENT_PARAMETERS                #: the internal parameters of the photosynthetic organs elements
     INIT_COMPARTMENTS = parameters.PHOTOSYNTHETIC_ORGAN_ELEMENT_INIT_COMPARTMENTS  #: the initial values of compartments and state parameters
 
-    def __init__(self, label=None, green_area=INIT_COMPARTMENTS.green_area, mstruct=INIT_COMPARTMENTS.mstruct, Nstruct=INIT_COMPARTMENTS.Nstruct,
+    def __init__(self, label=None, green_area=INIT_COMPARTMENTS.green_area, mstruct=INIT_COMPARTMENTS.mstruct, senesced_mstruct=INIT_COMPARTMENTS.senesced_mstruct, Nstruct=INIT_COMPARTMENTS.Nstruct,
                  triosesP=INIT_COMPARTMENTS.triosesP, starch=INIT_COMPARTMENTS.starch, sucrose=INIT_COMPARTMENTS.sucrose, fructan=INIT_COMPARTMENTS.fructan,
                  nitrates=INIT_COMPARTMENTS.nitrates, amino_acids=INIT_COMPARTMENTS.amino_acids, proteins=INIT_COMPARTMENTS.proteins, cytokinins=INIT_COMPARTMENTS.cytokinins,
                  Tr=INIT_COMPARTMENTS.Tr, Ag=INIT_COMPARTMENTS.Ag, Ts=INIT_COMPARTMENTS.Ts, is_growing=INIT_COMPARTMENTS.is_growing, cohorts=[], cohorts_replications=None, index=None):
@@ -1195,6 +1211,7 @@ class PhotosyntheticOrganElement(object):
 
         # state parameters
         self.mstruct = mstruct               #: Structural dry mass (g)
+        self.senesced_mstruct = senesced_mstruct   #: Senesced structural dry mass (g)
         self.Nstruct = Nstruct               #: Structural N mass (g)
         self.is_growing = is_growing         #: Flag indicating if the element is growing or not (:class:`bool`)
         self.green_area = green_area         #: green area (m-2)

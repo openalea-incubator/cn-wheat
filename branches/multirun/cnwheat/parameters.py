@@ -249,12 +249,13 @@ class RootsParameters(object):
 
         # Nitrate uptake
         self.NET_INFLUX_UPTAKE_RATIO = 0.6   #: ratio (net uptake : nitrate influx)
-        self.A_VMAX_HATS = 0.1333            #: Parameter for estimating the maximal rate of nitrates uptake at saturating soil N concentration;HATS (:math:`\mu` mol g-1 s-1)
-        self.LAMBDA_VMAX_HATS = 0.0025       #: Parameter for estimating the maximal rate of nitrates uptake at saturating soil N concentration;HATS (g :math:`\mu` mol-1)
-        self.A_K_HATS = 211812               #: Parameter for estimating the affinity coefficient of nitrates uptake at saturating soil N concentration;HATS (:math:`\mu` mol m-3)
-        self.LAMBDA_K_HATS = 0.0018          #: Parameter for estimating the affinity coefficient of nitrates uptake at saturating soil N concentration;HATS (g :math:`\mu` mol-1)
-        self.A_LATS = 4.614E-09              #: Parameter for estimating the rate of nitrates uptake at low soil N concentration; LATS (m3 g-1 s-1)
-        self.LAMBDA_LATS = 1.6517E-03        #: Parameter for estimating the rate of nitrates uptake at low soil N concentration; LATS (g :math:`\mu` mol-1)
+        self.MIN_INFLUX_FOR_UPTAKE = 3.02E-03 #: Minimum influx rate below wich no net absorption happens (:math:`\mu` mol C sucrose g-1 mstruct s-1)
+        self.A_VMAX_HATS = -0.00004          #: Parameter for estimating the maximal rate of nitrates uptake at saturating soil N concentration;HATS (:math:`\mu` mol g-1 s-1)
+        self.B_VMAX_HATS = 0.0549            #: Parameter for estimating the maximal rate of nitrates uptake at saturating soil N concentration;HATS (g :math:`\mu` mol-1)
+        self.A_K_HATS = -85.324              #: Parameter for estimating the affinity coefficient of nitrates uptake at saturating soil N concentration;HATS (:math:`\mu` mol m-3)
+        self.B_K_HATS = 124476               #: Parameter for estimating the affinity coefficient of nitrates uptake at saturating soil N concentration;HATS (g :math:`\mu` mol-1)
+        self.A_LATS = -1.98E-12              #: Parameter for estimating the rate of nitrates uptake at low soil N concentration; LATS (m3 g-1 s-1)
+        self.B_LATS = 2.93E-09               #: Parameter for estimating the rate of nitrates uptake at low soil N concentration; LATS (g :math:`\mu` mol-1)
 
         # Nitrate export
         self.K_NITRATE_EXPORT = 2E-4         #: Relative rate of nitrate export from roots (s-1)
@@ -294,6 +295,7 @@ class RootsInitCompartments(object):
         self.amino_acids = 0   #: initial value of amino_acids (:math:`\mu` mol N)
         self.cytokinins = 0    #: initial value of cytokinins (AU)
         self.mstruct = 0.15    #: initial value of mstruct (g)
+        self.senesced_mstruct = 0  #: initial value of senesced_mstruct (g)
         self.Nstruct = 0.0045  #: initial value of Nstruct (g)
 
 
@@ -429,6 +431,7 @@ class PhotosyntheticOrganElementInitCompartments(object):
     def __init__(self):
         self.green_area = 1E-4   #: initial value of green_area (m2)
         self.mstruct = 5E-3      #: initial value of mstruct (g)
+        self.senesced_mstruct = 0  #: initial value of senesced_mstruct (g)
         self.Nstruct = 1E-3      #: initial value of Nstruct (g)
 
         self.triosesP = 0        #: initial value of triosesP (:math:`\mu` mol C)

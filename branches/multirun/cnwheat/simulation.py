@@ -168,7 +168,7 @@ class Simulation(object):
     #: concatenation of :attr:`T_INDEX` and :attr:`AXES_INDEXES`
     AXES_T_INDEXES = T_INDEX + AXES_INDEXES
     #: the parameters which define the state of the modeled system at axis scale
-    AXES_STATE_PARAMETERS = ['mstruct']
+    AXES_STATE_PARAMETERS = ['mstruct','senesced_mstruct']
     #: the variables which define the state of the modeled system at axis scale,
     #: formed be the concatenation of :attr:`AXES_STATE_PARAMETERS` and the names
     #: of the compartments associated to each axis (see :attr:`MODEL_COMPARTMENTS_NAMES`)
@@ -210,7 +210,7 @@ class Simulation(object):
     #: concatenation of :attr:`T_INDEX` and :attr:`ORGANS_INDEXES`
     ORGANS_T_INDEXES = T_INDEX + ORGANS_INDEXES
     #: the parameters which define the state of the modeled system at organ scale
-    ORGANS_STATE_PARAMETERS = ['mstruct', 'Nstruct']
+    ORGANS_STATE_PARAMETERS = ['mstruct', 'Nstruct', 'senesced_mstruct']
     #: the variables which define the state of the modeled system at organ scale,
     #: formed be the concatenation of :attr:`ORGANS_STATE_PARAMETERS` and the names
     #: of the compartments associated to each organ (see :attr:`MODEL_COMPARTMENTS_NAMES`)
@@ -254,7 +254,7 @@ class Simulation(object):
     #: concatenation of :attr:`T_INDEX` and :attr:`ELEMENTS_INDEXES`
     ELEMENTS_T_INDEXES = T_INDEX + ELEMENTS_INDEXES
     #: the parameters which define the state of the modeled system at element scale
-    ELEMENTS_STATE_PARAMETERS = ['Ag', 'Nstruct', 'Tr', 'Ts', 'green_area', 'is_growing', 'mstruct']
+    ELEMENTS_STATE_PARAMETERS = ['Ag', 'Nstruct', 'Tr', 'Ts', 'green_area', 'is_growing', 'mstruct', 'senesced_mstruct']
     #: the variables which define the state of the modeled system at element scale,
     #: formed be the concatenation of :attr:`ELEMENTS_STATE_PARAMETERS` and the names
     #: of the compartments associated to each element (see :attr:`MODEL_COMPARTMENTS_NAMES`)

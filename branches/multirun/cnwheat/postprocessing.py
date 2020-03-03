@@ -741,7 +741,9 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
         returned_dataframes.append(pd.DataFrame({'A': []}))
 
     # organs
-    if organs_df is not None:
+    if organs_df is not None and axes_df is not None:
+        axes_df = axes_df[axes_df['axis'] == 'MS'].copy()  # TODO : Temporary !
+
         pp_organs_df = pd.concat([organs_df, pd.DataFrame(columns=ORGANS_POSTPROCESSING_VARIABLES)], sort=False)
 
         organs_df['sum_dry_mass'] = (((organs_df.fillna(0)['structure'] + organs_df.fillna(0)[
@@ -783,13 +785,8 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
 
         # phloem
         phloems_df = organs_df.loc[organs_df.organ == 'phloem']
-        if len(phloems_df) != len(axes_df):
-            # this is temporary, to make fpsm-wheat work ; but there is no reason for axes_df not having the same length as phloems_df. This problem should be fixed as soon as possible in fspm-wheat.
-            pp_organs_df.loc[pp_organs_df.organ == 'phloem', 'Conc_Amino_Acids'] = Phloem.calculate_conc_amino_acids(phloems_df['amino_acids'], axes_df.set_index(phloems_df.index[1:])['mstruct'])
-            pp_organs_df.loc[pp_organs_df.organ == 'phloem', 'Conc_Sucrose'] = Phloem.calculate_conc_sucrose(phloems_df['sucrose'], axes_df.set_index(phloems_df.index[1:])['mstruct'])
-        else:
-            pp_organs_df.loc[pp_organs_df.organ == 'phloem', 'Conc_Amino_Acids'] = Phloem.calculate_conc_amino_acids(phloems_df['amino_acids'], axes_df.set_index(phloems_df.index)['mstruct'])
-            pp_organs_df.loc[pp_organs_df.organ == 'phloem', 'Conc_Sucrose'] = Phloem.calculate_conc_sucrose(phloems_df['sucrose'], axes_df.set_index(phloems_df.index)['mstruct'])
+        pp_organs_df.loc[pp_organs_df.organ == 'phloem', 'Conc_Amino_Acids'] = Phloem.calculate_conc_amino_acids(phloems_df['amino_acids'], axes_df.set_index(phloems_df.index)['mstruct'])
+        pp_organs_df.loc[pp_organs_df.organ == 'phloem', 'Conc_Sucrose'] = Phloem.calculate_conc_sucrose(phloems_df['sucrose'], axes_df.set_index(phloems_df.index)['mstruct'])
 
         # grains
         grains_df = organs_df.loc[organs_df.organ == 'grains']
@@ -925,6 +922,7 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
 
     # axes
     if axes_df is not None:
+        axes_df = axes_df[axes_df['axis'] == 'MS'].copy()  # TODO : Temporary !
         pp_axes_df = pd.concat([axes_df, pd.DataFrame(columns=AXES_POSTPROCESSING_VARIABLES)], sort=False)
 
         # Integrated variables TODO : Homogeneiser la structure de ce bout de code
