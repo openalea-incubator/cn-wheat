@@ -235,7 +235,8 @@ class Phytomer(object):
         self.mstruct = None  #: the structural mass of the phytomer (g)
         self.senesced_mstruct = None  #: senesced structural mass of the phytomer (g)
         if cohorts is None:
-            self.cohorts = []  #: list of cohort values - Hack to treat tillering cases : TEMPORARY. Devrait être porté à l'échelle de la plante uniquement mais je ne vois pas comment faire mieux
+            cohorts = []
+        self.cohorts = cohorts  #: list of cohort values - Hack to treat tillering cases : TEMPORARY. Devrait être porté à l'échelle de la plante uniquement mais je ne vois pas comment faire mieux
         self.cohorts_replications = cohorts_replications  #: dictionary of number of replications per cohort rank
 
     def calculate_aggregated_variables(self):
@@ -291,7 +292,8 @@ class HiddenZone(Organ):
         super(HiddenZone, self).__init__(label)
 
         if cohorts is None:
-            self.cohorts = []  #: list of cohort values - Hack to treat tillering cases : TEMPORARY. Devrait être porté à l'échelle de la plante uniquement mais je ne vois pas comment faire mieux
+            cohorts = []
+        self.cohorts = cohorts  #: list of cohort values - Hack to treat tillering cases : TEMPORARY. Devrait être porté à l'échelle de la plante uniquement mais je ne vois pas comment faire mieux
         self.cohorts_replications = cohorts_replications  #: dictionary of number of replications per cohort rank
         self.index = index  #: the index of the phytomer TEMPORARY
 
@@ -1208,8 +1210,8 @@ class PhotosyntheticOrganElement(object):
                  nitrates=INIT_COMPARTMENTS.nitrates, amino_acids=INIT_COMPARTMENTS.amino_acids, proteins=INIT_COMPARTMENTS.proteins, cytokinins=INIT_COMPARTMENTS.cytokinins,
                  Tr=INIT_COMPARTMENTS.Tr, Ag=INIT_COMPARTMENTS.Ag, Ts=INIT_COMPARTMENTS.Ts, is_growing=INIT_COMPARTMENTS.is_growing, cohorts=None, cohorts_replications=None, index=None):
 
-        self.label = label                   #: the label of the element
-        if cohorts is None:
+        self.label = label   #: the label of the element
+        if cohorts is None:  #: list of cohort values - Hack to treat tillering cases : TEMPORARY. Devrait être porté à l'échelle de la plante uniquement mais je ne vois pas comment faire mieux
             cohorts = []
         self.cohorts = cohorts  #: list of cohort values - Hack to treat tillering cases : TEMPORARY. Devrait être porté à l'échelle de la plante uniquement mais je ne vois pas comment faire mieux
         self.cohorts_replications = cohorts_replications  #: dictionary of number of replications per cohort rank
