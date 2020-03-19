@@ -174,16 +174,19 @@ class Axis(object):
         self.Total_Transpiration = None  #: the total transpiration (mmol s-1)
         self.mstruct = None  #: structural mass of the axis (g)
         self.senesced_mstruct = None  #: senesced structural mass of the axis (g)
+        self.nitrates = None #: nitrates in the axis (µmol N)
 
     def calculate_aggregated_variables(self):
         """Calculate the integrative variables of the axis recursively.
         """
         self.mstruct = 0
         self.senesced_mstruct = 0
+        self.nitrates = 0
         if self.roots is not None:
             self.roots.calculate_aggregated_variables()
             self.mstruct += self.roots.mstruct
             self.senesced_mstruct += self.roots.senesced_mstruct
+            self.nitrates += self.roots.nitrates
         if self.phloem is not None:
             self.phloem.calculate_aggregated_variables()
         if self.grains is not None:
@@ -193,6 +196,7 @@ class Axis(object):
             phytomer.calculate_aggregated_variables()
             self.mstruct += phytomer.mstruct * phytomer.nb_replications
             self.senesced_mstruct += phytomer.senesced_mstruct * phytomer.nb_replications
+            self.nitrates += phytomer.nitrates * phytomer.nb_replications
 
     # COMPARTMENTS
 
@@ -234,6 +238,7 @@ class Phytomer(object):
         self.hiddenzone = hiddenzone  #: the hidden zone
         self.mstruct = None  #: the structural mass of the phytomer (g)
         self.senesced_mstruct = None  #: senesced structural mass of the phytomer (g)
+        self.nitrates = None #: nitrates of the phytomer (µmol N)
         if cohorts is None:
             cohorts = []
         self.cohorts = cohorts  #: list of cohort values - Hack to treat tillering cases : TEMPORARY. Devrait être porté à l'échelle de la plante uniquement mais je ne vois pas comment faire mieux
@@ -244,12 +249,15 @@ class Phytomer(object):
         """
         self.mstruct = 0
         self.senesced_mstruct = 0
+        self.nitrates = 0
         for organ_ in (self.chaff, self.peduncle, self.lamina, self.internode, self.sheath, self.hiddenzone):
             if organ_ is not None:
                 organ_.calculate_aggregated_variables()
                 self.mstruct += organ_.mstruct
                 if hasattr(organ_, 'senesced_mstruct'):
                     self.senesced_mstruct += organ_.senesced_mstruct
+                if hasattr(organ_, 'nitrates'):
+                    self.nitrates += organ_.nitrates
 
     @property
     def nb_replications(self):
@@ -787,7 +795,7 @@ class Roots(Organ):
     INIT_COMPARTMENTS = parameters.ROOTS_INIT_COMPARTMENTS  #: the initial values of compartments and state parameters
 
     def __init__(self, label='roots', mstruct=INIT_COMPARTMENTS.mstruct, senesced_mstruct=INIT_COMPARTMENTS.senesced_mstruct, Nstruct=INIT_COMPARTMENTS.Nstruct, sucrose=INIT_COMPARTMENTS.sucrose,
-                 nitrates=INIT_COMPARTMENTS.nitrates, amino_acids=INIT_COMPARTMENTS.amino_acids, cytokinins=INIT_COMPARTMENTS.cytokinins):
+                 nitrates=INIT_COMPARTMENTS.nitrates, nitrates_vacuole=INIT_COMPARTMENTS.nitrates_vacuole, amino_acids=INIT_COMPARTMENTS.amino_acids, cytokinins=INIT_COMPARTMENTS.cytokinins):
 
         super(Roots, self).__init__(label)
 
@@ -799,6 +807,7 @@ class Roots(Organ):
         # state variables
         self.sucrose = sucrose  #: :math:`\mu mol` C sucrose
         self.nitrates = nitrates  #: :math:`\mu mol` N nitrates
+        self.nitrates_vacuole = nitrates_vacuole  #: :math:`\mu mol` N nitrates
         self.amino_acids = amino_acids  #: :math:`\mu mol` N amino acids
         self.cytokinins = cytokinins  #: AU cytokinins
 
@@ -855,7 +864,7 @@ class Roots(Organ):
             Dimensionless regulating factor
         :rtype: float
         """
-        return total_transpiration * Roots.PARAMETERS.CST_TRANSPIRATION
+        return total_transpiration
 
     # FLUXES
 
@@ -933,7 +942,7 @@ class Roots(Organ):
         nitrate_influx = HATS_LATS * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax * self.mstruct
 
         # Regulations
-        regul_C = (sucrose_roots / self.mstruct) / ((sucrose_roots / self.mstruct) + Roots.PARAMETERS.K_C)  #: Nitrate uptake regulation by root C
+        regul_C = (sucrose_roots / self.mstruct) * Roots.PARAMETERS.RELATIVE_VMAX_N_UPTAKE / ((sucrose_roots / self.mstruct) + Roots.PARAMETERS.K_C)  #: Nitrate uptake regulation by root C
         if HATS_LATS < Roots.PARAMETERS.MIN_INFLUX_FOR_UPTAKE:
             net_nitrate_uptake = 0
         else:
@@ -1048,6 +1057,31 @@ class Roots(Organ):
 
         return max(min(Export_cytokinins, cytokinins), 0.)
 
+    def calculate_Loading_Nitrates_Vacuole(self, nitrates_roots, T_effect_Vmax):
+        """Rate of nitrates loading from root cytosol to root vacuole(:math:`\mu mol` N nitratet loaded g-1 mstruct h-1).
+        Michaelis-Menten function of the nitrates concentrations in the cytosol.
+
+        :param float nitrates_roots: Amount of nitrates in root cytosol (:math:`\mu mol` N)
+        :param float T_effect_Vmax: Effect of the temperature on the Vmax at 20°C (AU)
+
+        :return: Rate of Nitrates Loading into the vacuole (:math:`\mu mol` N g-1 mstruct h-1)
+        :rtype: float
+        """
+        conc_nitrates_roots = nitrates_roots / (self.mstruct * self.__class__.PARAMETERS.ALPHA)
+        return (conc_nitrates_roots * Roots.PARAMETERS.VMAX_NITRATES_VACUOLE_LOAD / (conc_nitrates_roots + Roots.PARAMETERS.K_NITRATES_VACUOLE_LOAD)) * T_effect_Vmax * parameters.SECOND_TO_HOUR_RATE_CONVERSION
+
+    def calculate_Unloading_Nitrates_Vacuole(self, nitrates_vacuole, T_effect_Vmax):
+        """Rate of sucrose Unloading from the root vacuole to the root cytosol (:math:`\mu mol` N unloaded g-1 mstruct h-1).
+
+        :param float nitrates_vacuole: Amount of nitrates in the root vacuole (:math:`\mu mol` N)
+        :param float T_effect_Vmax: Effect of the temperature on the Vmax rate at 20°C (AU).
+
+        :return: Rate of Nitrates Unloading from the root vacuole to the root cytosol (:math:`\mu mol` N g-1 mstruct h-1)
+        :rtype: float
+        """
+        conc_nitrates_vacuole = nitrates_vacuole / (self.mstruct * self.__class__.PARAMETERS.ALPHA)
+        return (conc_nitrates_vacuole * Roots.PARAMETERS.VMAX_NITRATES_VACUOLE_LOAD / (conc_nitrates_vacuole + Roots.PARAMETERS.K_NITRATES_VACUOLE_LOAD)) * T_effect_Vmax * parameters.SECOND_TO_HOUR_RATE_CONVERSION
+
     # COMPARTMENTS
 
     def calculate_sucrose_derivative(self, Unloading_Sucrose, S_Amino_Acids, C_exudation, sum_respi):
@@ -1065,19 +1099,32 @@ class Roots(Organ):
         sucrose_consumption_AA = (S_Amino_Acids / EcophysiologicalConstants.AMINO_ACIDS_N_RATIO) * EcophysiologicalConstants.AMINO_ACIDS_C_RATIO
         return (Unloading_Sucrose - sucrose_consumption_AA - C_exudation) * self.mstruct - sum_respi
 
-    def calculate_nitrates_derivative(self, Uptake_Nitrates, Export_Nitrates, S_Amino_Acids):
+    def calculate_nitrates_derivative(self, Uptake_Nitrates, Export_Nitrates, S_Amino_Acids, Loading_Nitrates_Vacuole, Unloading_Nitrates_Vacuole):
         """delta root nitrates.
 
         :param float Uptake_Nitrates: Nitrate uptake (:math:`\mu mol` N nitrates)
         :param float Export_Nitrates: Export of nitrates (:math:`\mu mol` N)
         :param float S_Amino_Acids: Amino acids synthesis (:math:`\mu mol` N g-1 mstruct)
+        :param float Loading_Nitrates_Vacuole: Loading of Nitrate into the vacuole (:math:`\mu mol` N nitrates)
+        :param float Unloading_Nitrates_Vacuole: Unloading of nitrates into the cytosol (:math:`\mu mol` N nitrates)
 
         :return: delta root nitrates (:math:`\mu mol` N nitrates)
         :rtype: float
         """
         import_nitrates_roots = Uptake_Nitrates
         nitrate_reduction_AA = S_Amino_Acids  #: Contribution of nitrates to the synthesis of amino_acids
-        return import_nitrates_roots - Export_Nitrates - nitrate_reduction_AA * self.mstruct
+        return import_nitrates_roots - Export_Nitrates - nitrate_reduction_AA * self.mstruct - Loading_Nitrates_Vacuole + Unloading_Nitrates_Vacuole
+
+    def calculate_nitrates_vacuole_derivative(self, Loading_Nitrates_Vacuole, Unloading_Nitrates_Vacuole):
+        """delta roots' vacuole nitrates.
+
+        :param float Loading_Nitrates_Vacuole: Loading of Nitrate into the vacuole (:math:`\mu mol` N nitrates g-1 mstruct h-1)
+        :param float Unloading_Nitrates_Vacuole: Unloading of nitrates into the cytosol (:math:`\mu mol` N nitrates  g-1 mstruct h-1)
+
+        :return: delta root nitrates (:math:`\mu mol` N nitrates)
+        :rtype: float
+        """
+        return (Loading_Nitrates_Vacuole - Unloading_Nitrates_Vacuole) * self.mstruct
 
     def calculate_amino_acids_derivative(self, Unloading_Amino_Acids, S_Amino_Acids, Export_Amino_Acids, N_exudation):
         """delta root amino acids.
@@ -1127,15 +1174,18 @@ class PhotosyntheticOrgan(Organ):
         self.enclosed_element = enclosed_element  #: the enclosed element
         self.mstruct = None  #: the structural dry mass
         self.senesced_mstruct = None  #: senesced structural dry mass
+        self.nitrates = None #: nitrates (µmol N)
 
     def calculate_aggregated_variables(self):
         self.mstruct = 0
         self.senesced_mstruct = 0
+        self.nitrates = 0
         for element in (self.exposed_element, self.enclosed_element):
             if element is not None:
                 element.calculate_aggregated_variables()
                 self.mstruct += element.mstruct
                 self.senesced_mstruct += element.senesced_mstruct
+                self.nitrates += element.nitrates
 
 
 class Chaff(PhotosyntheticOrgan):
@@ -1809,6 +1859,21 @@ class Soil(object):
         f_deactivation = (1 + np.exp((Tref * deltaS - deltaHd) / (Tref * R * 1E-3))) / (1 + np.exp((Tk * deltaS - deltaHd) / (Tk * R * 1E-3)))  #: Energy of deactivation (normalized to unity)
 
         return f_activation * f_deactivation
+
+    @staticmethod
+    def calculate_temperature_effect_on_conductivity(Tsoil):
+        """Effect of the temperature on phloeme translocation conductivity (Farrar 1988)
+        Should multiply the rate at 20°C
+
+        :param float Tsoil: Soil temperature (°C)
+
+        :return: Correction to apply to conductivity coefficients.
+        :rtype: float
+        """
+        Q10 = 1.3
+        Tref = 20.
+
+        return Q10 ** ((Tsoil - Tref) / 10.)
 
     # VARIABLES
 

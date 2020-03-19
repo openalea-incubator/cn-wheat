@@ -242,12 +242,9 @@ class RootsParameters(object):
         self.SIGMA_SUCROSE = 1e-7            #: Conductivity of the roots-phloem pathway (g2 :math:`\mu` mol-1 m-2 s-1) ; used to compute the sucrose loaded to the phloem
         self.BETA = 1                        #: Kind of volumetric mass density at power -2/3 ((g m-3)**(-2/3))
 
-        # Regulation function by transpiration of nitrate uptake
-        self.CST_TRANSPIRATION = 25          #: Coefficient of proportionaly between export and total transpiration (m mmol-1) (this coefficient could be integrated with K_..._EXPORT parameters)
-        self.K_TRANSPIRATION = 1             #: Affinity coefficient for the regulation function by culm transpiration (mmol H20 m-2 s-1)
-
         # Regulation function by C in roots of nitrate uptake
         self.K_C = 7000                      #: Affinity coefficient for the regulation function by root C (:math:`\mu` mol C sucrose g-1 MS)
+        self.RELATIVE_VMAX_N_UPTAKE = 1
 
         # Nitrate uptake
         self.NET_INFLUX_UPTAKE_RATIO = 0.6   #: ratio (net uptake : nitrate influx)
@@ -260,13 +257,19 @@ class RootsParameters(object):
         self.B_LATS = 2.93E-09               #: Parameter for estimating the rate of nitrates uptake at low soil N concentration; LATS (g :math:`\mu` mol-1)
 
         # Nitrate export
-        self.K_NITRATE_EXPORT = 2E-4         #: Relative rate of nitrate export from roots (s-1)
+        self.K_NITRATE_EXPORT = 5E-3         #: Relative rate of nitrate export from roots (s-1)
+
+        # Vacuolar nitrates
+        self.VMAX_NITRATES_VACUOLE_LOAD = 0.02 #: Maximal rate of loading of nitrates into the vacuole (:math:`\mu` mol N s-1 g-1 MS)
+        self.K_NITRATES_VACUOLE_LOAD = 200  #: Affinity coefficient of loading of nitrates into the vacuole (:math:`\mu` mol N g-1 MS)
+        self.VMAX_NITRATES_VACUOLE_UNLOAD = 0.015  #: Maximual rate of unloading of nitrates from the vacuole into the cytosol (:math:`\mu` mol N s-1 g-1 MS)
+        self.K_NITRATES_VACUOLE_UNLOAD = 120 #: Affinity coefficient of unloading of nitrates into the vacuole (:math:`\mu` mol N g-1 MS)
 
         # Amino acids
         self.VMAX_AMINO_ACIDS = 0.001        #: Maximal rate of amino acid synthesis (:math:`\mu` mol N s-1 g-1 MS)
         self.K_AMINO_ACIDS_NITRATES = 3      #: Affinity coefficient of amino acid synthesis from nitrates (:math:`\mu` mol N g-1 MS)
         self.K_AMINO_ACIDS_SUCROSE = 350     #: Affinity coefficient of amino acid synthesis from sucrose (:math:`\mu` mol C g-1 MS)
-        self.K_AMINO_ACIDS_EXPORT = 0.0018   #: Relative rate of amino acids export from roots (s-1)
+        self.K_AMINO_ACIDS_EXPORT = 0.045   #: Relative rate of amino acids export from roots (s-1)
 
         # Exudation
         self.C_EXUDATION = 0.20               #: Proportion of C exudated from C sucrose unloaded to roots (Keith et al., 1986)
@@ -280,7 +283,7 @@ class RootsParameters(object):
         self.N_SUC_CYTOKININS = 3             #: A parameter for cytokinins synthesis (dimensionless)
         self.N_NIT_CYTOKININS = 1             #: A parameter for cytokinins synthesis (dimensionless)
         self.N_AMINO_ACIDS_CYTOKININS = 1
-        self.K_CYTOKININS_EXPORT = 6.67E-5    #: Relative rate of cytokinins export from roots (s-1)
+        self.K_CYTOKININS_EXPORT = 1.67E-3    #: Relative rate of cytokinins export from roots (s-1)
 
 
 #: The instance of class :class:`cnwheat.parameters.RootsParameters` for current process
@@ -294,6 +297,7 @@ class RootsInitCompartments(object):
     def __init__(self):
         self.sucrose = 0       #: initial value of sucrose (:math:`\mu` mol C)
         self.nitrates = 0      #: initial value of nitrates (:math:`\mu` mol C)
+        self.nitrates_vacuole = 0      #: initial value of nitrates in the vacuole (:math:`\mu` mol C)
         self.amino_acids = 0   #: initial value of amino_acids (:math:`\mu` mol N)
         self.cytokinins = 0    #: initial value of cytokinins (AU)
         self.mstruct = 0.15    #: initial value of mstruct (g)
