@@ -60,7 +60,8 @@ setup(
 simulates the distribution of carbon and nitrogen into wheat culms in relation 
 to photosynthesis, N uptake, metabolite turnover, root exudation and tissue death.""",
     license="CeCILL-C",
-    keywords="functional-structural plant model, wheat, ode, system integration, scipy",
+    keywords="functional-structural plant model, wheat, ode, system integration, scipy, trophic status, carbon, nitrogen, metabolism, remobilisation, source-sink relation, resource allocation",
     url="https://sourcesup.renater.fr/projects/cn-wheat/",
-    download_url="https://sourcesup.renater.fr/frs/download.php/latestzip/2088/CN-Wheat-Stable-latest.zip", install_requires=['pandas']
+    download_url="https://sourcesup.renater.fr/frs/download.php/latestzip/2088/CN-Wheat-Stable-latest.zip",
+    install_requires=['pandas', 'numpy', 'matplotlib']
 )
