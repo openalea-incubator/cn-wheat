@@ -23,15 +23,6 @@ import parameters
     .. seealso:: Barillot et al. 2016.
 """
 
-"""
-    Information about this versioned file:
-        $LastChangedBy: mngauthier $
-        $LastChangedDate: 2020-02-12 10:54:32 +0100 (mer., 12 févr. 2020) $
-        $LastChangedRevision: 418 $
-        $URL: https://subversion.renater.fr/authscm/mngauthier/svn/cn-wheat/branches/multirun/cnwheat/model.py $
-        $Id: model.py 418 2020-02-12 09:54:32Z mngauthier $
-"""
-
 
 class EcophysiologicalConstants:
     """

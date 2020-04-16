@@ -1,13 +1,13 @@
 # -*- coding: latin-1 -*-
 
 from __future__ import division  # use "//" to do integer division
+
 import logging
 
-import numpy as np
-from scipy.integrate import solve_ivp
-
 import model
+import numpy as np
 import tools
+from scipy.integrate import solve_ivp
 
 """
     cnwheat.simulation
@@ -24,15 +24,6 @@ import tools
     (BreedWheat project ANR-10-BTBR-03).
 
     .. seealso:: Barillot et al. 2016.
-"""
-
-"""
-    Information about this versioned file:
-        $LastChangedBy: mngauthier $
-        $LastChangedDate: 2020-02-12 10:54:32 +0100 (mer., 12 févr. 2020) $
-        $LastChangedRevision: 418 $
-        $URL: https://subversion.renater.fr/authscm/mngauthier/svn/cn-wheat/branches/multirun/cnwheat/simulation.py $
-        $Id: simulation.py 418 2020-02-12 09:54:32Z mngauthier $
 """
 
 
@@ -124,7 +115,7 @@ class Simulation(object):
     #: :class:`model.Organ`, :class:`model.HiddenZone`, :class:`model.PhotosyntheticOrganElement`,
     #: and :class:`model.Soil`.
     MODEL_COMPARTMENTS_NAMES = {model.Plant: [],
-                                model.Axis: ['C_exudated','sum_respi_shoot','sum_respi_roots'],
+                                model.Axis: ['C_exudated', 'sum_respi_shoot', 'sum_respi_roots'],
                                 model.Phytomer: [],
                                 model.Organ: ['age_from_flowering', 'amino_acids', 'cytokinins',
                                               'nitrates', 'proteins', 'starch', 'structure', 'sucrose'],
@@ -875,7 +866,7 @@ class Simulation(object):
                     axis.grains.R_grain_growth_struct, axis.grains.R_grain_growth_starch = self.respiration_model.RespirationModel.R_grain_growth(axis.grains.S_grain_structure,
                                                                                                                                                   axis.grains.S_grain_starch,
                                                                                                                                                   axis.grains.structural_dry_mass)
-                    sum_respi_shoot += axis.grains.R_grain_growth_struct +  axis.grains.R_grain_growth_starch
+                    sum_respi_shoot += axis.grains.R_grain_growth_struct + axis.grains.R_grain_growth_starch
                     structure_derivative = axis.grains.calculate_structure_derivative(axis.grains.S_grain_structure, axis.grains.R_grain_growth_struct)
                     starch_derivative = axis.grains.calculate_starch_derivative(axis.grains.S_grain_starch, axis.grains.structural_dry_mass, axis.grains.R_grain_growth_starch)
                     proteins_derivative = axis.grains.calculate_proteins_derivative(axis.grains.S_Proteins)
@@ -1122,7 +1113,6 @@ class Simulation(object):
                 axis.roots.R_residual, _ = self.respiration_model.RespirationModel.R_residual(axis.roots.sucrose, axis.roots.mstruct * model.Roots.PARAMETERS.ALPHA, axis.roots.Total_Organic_Nitrogen,
                                                                                               soil.Tsoil)
                 axis.roots.sum_respi = axis.roots.R_Nnit_upt + axis.roots.R_Nnit_red + axis.roots.R_residual
-
 
         # soil
         soil.mineralisation = soil.calculate_mineralisation(soil.T_effect_Vmax)

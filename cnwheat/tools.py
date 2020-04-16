@@ -1,18 +1,17 @@
 # -*- coding: latin-1 -*-
 
+import json
+import logging
+import logging.config
 import os
 import sys
 import types
-from itertools import cycle
 import warnings
-import logging
-import logging.config
-import json
-
-import numpy as np
-import pandas as pd
+from itertools import cycle
 
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
 """
     cnwheat.tools
@@ -35,20 +34,12 @@ import matplotlib.pyplot as plt
     .. seealso:: Barillot et al. 2016.
 """
 
-"""
-    Information about this versioned file:
-        $LastChangedBy: rbarillot $
-        $LastChangedDate: 2020-01-16 10:28:13 +0100 (jeu., 16 janv. 2020) $
-        $LastChangedRevision: 413 $
-        $URL: https://subversion.renater.fr/authscm/mngauthier/svn/cn-wheat/branches/multirun/cnwheat/tools.py $
-        $Id: tools.py 413 2020-01-16 09:28:13Z rbarillot $
-"""
-
 OUTPUTS_INDEXES = ['t', 'plant', 'axis', 'metamer', 'organ', 'element']  #: All the possible indexes of CN-Wheat outputs
 
 
 class DataWarning(UserWarning):
     """Raised when there is no data to plot for a variable."""
+
     def __init__(self, variable, keys):
         self.message = 'No data to plot for variable {} at {}.'.format(variable, keys)
 
@@ -207,7 +198,7 @@ def plot_cnwheat_ouputs(outputs, x_name, y_name, x_label='', y_label='', x_lim=N
 
 
 def setup_logging(config_filepath='logging.json', level=logging.INFO,
-                  log_model=False, log_compartments=False, log_derivatives=False, 
+                  log_model=False, log_compartments=False, log_derivatives=False,
                   remove_old_logs=False):
     """Setup logging configuration.
 
@@ -261,14 +252,14 @@ def compare_actual_to_desired(data_dirpath, actual_data_df, desired_data_filenam
     :param int precision: The precision to use for the comparison. Default is `4`.
     :param bool overwrite_desired_data: If True the comparison between actual and desired data is not run. Instead, the desired data will be overwritten using actual data. To be used with caution.
     """
-    
-    relative_tolerance = 10**-precision
+
+    relative_tolerance = 10 ** -precision
     absolute_tolerance = relative_tolerance
-    
+
     # read desired data
     desired_data_filepath = os.path.join(data_dirpath, desired_data_filename)
     desired_data_df = pd.read_csv(desired_data_filepath)
-    
+
     if actual_data_filename is not None:
         # save actual outputs to CSV file
         actual_data_filepath = os.path.join(data_dirpath, actual_data_filename)
@@ -333,7 +324,7 @@ class ProgressBar(object):
         if t_inf not in self.progress_mapping:
             progress = t / self.t_max
             block = int(round(self.bar_length * progress))
-            text = "\r{0}: [{1}] {2:>5d}% ".format(self.title, self.block_character * block + self.uncomplete_character * (self.bar_length - block), int(progress*100))
+            text = "\r{0}: [{1}] {2:>5d}% ".format(self.title, self.block_character * block + self.uncomplete_character * (self.bar_length - block), int(progress * 100))
             self.progress_mapping[t_inf] = text
             sys.stdout.write(self.progress_mapping[t_inf])
             sys.stdout.flush()

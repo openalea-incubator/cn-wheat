@@ -22,15 +22,6 @@ from cnwheat import model, simulation
     .. seealso:: Barillot et al. 2016.
 """
 
-"""
-    Information about this versioned file:
-        $LastChangedBy: mngauthier $
-        $LastChangedDate: 2020-02-12 10:54:32 +0100 (mer., 12 févr. 2020) $
-        $LastChangedRevision: 418 $
-        $URL: https://subversion.renater.fr/authscm/mngauthier/svn/cn-wheat/branches/multirun/cnwheat/converter.py $
-        $Id: converter.py 418 2020-02-12 09:54:32Z mngauthier $
-"""
-
 #: the columns of the outputs dataframe at PLANT scale
 PLANTS_VARIABLES = simulation.Simulation.PLANTS_INDEXES + simulation.Simulation.PLANTS_RUN_VARIABLES
 
@@ -133,11 +124,11 @@ def from_dataframes(organs_inputs=None, hiddenzones_inputs=None, elements_inputs
                     axis.phytomers.append(phytomer)
 
                     for phytomer_attribute_name, phytomer_attribute_class, phytomer_attribute_element_class in \
-                        (('chaff', model.Chaff, model.ChaffElement),
-                         ('lamina', model.Lamina, model.LaminaElement),
-                         ('internode', model.Internode, model.InternodeElement),
-                         ('peduncle', model.Peduncle, model.PeduncleElement),
-                         ('sheath', model.Sheath, model.SheathElement)):
+                            (('chaff', model.Chaff, model.ChaffElement),
+                             ('lamina', model.Lamina, model.LaminaElement),
+                             ('internode', model.Internode, model.InternodeElement),
+                             ('peduncle', model.Peduncle, model.PeduncleElement),
+                             ('sheath', model.Sheath, model.SheathElement)):
 
                         organ_label = CNWHEAT_CLASSES_TO_DATAFRAME_ORGANS_MAPPING[phytomer_attribute_class]
 
@@ -314,4 +305,3 @@ def to_dataframes(population=None, soils=None):
         return all_plants_df, all_axes_df, all_phytomers_df, all_organs_df, all_hiddenzones_df, all_elements_df
     else:
         return all_soils_df
-

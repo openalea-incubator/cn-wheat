@@ -31,14 +31,6 @@ from cnwheat import simulation as cnwheat_simulation, converter as cnwheat_conve
     .. seealso:: Barillot et al. 2016.
 """
 
-'''
-    Information about this versioned file:
-        $LastChangedBy: rbarillot $
-        $LastChangedDate: 2019-07-22 16:27:57 +0200 (lun., 22 juil. 2019) $
-        $LastChangedRevision: 404 $
-        $URL: https://subversion.renater.fr/authscm/mngauthier/svn/cn-wheat/branches/multirun/example/main.py $
-        $Id: main.py 404 2019-07-22 14:27:57Z rbarillot $
-'''
 
 # inputs directory path
 INPUTS_DIRPATH = 'inputs'

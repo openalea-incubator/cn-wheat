@@ -34,14 +34,6 @@ from cnwheat import simulation as cnwheat_simulation, tools as cnwheat_tools, co
     .. seealso:: Barillot et al. 2016.
 """
 
-"""
-    Information about this versioned file:
-        $LastChangedBy: rbarillot $
-        $LastChangedDate: 2019-07-26 12:04:50 +0200 (ven., 26 juil. 2019) $
-        $LastChangedRevision: 405 $
-        $URL: https://subversion.renater.fr/authscm/mngauthier/svn/cn-wheat/branches/multirun/test/test_cnwheat.py $
-        $Id: test_cnwheat.py 405 2019-07-26 10:04:50Z rbarillot $
-"""
 
 # inputs directory path
 INPUTS_DIRPATH = 'inputs'
