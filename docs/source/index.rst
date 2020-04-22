@@ -52,13 +52,13 @@ an email to cn-wheat-request@groupes.renater.fr.
 Authors
 =======
 
-.. include:: ../AUTHORS
+.. include:: ../../AUTHORS
 
 
 License
 =======
 
-|cnwheat| is released under CeCILL-C License. See file :download:`LICENSE <../LICENSE>` for details.
+|cnwheat| is released under CeCILL-C License. See file :download:`LICENSE <../../LICENSE>` for details.
 
 
 Acknowledgments

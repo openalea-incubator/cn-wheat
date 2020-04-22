@@ -11,19 +11,12 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-"""
-    Information about this versioned file:
-        $LastChangedBy: rbarillot $
-        $LastChangedDate: 2020-03-03 18:00:50 +0100 (mar., 03 mars 2020) $
-        $LastChangedRevision: 427 $
-        $URL: https://subversion.renater.fr/authscm/rbarillot/svn/cn-wheat/branches/multirun/doc/conf.py $
-        $Id: conf.py 427 2020-03-03 17:00:50Z rbarillot $
-"""
-
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-# sys.path.insert(0, os.path.abspath('.'))
+import os
+import sys
+sys.path.insert(0, os.path.abspath('..'))
 
 # -- General configuration -----------------------------------------------------
 
