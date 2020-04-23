@@ -38,15 +38,14 @@ Documentation
 Contact
 =======
 
-For any question, send an email to cn-wheat-request@groupes.renater.fr.
+For any question, please submitit to https://github.com/openalea-incubator/WheatFspm/issues.
 
 
 Versioning
 ==========
 
-Sources are versioned on an SVN repository hosted by platform SourceSup: https://sourcesup.renater.fr/projects/cn-wheat/.
-If you need an access to the current in development version of the model, please send 
-an email to cn-wheat-request@groupes.renater.fr.   
+Sources are versioned on an Git repository hosted by platform GitHub: https://github.com/openalea-incubator/WheatFspm.
+If you want to make your own development of the model, please fork the repository.
 
 
 Authors
@@ -61,25 +60,18 @@ License
 |cnwheat| is released under CeCILL-C License. See file :download:`LICENSE <../../LICENSE>` for details.
 
 
-Acknowledgments
+Funding
 ===============
+INRAE: salaries of permanent staff
+French Research National Agency: projects Breedwheat (ANR-10-BTBR-03) and Wheatamix (ANR-13-AGRO0008): postdoctoral research of R.Barillot
+itk company: funded the PhD thesis of M.Gauthier
 
-The research leading these results has received funding through the 
-Investment for the Future programme managed by the Research National Agency 
-(BreedWheat project ANR-10-BTBR-03).
 
 Contributing
 ============
 
-First, send an email to cn-wheat-request@groupes.renater.fr to be added to the project.
-
-Then,
-
-* check for open issues or open a fresh issue to start a discussion around a
-  feature idea or a bug: https://sourcesup.renater.fr/tracker/?group_id=1515.
-* If you feel uncomfortable or uncertain about an issue or your changes, feel
-  free to email cn-wheat@groupes.renater.fr.
-
+check for open issues or open a new issue to start a discussion around a
+feature idea or a bug: https://github.com/openalea-incubator/WheatFspm/issues .
 
 Indices and tables
 ==================
