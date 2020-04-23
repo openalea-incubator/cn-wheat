@@ -16,7 +16,9 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../../cnwheat'))
+sys.path.insert(0, os.path.abspath('../..'))
+
+autodoc_mock_imports = ['matplotlib', 'numpy', 'pandas', 'matplotlib', 'scipy']
 
 # -- General configuration -----------------------------------------------------
 
