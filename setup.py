@@ -44,9 +44,9 @@ if sys.version_info < (2, 7):
 if sys.version_info >= (3, 0):
     print('WARNING: CN-Wheat has not been tested with Python 3.')
 
-pkg_resources.require('numpy>=1.11.0', 'pandas>=0.18.0', 'scipy>=0.16.1',
-                      'matplotlib>=1.5', 'sphinx>=1.4.8', 'nose>=1.3.7',
-                      'coverage>=4.4.1', 'Respi-Wheat')
+# pkg_resources.require('numpy>=1.11.0', 'pandas>=0.18.0', 'scipy>=0.16.1',
+#                       'matplotlib>=1.5', 'sphinx>=1.4.8', 'nose>=1.3.7',
+#                       'coverage>=4.4.1', 'Respi-Wheat')
 
 setup(
     name="CN-Wheat",
@@ -63,5 +63,5 @@ to photosynthesis, N uptake, metabolite turnover, root exudation and tissue deat
     keywords="functional-structural plant model, wheat, ode, system integration, scipy, trophic status, carbon, nitrogen, metabolism, remobilisation, source-sink relation, resource allocation",
     url="https://sourcesup.renater.fr/projects/cn-wheat/",
     download_url="https://sourcesup.renater.fr/frs/download.php/latestzip/2088/CN-Wheat-Stable-latest.zip",
-    install_requires=['pandas', 'numpy', 'matplotlib']
+    # install_requires=['pandas', 'numpy', 'matplotlib']
 )
