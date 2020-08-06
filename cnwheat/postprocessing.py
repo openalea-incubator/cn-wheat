@@ -1,5 +1,3 @@
-# -*- coding: latin-1 -*-
-
 from __future__ import division  # use "//" to do integer division
 import os
 
@@ -124,10 +122,10 @@ class Roots:
     def calculate_Conc_Nitrates(nitrates, mstruct):
         """Nitrate concentration.
 
-        :param float nitrates: Amount of nitrates (µmol` N)
+        :param float nitrates: Amount of nitrates (Âµmol` N)
         :param float mstruct: Structural mass (g)
 
-        :return: Nitrate concentration (µmol` nitrates g-1 mstruct)
+        :return: Nitrate concentration (Âµmol` nitrates g-1 mstruct)
         :rtype: float
         """
         return nitrates / mstruct
@@ -136,10 +134,10 @@ class Roots:
     def calculate_Conc_Amino_Acids(amino_acids, mstruct):
         """Amino_acid concentration.
 
-        :param float amino_acids: Amount of amino acids (µmol` N)
+        :param float amino_acids: Amount of amino acids (Âµmol` N)
         :param float mstruct: Structural mass (g)
 
-        :return: Amino_acid concentration (µmol` amino_acids g-1 mstruct)
+        :return: Amino_acid concentration (Âµmol` amino_acids g-1 mstruct)
         :rtype: float
         """
         return (amino_acids / cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_N_RATIO) / mstruct
@@ -148,10 +146,10 @@ class Roots:
     def calculate_conc_sucrose(sucrose, mstruct):
         """Sucrose concentration.
 
-        :param float sucrose: Amount of sucrose (µmol` C)
+        :param float sucrose: Amount of sucrose (Âµmol` C)
         :param float mstruct: Structural mass (g)
 
-        :return: Sucrose concentration (µmol` sucrose g-1 mstruct)
+        :return: Sucrose concentration (Âµmol` sucrose g-1 mstruct)
         :rtype: float
         """
         return (sucrose / mstruct) / cnwheat_model.EcophysiologicalConstants.NB_C_SUCROSE
@@ -181,10 +179,10 @@ class Phloem:
     def calculate_conc_amino_acids(amino_acids, mstruct_axis):
         """Amino_acids concentration. Related to the structural dry mass of the culm.
 
-        :param float amino_acids: Amount of amino_acids in phloem (µmol` N)
+        :param float amino_acids: Amount of amino_acids in phloem (Âµmol` N)
         :param float mstruct_axis: The structural dry mass of the axis (g)
 
-        :return: Amino_acids concentration (µmol` amino_acids g-1 mstruct)
+        :return: Amino_acids concentration (Âµmol` amino_acids g-1 mstruct)
         :rtype: float
         """
         return (amino_acids / cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_N_RATIO) / mstruct_axis
@@ -193,10 +191,10 @@ class Phloem:
     def calculate_conc_sucrose(sucrose, mstruct_axis):
         """Sucrose concentration. Related to the structural dry mass of the culm
 
-        :param float sucrose: Amount of sucrose in phloem (µmol` C)
+        :param float sucrose: Amount of sucrose in phloem (Âµmol` C)
         :param float mstruct_axis: The structural dry mass of the axis (g)
 
-        :return: Sucrose concentration (µmol` sucrose g-1 mstruct)
+        :return: Sucrose concentration (Âµmol` sucrose g-1 mstruct)
         :rtype: float
         """
         return (sucrose / cnwheat_model.EcophysiologicalConstants.NB_C_SUCROSE) / mstruct_axis
@@ -214,9 +212,9 @@ class Grains:
     def calculate_dry_mass(structure, starch, proteins):
         """Grain total dry mass.
 
-        :param float structure: Grain structural C mass (µmol` C)
-        :param float starch:  Grain starch content (µmol` C)
-        :param float proteins: Grain protein content (µmol` N)
+        :param float structure: Grain structural C mass (Âµmol` C)
+        :param float starch:  Grain starch content (Âµmol` C)
+        :param float proteins: Grain protein content (Âµmol` N)
 
         :return: Grain total dry mass (g)
         :rtype: float
@@ -233,7 +231,7 @@ class Grains:
     def calculate_protein_N_mass(proteins):
         """Grain total protein mass.
 
-        :param float proteins: Grain protein content (µmol` N)
+        :param float proteins: Grain protein content (Âµmol` N)
 
         :return: Grain total protein mass (g)
         :rtype: float
@@ -255,11 +253,11 @@ class HiddenZone:
     def calculate_dry_mass(sucrose, starch, fructan, amino_acids, proteins, mstruct):
         """Dry mass
 
-        :param float sucrose: Amount of sucrose (µmol` C)
-        :param float starch: Amount of starch (µmol` C)
-        :param float fructan: Amount of fructan (µmol` C)
-        :param float amino_acids: Amount of amino acids (µmol` N)
-        :param float proteins: Amount of proteins (µmol` N)
+        :param float sucrose: Amount of sucrose (Âµmol` C)
+        :param float starch: Amount of starch (Âµmol` C)
+        :param float fructan: Amount of fructan (Âµmol` C)
+        :param float amino_acids: Amount of amino acids (Âµmol` N)
+        :param float proteins: Amount of proteins (Âµmol` N)
         :param float mstruct: strcural mass (g)
 
         :return: Dry mass (g)
@@ -280,11 +278,11 @@ class HiddenZone:
     def calculate_C_g(sucrose, starch, fructan, amino_acids, proteins, mstruct):
         """Mass of carbon metabolites
 
-        :param float sucrose: Amount of sucrose (µmol` C)
-        :param float starch: Amount of starch (µmol` C)
-        :param float fructan: Amount of fructan (µmol` C)
-        :param float amino_acids: Amount of amino acids (µmol` N)
-        :param float proteins: Amount of proteins (µmol` N)
+        :param float sucrose: Amount of sucrose (Âµmol` C)
+        :param float starch: Amount of starch (Âµmol` C)
+        :param float fructan: Amount of fructan (Âµmol` C)
+        :param float amino_acids: Amount of amino acids (Âµmol` N)
+        :param float proteins: Amount of proteins (Âµmol` N)
         :param float mstruct: strcural mass (g)
 
         :return: Dry mass (g)
@@ -305,8 +303,8 @@ class HiddenZone:
     def calculate_N_g(amino_acids, proteins, Nstruct):
         """Mass of N metabolites
 
-        :param float amino_acids: Amount of amino acids (µmol` N)
-        :param float proteins: Amount of proteins (µmol` N)
+        :param float amino_acids: Amount of amino acids (Âµmol` N)
+        :param float proteins: Amount of proteins (Âµmol` N)
         :param float Nstruct: N structural mass(g)
 
         :return: Dry mass (g)
@@ -323,7 +321,7 @@ class HiddenZone:
     def calculate_fructan_g(fructan):
         """Mass of fructans
 
-        :param float fructan: Amount of fructans (µmol` C)
+        :param float fructan: Amount of fructans (Âµmol` C)
 
         :return: Dry mass (g)
         :rtype: float
@@ -335,7 +333,7 @@ class HiddenZone:
     def calculate_proteins_g(proteins):
         """Mass of proteins
 
-        :param float proteins: Amount of proteins (µmol` N)
+        :param float proteins: Amount of proteins (Âµmol` N)
 
         :return: Dry mass (g)
         :rtype: float
@@ -347,10 +345,10 @@ class HiddenZone:
     def calculate_Conc_Amino_Acids(amino_acids, mstruct):
         """Amino acid concentration.
 
-        :param float amino_acids: N amino acids (µmol` N)
+        :param float amino_acids: N amino acids (Âµmol` N)
         :param float mstruct: Structural mass
 
-        :return: Amino_acid concentration (µmol` amino acids g-1 mstruct)
+        :return: Amino_acid concentration (Âµmol` amino acids g-1 mstruct)
         :rtype: float
         """
         return (amino_acids / cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_N_RATIO) / mstruct
@@ -359,10 +357,10 @@ class HiddenZone:
     def calculate_conc_sucrose(sucrose, mstruct):
         """Sucrose concentration.
 
-        :param float sucrose: C sucrose (µmol` C)
+        :param float sucrose: C sucrose (Âµmol` C)
         :param float mstruct: Structural mass
 
-        :return: Sucrose concentration (µmol` sucrose g-1 mstruct)
+        :return: Sucrose concentration (Âµmol` sucrose g-1 mstruct)
         :rtype: float
         """
         return (sucrose / mstruct) / cnwheat_model.EcophysiologicalConstants.NB_C_SUCROSE
@@ -371,10 +369,10 @@ class HiddenZone:
     def calculate_conc_fructan(fructan, mstruct):
         """Fructan concentration.
 
-        :param float fructan: C fructan (µmol` C)
+        :param float fructan: C fructan (Âµmol` C)
         :param float mstruct: Structural mass
 
-        :return: Fructan concentration (µmol` fructan g-1 mstruct, eq. glucose).
+        :return: Fructan concentration (Âµmol` fructan g-1 mstruct, eq. glucose).
         :rtype: float
         """
         return (fructan / mstruct) / cnwheat_model.EcophysiologicalConstants.NB_C_HEXOSES
@@ -383,7 +381,7 @@ class HiddenZone:
     def calculate_conc_protein(proteins, mstruct):
         """Proteins concentration.
 
-        :param float proteins: N proteins (µmol` N)
+        :param float proteins: N proteins (Âµmol` N)
         :param float mstruct: Structural mass
 
         :return: Protein concentration (g proteins g-1 mstruct)
@@ -419,13 +417,13 @@ class Element:
     def calculate_dry_mass(triosesP, sucrose, starch, fructan, nitrates, amino_acids, proteins, mstruct):
         """Dry mass
 
-        :param triosesP: Amount of triose phosphates (µmol` C)
-        :param float sucrose: Amount of sucrose (µmol` C)
-        :param float starch: Amount of sucrose (µmol` C)
-        :param float fructan: Amount of sucrose (µmol` C)
-        :param float nitrates: Amount of nitrates (µmol` N)
-        :param float amino_acids: Amount of sucrose (µmol` N)
-        :param float proteins: Amount of sucrose (µmol` N)
+        :param triosesP: Amount of triose phosphates (Âµmol` C)
+        :param float sucrose: Amount of sucrose (Âµmol` C)
+        :param float starch: Amount of sucrose (Âµmol` C)
+        :param float fructan: Amount of sucrose (Âµmol` C)
+        :param float nitrates: Amount of nitrates (Âµmol` N)
+        :param float amino_acids: Amount of sucrose (Âµmol` N)
+        :param float proteins: Amount of sucrose (Âµmol` N)
         :param float mstruct: strcural mass (g)
 
         :return: Dry mass (g)
@@ -448,7 +446,7 @@ class Element:
     def calculate_fructan_g(fructan):
         """Mass of fructans
 
-        :param float fructan: Amount of fructans (µmol` C)
+        :param float fructan: Amount of fructans (Âµmol` C)
 
         :return: Dry mass (g)
         :rtype: float
@@ -460,12 +458,12 @@ class Element:
     def calculate_C_g(triosesP, sucrose, starch, fructan, amino_acids, proteins, mstruct):
         """Mass of carbon metabolites
 
-        :param float triosesP: Amount of triose phosphates (µmol` C)
-        :param float sucrose: Amount of sucrose (µmol` C)
-        :param float starch: Amount of starch (µmol` C)
-        :param float fructan: Amount of fructan (µmol` C)
-        :param float amino_acids: Amount of amino acids (µmol` N)
-        :param float proteins: Amount of proteins (µmol` N)
+        :param float triosesP: Amount of triose phosphates (Âµmol` C)
+        :param float sucrose: Amount of sucrose (Âµmol` C)
+        :param float starch: Amount of starch (Âµmol` C)
+        :param float fructan: Amount of fructan (Âµmol` C)
+        :param float amino_acids: Amount of amino acids (Âµmol` N)
+        :param float proteins: Amount of proteins (Âµmol` N)
         :param float mstruct: strcural mass (g)
 
         :return: Dry mass (g)
@@ -487,9 +485,9 @@ class Element:
     def calculate_N_g(nitrates, amino_acids, proteins, Nstruct):
         """Mass of N metabolites
 
-        :param float nitrates: Amount of nitrates (µmol` N)
-        :param float amino_acids: Amount of amino acids (µmol` N)
-        :param float proteins: Amount of proteins (µmol` N)
+        :param float nitrates: Amount of nitrates (Âµmol` N)
+        :param float amino_acids: Amount of amino acids (Âµmol` N)
+        :param float proteins: Amount of proteins (Âµmol` N)
         :param float Nstruct: N structural mass(g)
 
         :return: Dry mass (g)
@@ -507,10 +505,10 @@ class Element:
     def calculate_conc_triosesP(triosesP, mstruct):
         """Triose Phosphates concentration.
 
-        :param float triosesP: Amount of triose phosphates (µmol` C)
+        :param float triosesP: Amount of triose phosphates (Âµmol` C)
         :param float mstruct: Structural mass
 
-        :return: Triose phosphates concentration (µmol` triosesP g-1 mstruct)
+        :return: Triose phosphates concentration (Âµmol` triosesP g-1 mstruct)
         :rtype: float
         """
         return (triosesP / mstruct) / cnwheat_model.EcophysiologicalConstants.NB_C_TRIOSEP
@@ -519,10 +517,10 @@ class Element:
     def calculate_conc_sucrose(sucrose, mstruct):
         """Sucrose concentration.
 
-        :param float sucrose: Amount of sucrose (µmol` C)
+        :param float sucrose: Amount of sucrose (Âµmol` C)
         :param float mstruct: Structural mass
 
-        :return: Sucrose concentration (µmol` sucrose g-1 mstruct)
+        :return: Sucrose concentration (Âµmol` sucrose g-1 mstruct)
         :rtype: float
         """
         return (sucrose / mstruct) / cnwheat_model.EcophysiologicalConstants.NB_C_SUCROSE
@@ -531,10 +529,10 @@ class Element:
     def calculate_conc_starch(starch, mstruct):
         """Starch concentration.
 
-        :param float starch: Amount of sucrose (µmol` C)
+        :param float starch: Amount of sucrose (Âµmol` C)
         :param float mstruct: Structural mass
 
-        :return: Starch concentration (µmol` starch g-1 mstruct)
+        :return: Starch concentration (Âµmol` starch g-1 mstruct)
         :rtype: float
         """
         return (starch / mstruct) / cnwheat_model.EcophysiologicalConstants.NB_C_HEXOSES
@@ -543,10 +541,10 @@ class Element:
     def calculate_conc_fructan(fructan, mstruct):
         """Fructan concentration.
 
-        :param float fructan: Amount of fructan (µmol` C)
+        :param float fructan: Amount of fructan (Âµmol` C)
         :param float mstruct: Structural mass
 
-        :return: Fructan concentration (µmol` fructan g-1 mstruct, eq. glucose).
+        :return: Fructan concentration (Âµmol` fructan g-1 mstruct, eq. glucose).
         :rtype: float
         """
         return (fructan / mstruct) / cnwheat_model.EcophysiologicalConstants.NB_C_HEXOSES
@@ -555,10 +553,10 @@ class Element:
     def calculate_Conc_Nitrates(nitrates, mstruct):
         """Nitrate concentration.
 
-        :param float nitrates: Amount of nitrates (µmol` N)
+        :param float nitrates: Amount of nitrates (Âµmol` N)
         :param float mstruct: Structural mass
 
-        :return: Nitrate concentration (µmol` nitrates g-1 mstruct)
+        :return: Nitrate concentration (Âµmol` nitrates g-1 mstruct)
         :rtype: float
         """
         return nitrates / mstruct
@@ -567,10 +565,10 @@ class Element:
     def calculate_Conc_Amino_Acids(amino_acids, mstruct):
         """Amino_acid concentration.
 
-        :param float amino_acids: Amount of amino acids (µmol` N)
+        :param float amino_acids: Amount of amino acids (Âµmol` N)
         :param float mstruct: Structural mass
 
-        :return: Amino_acid concentration (µmol` amino acids g-1 mstruct)
+        :return: Amino_acid concentration (Âµmol` amino acids g-1 mstruct)
         :rtype: float
         """
         return (amino_acids / cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_N_RATIO) / mstruct
@@ -579,7 +577,7 @@ class Element:
     def calculate_conc_proteins(proteins, mstruct):
         """Protein concentration.
 
-        :param float proteins: Amount of proteins (µmol` N)
+        :param float proteins: Amount of proteins (Âµmol` N)
         :param float mstruct: Structural mass
 
         :return: Protein concentration (g proteins g-1 mstruct)
@@ -605,9 +603,9 @@ class Element:
     def calculate_SLN(nitrates, amino_acids, proteins, Nstruct, green_area):
         """ Surfacic Leaf Nitrogen (SLN, g.m-2)
 
-        :param float nitrates: Amount of nitrates (µmol` N)
-        :param float amino_acids: Amount of amino_acids (µmol` N)
-        :param float proteins: Amount of proteins (µmol` N)
+        :param float nitrates: Amount of nitrates (Âµmol` N)
+        :param float amino_acids: Amount of amino_acids (Âµmol` N)
+        :param float proteins: Amount of proteins (Âµmol` N)
         :param float Nstruct: Structural N (g)
         :param float green_area: Green area (m-2)
 
@@ -621,9 +619,9 @@ class Element:
     def calculate_SLN_nonstruct(nitrates, amino_acids, proteins, green_area):
         """ Surfacic Leaf Nitrogen (SLN, g.m-2)
 
-        :param float nitrates: Amount of nitrates (µmol` N)
-        :param float amino_acids: Amount of amino_acids (µmol` N)
-        :param float proteins: Amount of proteins (µmol` N)
+        :param float nitrates: Amount of nitrates (Âµmol` N)
+        :param float amino_acids: Amount of amino_acids (Âµmol` N)
+        :param float proteins: Amount of proteins (Âµmol` N)
         :param float green_area: Green area (m-2)
 
         :return: Surfacic Leaf Nitrogen (SLN, g.m-2)
@@ -1107,16 +1105,16 @@ def generate_graphs(axes_df=None, hiddenzones_df=None, organs_df=None, elements_
     # 1) Photosynthetic organs
     if elements_df is not None:
         elements_df = elements_df.loc[elements_df['mstruct'] != 0]
-        graph_variables_ph_elements = {'Ag': u'Gross photosynthesis (µmol m$^{-2}$ s$^{-1}$)', 'Tr': u'Organ surfacic transpiration rate (mmol H$_{2}$0 m$^{-2}$ s$^{-1}$)',
-                                       'Transpiration': u'Organ transpiration rate (mmol H$_{2}$0 s$^{-1}$)', 'Ts': u'Temperature surface (°C)', 'Conc_TriosesP': u'[TriosesP] (µmol g$^{-1}$ mstruct)',
-                                       'Conc_Starch': u'[Starch] (µmol g$^{-1}$ mstruct)', 'Conc_Sucrose': u'[Sucrose] (µmol g$^{-1}$ mstruct)', 'Conc_Fructan': u'[Fructan] (µmol g$^{-1}$ mstruct)',
-                                       'Conc_Nitrates': u'[Nitrates] (µmol g$^{-1}$ mstruct)', 'Conc_Amino_Acids': u'[Amino_Acids] (µmol g$^{-1}$ mstruct)',
-                                       'Conc_Proteins': u'[Proteins] (g g$^{-1}$ mstruct)', 'Cont_Fructan_DM': u'Fructan content (% DM)', 'Nitrates_import': u'Total nitrates imported (µmol h$^{-1}$)',
-                                       'Amino_Acids_import': u'Total amino acids imported (µmol N h$^{-1}$)', 'S_Amino_Acids': u'[Rate of amino acids synthesis] (µmol N g$^{-1}$ mstruct h$^{-1}$)',
-                                       'S_Proteins': u'Rate of protein synthesis (µmol N g$^{-1}$ mstruct h$^{-1}$)', 'D_Proteins': u'Rate of protein degradation (µmol N g$^{-1}$ mstruct h$^{-1}$)',
-                                       'Loading_Sucrose': u'Loading Sucrose (µmol C sucrose h$^{-1}$)', 'Loading_Amino_Acids': u'Loading Amino acids (µmol N amino acids h$^{-1}$)',
-                                       'green_area': u'Green area (m$^{2}$)', 'R_phloem_loading': u'Respiration phloem loading (µmol C h$^{-1}$)',
-                                       'R_Nnit_red': u'Respiration nitrate reduction (µmol C h$^{-1}$)', 'R_residual': u'Respiration residual (µmol C h$^{-1}$)', 'mstruct': u'Structural mass (g)',
+        graph_variables_ph_elements = {'Ag': u'Gross photosynthesis (Âµmol m$^{-2}$ s$^{-1}$)', 'Tr': u'Organ surfacic transpiration rate (mmol H$_{2}$0 m$^{-2}$ s$^{-1}$)',
+                                       'Transpiration': u'Organ transpiration rate (mmol H$_{2}$0 s$^{-1}$)', 'Ts': u'Temperature surface (Â°C)', 'Conc_TriosesP': u'[TriosesP] (Âµmol g$^{-1}$ mstruct)',
+                                       'Conc_Starch': u'[Starch] (Âµmol g$^{-1}$ mstruct)', 'Conc_Sucrose': u'[Sucrose] (Âµmol g$^{-1}$ mstruct)', 'Conc_Fructan': u'[Fructan] (Âµmol g$^{-1}$ mstruct)',
+                                       'Conc_Nitrates': u'[Nitrates] (Âµmol g$^{-1}$ mstruct)', 'Conc_Amino_Acids': u'[Amino_Acids] (Âµmol g$^{-1}$ mstruct)',
+                                       'Conc_Proteins': u'[Proteins] (g g$^{-1}$ mstruct)', 'Cont_Fructan_DM': u'Fructan content (% DM)', 'Nitrates_import': u'Total nitrates imported (Âµmol h$^{-1}$)',
+                                       'Amino_Acids_import': u'Total amino acids imported (Âµmol N h$^{-1}$)', 'S_Amino_Acids': u'[Rate of amino acids synthesis] (Âµmol N g$^{-1}$ mstruct h$^{-1}$)',
+                                       'S_Proteins': u'Rate of protein synthesis (Âµmol N g$^{-1}$ mstruct h$^{-1}$)', 'D_Proteins': u'Rate of protein degradation (Âµmol N g$^{-1}$ mstruct h$^{-1}$)',
+                                       'Loading_Sucrose': u'Loading Sucrose (Âµmol C sucrose h$^{-1}$)', 'Loading_Amino_Acids': u'Loading Amino acids (Âµmol N amino acids h$^{-1}$)',
+                                       'green_area': u'Green area (m$^{2}$)', 'R_phloem_loading': u'Respiration phloem loading (Âµmol C h$^{-1}$)',
+                                       'R_Nnit_red': u'Respiration nitrate reduction (Âµmol C h$^{-1}$)', 'R_residual': u'Respiration residual (Âµmol C h$^{-1}$)', 'mstruct': u'Structural mass (g)',
                                        'Nstruct': u'Structural N mass (g)', 'Conc_cytokinins': u'[cytokinins] (UA g$^{-1}$ mstruct)', 'D_cytokinins': u'Cytokinin degradation (UA g$^{-1}$ mstruct)',
                                        'cytokinins_import': u'Cytokinin import (UA)', 'Surfacic N': u'Surfacic N (g m$^{-2}$)', 'Surfacic_NS': u'Surfacic Non Structural mass (g m$^{-2}$)',
                                        'NS': u'Ratio of Non Structural mass', 'N_content': u'N content in the green tissues (% DM)',
@@ -1124,7 +1122,7 @@ def generate_graphs(axes_df=None, hiddenzones_df=None, organs_df=None, elements_
                                        'SLA': u'Specific Leaf Area (m$^{2}$.kg$^{-1}$)',
                                        'SLN': u'Surfacic Leaf Nitrogen (g.m$^{-2}$)',
                                        'SLN_nonstruct': u'Surfacic Leaf Non-structural Nitrogen (g.m$^{-2}$)', 'length': u'Length (m)',
-                                       'Photosynthetic_yield': u'Photosynthetic yield (µmol C/µmol PARa)'}
+                                       'Photosynthetic_yield': u'Photosynthetic yield (Âµmol C/Âµmol PARa)'}
 
         for org_ph in (['blade'], ['sheath'], ['internode'], ['peduncle', 'ear']):
             for variable_name, variable_label in graph_variables_ph_elements.items():
@@ -1141,20 +1139,20 @@ def generate_graphs(axes_df=None, hiddenzones_df=None, organs_df=None, elements_
 
     # 2) Roots, grains and phloem
     if organs_df is not None:
-        # 'R_growth': u'Growth respiration of roots (µmol C h$^{-1}$)',
-        graph_variables_organs = {'Conc_Sucrose': u'[Sucrose] (µmol g$^{-1}$ mstruct)', 'Dry_Mass': 'Dry mass (g)', 'Conc_Nitrates': u'[Nitrates] (µmol g$^{-1}$ mstruct)',
-                                  'Conc_Amino_Acids': u'[Amino Acids] (µmol g$^{-1}$ mstruct)', 'Proteins_N_Mass': u'[N Proteins] (g)', 'Uptake_Nitrates': u'Nitrates uptake (µmol h$^{-1}$)',
-                                  'sucrose': u'Sucrose (µmol)', 'amino_acids': u'Amino Acids (µmol)', 'Unloading_Sucrose': u'Unloaded sucrose (µmol C g$^{-1}$ mstruct h$^{-1}$)',
-                                  'Unloading_Amino_Acids': u'Unloaded Amino Acids (µmol N AA g$^{-1}$ mstruct h$^{-1}$)',
-                                  'S_Amino_Acids': u'Rate of amino acids synthesis (µmol N g$^{-1}$ mstruct h$^{-1}$)', 'S_Proteins': u'Rate of protein synthesis (µmol N h$^{-1}$)',
-                                  'Export_Nitrates': u'Total export of nitrates (µmol N h$^{-1}$)', 'Export_Amino_Acids': u'Total export of Amino acids (µmol N h$^{-1}$)',
-                                  'R_Nnit_upt': u'Respiration nitrates uptake (µmol C h$^{-1}$)', 'R_Nnit_red': u'Respiration nitrate reduction (µmol C h$^{-1}$)',
-                                  'R_residual': u'Respiration residual (µmol C h$^{-1}$)', 'R_maintenance': u'Respiration residual (µmol C h$^{-1}$)',
-                                  'R_grain_growth_struct': u'Respiration grain structural growth (µmol C h$^{-1}$)', 'R_grain_growth_starch': u'Respiration grain starch growth (µmol C h$^{-1}$)',
-                                  'mstruct': u'Structural mass (g)', 'C_exudation': u'Carbon lost by root exudation (µmol C g$^{-1}$ mstruct h$^{-1}$',
-                                  'N_exudation': u'Nitrogen lost by root exudation (µmol N g$^{-1}$ mstruct h$^{-1}$', 'Conc_cytokinins': u'[cytokinins] (UA g$^{-1}$ mstruct)',
+        # 'R_growth': u'Growth respiration of roots (Âµmol C h$^{-1}$)',
+        graph_variables_organs = {'Conc_Sucrose': u'[Sucrose] (Âµmol g$^{-1}$ mstruct)', 'Dry_Mass': 'Dry mass (g)', 'Conc_Nitrates': u'[Nitrates] (Âµmol g$^{-1}$ mstruct)',
+                                  'Conc_Amino_Acids': u'[Amino Acids] (Âµmol g$^{-1}$ mstruct)', 'Proteins_N_Mass': u'[N Proteins] (g)', 'Uptake_Nitrates': u'Nitrates uptake (Âµmol h$^{-1}$)',
+                                  'sucrose': u'Sucrose (Âµmol)', 'amino_acids': u'Amino Acids (Âµmol)', 'Unloading_Sucrose': u'Unloaded sucrose (Âµmol C g$^{-1}$ mstruct h$^{-1}$)',
+                                  'Unloading_Amino_Acids': u'Unloaded Amino Acids (Âµmol N AA g$^{-1}$ mstruct h$^{-1}$)',
+                                  'S_Amino_Acids': u'Rate of amino acids synthesis (Âµmol N g$^{-1}$ mstruct h$^{-1}$)', 'S_Proteins': u'Rate of protein synthesis (Âµmol N h$^{-1}$)',
+                                  'Export_Nitrates': u'Total export of nitrates (Âµmol N h$^{-1}$)', 'Export_Amino_Acids': u'Total export of Amino acids (Âµmol N h$^{-1}$)',
+                                  'R_Nnit_upt': u'Respiration nitrates uptake (Âµmol C h$^{-1}$)', 'R_Nnit_red': u'Respiration nitrate reduction (Âµmol C h$^{-1}$)',
+                                  'R_residual': u'Respiration residual (Âµmol C h$^{-1}$)', 'R_maintenance': u'Respiration residual (Âµmol C h$^{-1}$)',
+                                  'R_grain_growth_struct': u'Respiration grain structural growth (Âµmol C h$^{-1}$)', 'R_grain_growth_starch': u'Respiration grain starch growth (Âµmol C h$^{-1}$)',
+                                  'mstruct': u'Structural mass (g)', 'C_exudation': u'Carbon lost by root exudation (Âµmol C g$^{-1}$ mstruct h$^{-1}$',
+                                  'N_exudation': u'Nitrogen lost by root exudation (Âµmol N g$^{-1}$ mstruct h$^{-1}$', 'Conc_cytokinins': u'[cytokinins] (UA g$^{-1}$ mstruct)',
                                   'S_cytokinins': u'Rate of cytokinins synthesis (UA g$^{-1}$ mstruct)', 'Export_cytokinins': 'Export of cytokinins from roots (UA h$^{-1}$)',
-                                  'HATS_LATS': u'Potential uptake (µmol h$^{-1}$)', 'regul_transpiration': 'Regulating transpiration function'}
+                                  'HATS_LATS': u'Potential uptake (Âµmol h$^{-1}$)', 'regul_transpiration': 'Regulating transpiration function'}
 
         for org in (['roots'], ['grains'], ['phloem']):
             for variable_name, variable_label in graph_variables_organs.items():
@@ -1183,10 +1181,10 @@ def generate_graphs(axes_df=None, hiddenzones_df=None, organs_df=None, elements_
 
     # 4) Hidden zones
     if hiddenzones_df is not None:
-        graph_variables_hiddenzones = {'Conc_Sucrose': u'[Sucrose] (µmol g$^{-1}$ mstruct)', 'Conc_Amino_Acids': u'[Amino Acids] (µmol g$^{-1}$ mstruct)',
-                                       'Conc_Proteins': u'[Proteins] (g g$^{-1}$ mstruct)', 'Conc_Fructan': u'[Fructan] (µmol g$^{-1}$ mstruct)', 'Cont_Fructan_DM': u'Fructan content (% DM)',
-                                       'Cont_Proteins_DM': u'Protein content (% DM)', 'Unloading_Sucrose': u'Rate of Sucrose unloading (µmol C h${-1}$)',
-                                       'Unloading_Amino_Acids': u'Rate of Amino_acids unloading (µmol N h${-1}$)', 'mstruct': u'Structural mass (g)', 'Nstruct': u'Structural N mass (g)',
+        graph_variables_hiddenzones = {'Conc_Sucrose': u'[Sucrose] (Âµmol g$^{-1}$ mstruct)', 'Conc_Amino_Acids': u'[Amino Acids] (Âµmol g$^{-1}$ mstruct)',
+                                       'Conc_Proteins': u'[Proteins] (g g$^{-1}$ mstruct)', 'Conc_Fructan': u'[Fructan] (Âµmol g$^{-1}$ mstruct)', 'Cont_Fructan_DM': u'Fructan content (% DM)',
+                                       'Cont_Proteins_DM': u'Protein content (% DM)', 'Unloading_Sucrose': u'Rate of Sucrose unloading (Âµmol C h${-1}$)',
+                                       'Unloading_Amino_Acids': u'Rate of Amino_acids unloading (Âµmol N h${-1}$)', 'mstruct': u'Structural mass (g)', 'Nstruct': u'Structural N mass (g)',
                                        'leaf_L': u'Leaf length in hz (m)', 'delta_leaf_L': u'delta of leaf length (m)', 'internode_L': u'Internode length in hz (m)',
                                        'leaf_pseudostem_length': u'leaf pseudostem length (m)'}
 
