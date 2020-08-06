@@ -1,4 +1,3 @@
-# -*- coding: latin-1 -*-
 import numpy as np
 import pandas as pd
 
@@ -103,6 +102,7 @@ def from_dataframes(organs_inputs=None, hiddenzones_inputs=None, elements_inputs
                         organ = axis_attribute_class(organ_label)
                         organ_attributes_names = [state_var_name for state_var_name in simulation.Simulation.ORGANS_STATE if hasattr(organ, state_var_name)]
                         organ_row = organ_inputs.loc[organ_inputs.first_valid_index()]
+                        organ_attributes_names = [i for i in organ_attributes_names if i in organ_row.index]
                         organ_attributes_values = organ_row[organ_attributes_names].tolist()
                         organ_attributes = dict(zip(organ_attributes_names, organ_attributes_values))
                         organ.__dict__.update(organ_attributes)
@@ -149,7 +149,8 @@ def from_dataframes(organs_inputs=None, hiddenzones_inputs=None, elements_inputs
                                 element_inputs = curr_elements_inputs[curr_elements_inputs['element'] == mtg_element_label]
                                 if len(element_inputs) == 0:
                                     continue
-                                element_inputs = element_inputs.loc[:, simulation.Simulation.ELEMENTS_STATE]
+                                keys = [i for i in simulation.Simulation.ELEMENTS_STATE if i in element_inputs]
+                                element_inputs = element_inputs.loc[:, keys]
                                 element_dict = element_inputs.loc[element_inputs.first_valid_index()].to_dict()
                                 # create a new element
                                 element = phytomer_attribute_element_class(mtg_element_label, **element_dict)
