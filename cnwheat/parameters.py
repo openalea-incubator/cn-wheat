@@ -1,4 +1,3 @@
-# -*- coding: latin-1 -*-
 import pandas as pd
 
 """
@@ -192,16 +191,16 @@ class GrainsParameters(object):
         self.ALPHA = 1                                   #: Proportion of structural mass containing substrate
 
         # Structure parameters
-        self.VMAX_RGR = 1.5e-06                          #: Maximal value of the Relative Growth Rate of grain structure (s-1 at 20캜)
+        self.VMAX_RGR = 1.5e-06                          #: Maximal value of the Relative Growth Rate of grain structure (s-1 at 20째C)
         self.K_RGR = 300                                 #: Affinity coefficient of the Relative Growth Rate of grain structure (:math:`\mu` mol C)
         self.Arrhenius_ref = 1.7399e-11                  #:
 
         # Starch parameters
-        self.VMAX_STARCH = 0.35                          #: Maximal rate of grain filling of starch (:math:`\mu` mol C s-1 at 20캜 g-1 MS)
+        self.VMAX_STARCH = 0.35                          #: Maximal rate of grain filling of starch (:math:`\mu` mol C s-1 at 20째C g-1 MS)
         self.K_STARCH = 400                              #: Affinity coefficient of grain filling of starch (:math:`\mu` mol C g-1 MS)
 
-        self.FILLING_INIT = 360 * 3600                   #: Time (s at 20캜) at which phloem loading switch from grain structure to accumulation of starch
-        self.FILLING_END = 900 * 3600                    #: Time (s at 20캜) at which grains filling stops. (Bertheloot et al., 2011)
+        self.FILLING_INIT = 360 * 3600                   #: Time (s at 20째C) at which phloem loading switch from grain structure to accumulation of starch
+        self.FILLING_END = 900 * 3600                    #: Time (s at 20째C) at which grains filling stops. (Bertheloot et al., 2011)
 
 
 #: The instance of class :class:`cnwheat.parameters.GrainsParameters` for current process
