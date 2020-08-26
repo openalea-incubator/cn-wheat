@@ -41,9 +41,6 @@ if sys.version_info < (2, 7):
     print('ERROR: CN-Wheat requires at least Python 2.7 to run.')
     sys.exit(1)
 
-if sys.version_info >= (3, 0):
-    print('WARNING: CN-Wheat has not been tested with Python 3.')
-
 # pkg_resources.require('numpy>=1.11.0', 'pandas>=0.18.0', 'scipy>=0.16.1',
 #                       'matplotlib>=1.5', 'sphinx>=1.4.8', 'nose>=1.3.7',
 #                       'coverage>=4.4.1', 'Respi-Wheat')
