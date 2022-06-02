@@ -235,7 +235,7 @@ class Simulation(object):
     #: of the compartments associated to each organ (see :attr:`MODEL_COMPARTMENTS_NAMES`)
     ORGANS_STATE = ORGANS_STATE_PARAMETERS + MODEL_COMPARTMENTS_NAMES.get(model.Organ, [])
     #: the variables that we need to compute in order to compute fluxes and/or compartments values at organ scale
-    ORGANS_INTERMEDIATE_VARIABLES = ['C_exudation', 'HATS_LATS', 'N_exudation', 'RGR_Structure', 'R_Nnit_red', 'R_Nnit_upt', 'Respi_growth',
+    ORGANS_INTERMEDIATE_VARIABLES = ['C_exudation', 'HATS_LATS', 'N_exudation', 'R_Nnit_red', 'R_Nnit_upt', 'Respi_growth',
                                      'R_grain_growth_starch', 'R_grain_growth_struct', 'R_residual', 'regul_transpiration', 'sum_respi']
     #: the fluxes exchanged between the compartments at organ scale
     ORGANS_FLUXES = ['Export_Amino_Acids', 'Export_Nitrates', 'Export_cytokinins', 'S_Amino_Acids', 'S_cytokinins', 'S_grain_starch',
@@ -490,7 +490,7 @@ class Simulation(object):
                         if len(axis.phytomers) != 0:  # each axis must contain at least 1 phytomer
                             for phytomer in axis.phytomers:
                                 phytomer_organs = (phytomer.lamina, phytomer.internode, phytomer.sheath, phytomer.chaff, phytomer.peduncle)
-                                # each phytomer must contain at least 1 photosynthetic organ or an hidden growing zone
+                                # each phytomer must contain at least 1 photosynthetic organ or a hidden growing zone
                                 if phytomer_organs.count(None) != len(phytomer_organs) or phytomer.hiddenzone is not None:
                                     for organ in phytomer_organs:
                                         if organ is not None:
@@ -981,7 +981,7 @@ class Simulation(object):
                             # compartments derivatives
                             starch_derivative = element.calculate_starch_derivative(element.S_Starch, element.D_Starch)
                             element.R_residual = self.respiration_model.RespirationModel.R_residual(element.sucrose, element.mstruct * element.__class__.PARAMETERS.ALPHA,
-                                                                                                                           element.Total_Organic_Nitrogen, element.Ts)
+                                                                                                    element.Total_Organic_Nitrogen, element.Ts)
                             element.sum_respi = element.R_phloem_loading + element.R_Nnit_red + element.R_residual
                             sum_respi_shoot += element.sum_respi * element.nb_replications
                             sucrose_derivative = element.calculate_sucrose_derivative(element.S_Sucrose, element.D_Starch, element.Loading_Sucrose, element.S_Fructan,
@@ -1025,9 +1025,9 @@ class Simulation(object):
 
                         # Residual respiration
                         hiddenzone.R_residual = self.respiration_model.RespirationModel.R_residual(hiddenzone.sucrose,
-                                                                                                                             hiddenzone.mstruct * hiddenzone.__class__.PARAMETERS.ALPHA,
-                                                                                                                             hiddenzone.Total_Organic_Nitrogen,
-                                                                                                                             plant.Tair)
+                                                                                                   hiddenzone.mstruct * hiddenzone.__class__.PARAMETERS.ALPHA,
+                                                                                                   hiddenzone.Total_Organic_Nitrogen,
+                                                                                                   plant.Tair)
                         sum_respi_shoot += hiddenzone.R_residual * hiddenzone.nb_replications
 
                         # compute the derivatives of the hidden zone
@@ -1050,11 +1050,10 @@ class Simulation(object):
 
                     # intermediate variables
                     T_effect_growth = axis.grains.calculate_temperature_effect_on_growth(plant.Tair)
-                    axis.grains.RGR_Structure = axis.grains.calculate_RGR_Structure(axis.phloem.sucrose, axis.mstruct, T_effect_growth)
                     axis.grains.structural_dry_mass = axis.grains.calculate_structural_dry_mass(axis.grains.structure)
 
                     # flows
-                    axis.grains.S_grain_structure = axis.grains.calculate_S_grain_structure(axis.grains.structure, axis.grains.RGR_Structure)
+                    axis.grains.S_grain_structure = axis.grains.calculate_S_grain_structure(axis.grains.structure, axis.phloem.sucrose, axis.mstruct, T_effect_growth)
                     axis.grains.S_grain_starch = axis.grains.calculate_S_grain_starch(axis.phloem.sucrose, axis.mstruct, plant.T_effect_Vmax)
                     axis.grains.S_Proteins = axis.grains.calculate_S_proteins(axis.grains.S_grain_structure, axis.grains.S_grain_starch, axis.phloem.amino_acids, axis.phloem.sucrose,
                                                                               axis.grains.structural_dry_mass)
@@ -1069,7 +1068,7 @@ class Simulation(object):
                     y_derivatives[self.initial_conditions_mapping[axis.grains]['structure']] = structure_derivative
                     y_derivatives[self.initial_conditions_mapping[axis.grains]['starch']] = starch_derivative
                     y_derivatives[self.initial_conditions_mapping[axis.grains]['proteins']] = proteins_derivative
-                    y_derivatives[self.initial_conditions_mapping[axis.grains]['age_from_flowering']] += (self.delta_t * T_effect_growth) #TODO: create a function
+                    y_derivatives[self.initial_conditions_mapping[axis.grains]['age_from_flowering']] += (self.delta_t * T_effect_growth)  # TODO: create a function
 
                 # compute the derivative of each compartment of roots
                 # flows
@@ -1083,7 +1082,7 @@ class Simulation(object):
 
                 # compartments derivatives
                 axis.roots.R_residual = self.respiration_model.RespirationModel.R_residual(axis.roots.sucrose, axis.roots.mstruct * model.Roots.PARAMETERS.ALPHA, axis.roots.Total_Organic_Nitrogen,
-                                                                                              soil.Tsoil)
+                                                                                           soil.Tsoil)
                 axis.roots.sum_respi = axis.roots.R_Nnit_upt + axis.roots.R_Nnit_red + axis.roots.R_residual
                 sucrose_derivative = axis.roots.calculate_sucrose_derivative(axis.roots.Unloading_Sucrose, axis.roots.S_Amino_Acids, axis.roots.C_exudation, axis.roots.sum_respi)
                 nitrates_derivative = axis.roots.calculate_nitrates_derivative(axis.roots.Uptake_Nitrates, axis.roots.Export_Nitrates, axis.roots.S_Amino_Acids)

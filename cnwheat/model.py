@@ -601,8 +601,7 @@ class Grains(Organ):
         self.S_Proteins = None  #: current synthesis of grain proteins integrated over a delta t (µmol` N)
 
         # intermediate variables
-        self.RGR_Structure = None  #: RGR of grain structure (dimensionless?)
-        self.R_grain_growth_struct = None  #: grain struct  respiration (µmol` C respired)
+        self.R_grain_growth_struct = None  #: grain struct respiration (µmol` C respired)
         self.R_grain_growth_starch = None  #: grain starch growth respiration (µmol` C respired)
 
     def initialize(self):
@@ -665,33 +664,23 @@ class Grains(Organ):
         """
         return self.modified_Arrhenius_equation(Tair) / Grains.PARAMETERS.Arrhenius_ref
 
-    @staticmethod
-    def calculate_RGR_Structure(sucrose_phloem, mstruct_axis, T_effect_growth):
-        """Relative Growth Rate of grain structure, regulated by sucrose concentration in phloem.
-
-        :param float sucrose_phloem: Sucrose amount in phloem (µmol` C)
-        :param float mstruct_axis: The structural dry mass of the axis (g)
-        :param float T_effect_growth: Effect of the temperature on the growth rate at 20°C (AU)
-
-        :return: RGR of grain structure at 20°C (s-1)
-        :rtype: float
-        """
-        return ((max(0., sucrose_phloem) / (mstruct_axis * Axis.PARAMETERS.ALPHA)) * Grains.PARAMETERS.VMAX_RGR) / ((max(0., sucrose_phloem) / (mstruct_axis * Axis.PARAMETERS.ALPHA)) +
-                                                                                                                    Grains.PARAMETERS.K_RGR) * T_effect_growth
-
     # FLUXES
 
-    def calculate_S_grain_structure(self, prec_structure, RGR_Structure):
+    def calculate_S_grain_structure(self, prec_structure, sucrose_phloem, mstruct_axis, T_effect_growth):
         """Rate of grain structure synthesis (µmol` C structure h-1).
         Exponential function, RGR regulated by sucrose concentration in the phloem.
 
         :param float prec_structure: Grain structure at t-1 (µmol` C)
-        :param float RGR_Structure: Relative Growth Rate of grain structure (dimensionless?)
+        :param float sucrose_phloem: Sucrose amount in phloem (µmol` C)
+        :param float mstruct_axis: The structural dry mass of the axis (g)
+        :param float T_effect_growth: Effect of the temperature on the growth rate at 20°C (AU)
 
         :return: Rate of Synthesis of grain structure (µmol` C h-1)
         :rtype: float
         """
         if self.age_from_flowering <= Grains.PARAMETERS.FILLING_INIT:  #: Grain enlargment
+            RGR_Structure = ((max(0., sucrose_phloem) / (mstruct_axis * Axis.PARAMETERS.ALPHA)) * Grains.PARAMETERS.VMAX_RGR) / \
+                            ((max(0., sucrose_phloem) / (mstruct_axis * Axis.PARAMETERS.ALPHA)) + Grains.PARAMETERS.K_RGR) * T_effect_growth
             S_grain_structure = prec_structure * RGR_Structure * parameters.SECOND_TO_HOUR_RATE_CONVERSION
         else:  #: Grain filling
             S_grain_structure = 0
@@ -709,14 +698,19 @@ class Grains(Organ):
         :return: Rate of Synthesis of grain starch (µmol` C g-1 mstruct h-1)
         :rtype: float
         """
-        if self.age_from_flowering <= Grains.PARAMETERS.FILLING_INIT:  #: Grain enlargment
-            S_grain_starch = 0
-        elif self.age_from_flowering > Grains.PARAMETERS.FILLING_END:  #: Grain maturity
-            S_grain_starch = 0
-        else:  #: Grain filling
+        if Grains.PARAMETERS.FILLING_INIT <= self.age_from_flowering < Grains.PARAMETERS.FILLING_END:  #: Between grain enlargment and grain maturity
             S_grain_starch = (((max(0., sucrose_phloem) / (mstruct_axis * Axis.PARAMETERS.ALPHA)) * Grains.PARAMETERS.VMAX_STARCH) /
                               ((max(0., sucrose_phloem) / (mstruct_axis * Axis.PARAMETERS.ALPHA)) + Grains.PARAMETERS.K_STARCH)) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
+        else:
+            S_grain_starch = 0
         return S_grain_starch
+
+    def calculate_D_grain_starch(self, starch, T_effect_Vmax):
+        """Rate of starch degradation (µmol` C starch g-1 mstruct h-1).
+
+        """
+        # :TODO: finir equation (juste copier/coller des element). Tester l'age des grains pour savoir si il faut déclencher cette equation? Ajouter ce flux dans le derivative
+        return max(0, self.__class__.PARAMETERS.DELTA_DSTARCH * (starch / (self.mstruct * self.__class__.PARAMETERS.ALPHA))) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
 
     @staticmethod
     def calculate_S_proteins(S_grain_structure, S_grain_starch, amino_acids_phloem, sucrose_phloem, structural_dry_mass):
