@@ -50,7 +50,7 @@ class DataWarning(UserWarning):
 warnings.simplefilter('always', DataWarning)
 
 
-def plot_cnwheat_ouputs(outputs, x_name, y_name, x_label='', y_label='', x_lim=None, title=None, filters={}, plot_filepath=None, colors=[], linestyles=[], explicit_label=True, kwargs={}):
+def plot_cnwheat_ouputs(outputs, x_name, y_name, x_label='', y_label='', x_lim=None, title=None, meteo_data=None, filters={}, plot_filepath=None, colors=[], linestyles=[], explicit_label=True, kwargs={}):
     """Plot `outputs`, with x=`x_name` and y=`y_name`.
 
     The general algorithm is:
@@ -67,6 +67,7 @@ def plot_cnwheat_ouputs(outputs, x_name, y_name, x_label='', y_label='', x_lim=N
     :param str or unicode y_label: The y label of the plot. Default is ''.
     :param float x_lim: the x-axis limit.
     :param str title: the title of the plot. If None (default), create a title which is the concatenation of `y_name` and each scales which cardinality is one.
+    :param pandas.DataFrame meteo_data: the meteo dataframe having the mapping between t (hours) and calendar dates
     :param dict filters: A dictionary whose keys are the columns of `outputs` for which we want to apply a specific filter.
           These columns can be one or more element of :const:`OUTPUTS_INDEXES`.
           The value associated to each key is a criteria that the rows of `outputs`
@@ -180,6 +181,15 @@ def plot_cnwheat_ouputs(outputs, x_name, y_name, x_label='', y_label='', x_lim=N
         ax.set_xlim(left=0, right=x_lim)
     else:
         ax.set_xlim(left=0)
+
+    if meteo_data is not None:
+        meteo_data['Date'] = pd.to_datetime(meteo_data['Date'], format='%d/%m/%Y')
+        ax2 = ax.twiny()
+        ax2.set_xticks(ax.get_xticks())
+        ax2.set_xticklabels(meteo_data.loc[ax.get_xticks()]['Date'].dt.strftime('%d/%m'))
+        ax2.xaxis.set_ticks_position('bottom')  # set the position of the second x-axis to bottom
+        ax2.xaxis.set_label_position('bottom')  # set the position of the second x-axis to bottom
+        ax2.spines['bottom'].set_position(('outward', 35))
 
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)

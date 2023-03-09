@@ -138,15 +138,18 @@ class Axis(object):
     An :class:`axis <Axis>` must have:
         * one :class:`set of roots <Roots>`,
         * one :class:`phloem <Phloem>`,
+        * at least one :class:`phytomer <Phytomer>`,
         * zero or one :class:`set of grains <Grains>`,
-        * at least one :class:`phytomer<Phytomer>`.
+        * zero or one :class:`endosperm <Endosperm>
+        .
     """
 
     PARAMETERS = parameters.AXIS_PARAMETERS  #: the internal parameters of the axes
     INIT_COMPARTMENTS = parameters.AXIS_INIT_COMPARTMENTS  #: the initial values of compartments and state parameters
 
-    def __init__(self, label=None, roots=None, phloem=None, grains=None, phytomers=None, C_exudated=INIT_COMPARTMENTS.C_exudated, sum_respi_shoot=INIT_COMPARTMENTS.sum_respi_shoot,
-                 sum_respi_roots=INIT_COMPARTMENTS.sum_respi_roots):
+    def __init__(self, label=None, roots=None, phloem=None, grains=None, phytomers=None,
+                 SAM_temperature=INIT_COMPARTMENTS.SAM_temperature, C_exudated=INIT_COMPARTMENTS.C_exudated,
+                 sum_respi_shoot=INIT_COMPARTMENTS.sum_respi_shoot, sum_respi_roots=INIT_COMPARTMENTS.sum_respi_roots):
 
         self.label = label  #: the label of the axis
         self.roots = roots  #: the roots
@@ -157,6 +160,7 @@ class Axis(object):
         self.phytomers = phytomers  #: the list of phytomers
 
         # state variables
+        self.SAM_temperature = SAM_temperature
         self.C_exudated = C_exudated
         self.sum_respi_shoot = sum_respi_shoot
         self.sum_respi_roots = sum_respi_roots
@@ -188,21 +192,6 @@ class Axis(object):
             self.mstruct += phytomer.mstruct * phytomer.nb_replications
             self.senesced_mstruct += phytomer.senesced_mstruct * phytomer.nb_replications
             self.nitrates += phytomer.nitrates * phytomer.nb_replications
-
-    # COMPARTMENTS
-
-    @staticmethod
-    def calculate_C_exudated(C_exudation, N_exudation, roots_mstruct):
-        """delta sucrose
-
-        :param float C_exudation: Rates of sucrose exudated (µmol` C g-1 mstruct h-1)
-        :param float N_exudation: Rate of amino acids exudated (µmol` N g-1 mstruct h-1)
-        :param float roots_mstruct: RStructural mass of the roots (g)
-
-        :return: delta C loss by exudation (µmol` C)
-        :rtype: float
-        """
-        return (C_exudation + N_exudation * EcophysiologicalConstants.AMINO_ACIDS_C_RATIO / EcophysiologicalConstants.AMINO_ACIDS_N_RATIO) * roots_mstruct
 
 
 class Phytomer(object):
@@ -274,6 +263,126 @@ class Organ(object):
         """Calculate the integrative variables of the organ recursively.
         """
         pass
+
+
+class Endosperm(Organ):
+    """
+    The class :class:`Endosperm` defines the CN exchanges from the seed during germination.
+    """
+
+    PARAMETERS = parameters.ENDOSPERM_PARAMETERS           #: the internal parameters of seed endosperm
+
+    def __init__(self, label='endosperm', starch=0, proteins=0, mstruct=0):
+
+        super(Endosperm, self).__init__(label)
+
+        # state variables
+        self.starch = starch                  #: µmol` of C starch (endosperm)
+        self.proteins = proteins              #: µmol` of N (endosperm)
+        self.mstruct = mstruct                #: g of MS (~ pericarp)
+
+        # fluxes to the phloem
+        self.D_starch = None    #: current degradation of starch integrated over a delta t (µmol` C g-1)
+        self.D_proteins = None  #: current degradation of proteins integrated over a delta t (µmol` N g-1)
+
+        # intermediate variables
+        self.R_residual = None      #: maintenance respiration of endosperm (µmol` C respired)
+
+    # VARIABLES
+    @staticmethod
+    def modified_Arrhenius_equation(temperature):  # TODO: move in a seperate model
+        """ Return value of equation from Johnson and Lewin (1946) for temperature. The equation is modified to return zero below zero degree.
+
+        :param float temperature: organ temperature (degree Celsius)
+
+        :return: Return value of Eyring equation from Johnson and Lewin (1946) for temperature (dimensionless). The equation is modified to return zero below zero degree.
+        :rtype: float
+        """
+
+        # Parameters for temperature responses
+        Temp_Ea_R = 8900  # Parameter Ea/R in Eyring equation from Johnson and Lewin (1946) - Parameter value fitted from Kemp and Blacklow (1982) (K)
+        Temp_DS_R = 68.432  # Parameter deltaS/R in Eyring equation from Johnson and Lewin (1946) - Parameter value fitted from Kemp and Blacklow (1982) (dimensionless)
+        Temp_DH_R = 20735.5  # Parameter deltaH/R in Eyring equation from Johnson and Lewin (1946) - Parameter value fitted from Kemp and Blacklow (1982) (K)
+        Temp_Ttransition = 9  # Below this temperature f = linear function of temperature instead of Arrhenius-like(°C)
+
+        def Arrhenius_equation(T):
+            return T * exp(-Temp_Ea_R / T) / (1 + exp(Temp_DS_R - Temp_DH_R / T))
+
+        temperature_K = temperature + 273.15  #: Kelvins
+
+        if temperature < 0:
+            res = 0
+        elif temperature < Temp_Ttransition:
+            res = temperature * Arrhenius_equation(Temp_Ttransition + 273.15) / Temp_Ttransition
+        else:
+            res = Arrhenius_equation(temperature_K)
+
+        return res
+
+    def calculate_temperature_effect_on_growth(self, Tair):
+        """Effect of the temperature on seed.
+        Return value of equation from Johnson and Lewin (1946) for temperature. The equation is modified to return zero below zero degree.
+        Identical to modified_Arrhenius_equation in ElongWheat.
+        Should multiply the rate at 20°C
+
+        :param float Tair: Air temperature(°C)
+
+        :return: Correction to apply to endosperm remobilisation (dimensionless)
+        :rtype: float
+        """
+        return self.modified_Arrhenius_equation(Tair) / Grains.PARAMETERS.Arrhenius_ref
+
+    # FLUXES
+
+    def calculate_D_starch(self, starch, T_effect_Vmax):
+        """Rate of starch degradation from seed endosperm (µmol` C starch h-1).
+        First order kinetic.
+
+        :param float starch: Amount of starch (µmol` C)
+        :param float T_effect_Vmax: Correction to apply to enzyme activity
+
+        :return: Starch degradation (µmol` C h-1)
+        :rtype: float
+        """
+        # return max(0, Endosperm.PARAMETERS.DELTA_DSTARCH * (starch / self.mstruct)) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
+        return max(0, Endosperm.PARAMETERS.K_STARCH * (Endosperm.PARAMETERS.STARCH_MAX - starch) * (starch - Endosperm.PARAMETERS.STARCH_MIN)) *\
+               parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
+
+    @staticmethod
+    def calculate_D_proteins(D_starch, starch, proteins):
+        """Protein degradation in seed endosperm.
+        N is assumed to be degradated at the same rate as starch.
+
+        :param float D_starch: Degradation of seed starch (µmol` C)
+        :param float starch: Starch amount in endosperm (µmol` C)
+        :param float proteins: Protein amount in endosperm (µmol` N)
+
+        :return: Proteins degradation (µmol` N h-1)
+        :rtype: float
+        """
+        return D_starch * (proteins / starch)
+
+    # COMPARTMENTS
+    def calculate_starch_derivative(self, D_grain_starch, R_residual):
+        """delta starch of seed endosperm.
+
+        :param float D_grain_starch: Degradation of starch in endosperm (µmol` C g-1 h-1)
+        :param float R_residual: Residual resipration (maintenance) of the seed (µmol` C respired)
+
+        :return: delta seed starch (µmol` C starch)
+        :rtype: float
+        """
+        return -(D_grain_starch) - R_residual
+
+    def calculate_proteins_derivative(self, D_Proteins):
+        """delta proteins of seed endosperm.
+
+        :param float D_Proteins: Degradation of proteins in endosperm (µmol` N g-1)
+
+        :return: delta grain proteins (µmol` N proteins)
+        :rtype: float
+        """
+        return -D_Proteins #* self.mstruct
 
 
 class HiddenZone(Organ):
@@ -530,7 +639,7 @@ class Phloem(Organ):
     def calculate_sucrose_derivative(contributors):
         """delta sucrose
 
-        :param list [PhotosyntheticOrganElement, Grains, Roots, HiddenZone] contributors: Organs exchanging C with the phloem
+        :param list [PhotosyntheticOrganElement, Grains, Roots, HiddenZone, Endosperm] contributors: Organs exchanging C with the phloem
 
         :return: delta sucrose (µmol` C sucrose)
         :rtype: float
@@ -545,6 +654,8 @@ class Phloem(Organ):
                 sucrose_derivative -= contributor.Unloading_Sucrose * contributor.mstruct * contributor.__class__.PARAMETERS.ALPHA
             elif isinstance(contributor, HiddenZone):
                 sucrose_derivative -= contributor.Unloading_Sucrose * contributor.nb_replications
+            elif isinstance(contributor, Endosperm):
+                sucrose_derivative += contributor.D_starch * 0.5
 
         return sucrose_derivative
 
@@ -552,7 +663,7 @@ class Phloem(Organ):
     def calculate_amino_acids_derivative(contributors):
         """delta amino acids
 
-        :param list [PhotosyntheticOrganElement, Grains, Roots, HiddenZone] contributors: Organs exchanging N with the phloem
+        :param list [PhotosyntheticOrganElement, Grains, Roots, HiddenZone, Endosperm] contributors: Organs exchanging N with the phloem
 
         :return: delta amino acids (µmol` N amino acids)
         :rtype: float
@@ -567,6 +678,8 @@ class Phloem(Organ):
                 amino_acids_derivative -= contributor.Unloading_Amino_Acids * contributor.mstruct * contributor.__class__.PARAMETERS.ALPHA
             elif isinstance(contributor, HiddenZone):
                 amino_acids_derivative -= contributor.Unloading_Amino_Acids * contributor.nb_replications
+            elif isinstance(contributor, Endosperm):
+                amino_acids_derivative += contributor.D_proteins * 1
 
         return amino_acids_derivative
 
@@ -652,7 +765,7 @@ class Grains(Organ):
         return res
 
     def calculate_temperature_effect_on_growth(self, Tair):
-        """Effect of the temperature on elongation.
+        """Effect of the temperature on grain growth.
         Return value of equation from Johnson and Lewin (1946) for temperature. The equation is modified to return zero below zero degree.
         Identical to modified_Arrhenius_equation in ElongWheat.
         Should multiply the rate at 20°C
@@ -690,7 +803,7 @@ class Grains(Organ):
         """Rate of starch synthesis in grains (i.e. grain filling) (µmol` C starch g-1 mstruct h-1).
         Michaelis-Menten function of sucrose concentration in the phloem.
 
-        :param float sucrose_phloem: Sucrose concentration in phloem (µmol` C g-1 mstruct)
+        :param float sucrose_phloem: Sucrose amount in phloem (µmol` C)
         :param float mstruct_axis: The structural dry mass of the axis (g)
         :param float T_effect_Vmax: Correction to apply to enzyme activity
 
@@ -704,13 +817,6 @@ class Grains(Organ):
         else:
             S_grain_starch = 0
         return S_grain_starch
-
-    def calculate_D_grain_starch(self, starch, T_effect_Vmax):
-        """Rate of starch degradation (µmol` C starch g-1 mstruct h-1).
-
-        """
-        # :TODO: finir equation (juste copier/coller des element). Tester l'age des grains pour savoir si il faut déclencher cette equation? Ajouter ce flux dans le derivative
-        return max(0, self.__class__.PARAMETERS.DELTA_DSTARCH * (starch / (self.mstruct * self.__class__.PARAMETERS.ALPHA))) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
 
     @staticmethod
     def calculate_S_proteins(S_grain_structure, S_grain_starch, amino_acids_phloem, sucrose_phloem, structural_dry_mass):
@@ -870,7 +976,7 @@ class Roots(Organ):
         #: Gradient of sucrose between the roots and the phloem (µmol` C g-1 mstruct)
         diff_sucrose = conc_sucrose_phloem - conc_sucrose_roots
         #: Conductance depending on mstruct (g2 µmol`-1 s-1)
-        conductance = Roots.PARAMETERS.SIGMA_SUCROSE * Roots.PARAMETERS.BETA * self.mstruct ** (2 / 3) * T_effect_conductivity
+        conductance = Roots.PARAMETERS.SIGMA_SUCROSE * Roots.PARAMETERS.BETA * self.mstruct ** (2 / 3) * T_effect_conductivity * 10
 
         return driving_sucrose_compartment * diff_sucrose * conductance * parameters.SECOND_TO_HOUR_RATE_CONVERSION
 
@@ -1207,11 +1313,6 @@ class PhotosyntheticOrganElement(object):
 
         self.label = label  #: the label of the element
         if cohorts is None:  #: list of cohort values - Hack to treat tillering cases : TEMPORARY. Devrait être porté à l'échelle de la plante uniquement mais je ne vois pas comment faire mieux
-            cohorts = []
-        self.cohorts = cohorts  #: list of cohort values - Hack to treat tillering cases : TEMPORARY. Devrait être porté à l'échelle de la plante uniquement mais je ne vois pas comment faire mieux
-        self.cohorts_replications = cohorts_replications  #: dictionary of number of replications per cohort rank
-        self.index = index  #: the index of the phytomer TEMPORARY
-        if cohorts is None:
             cohorts = []
         self.cohorts = cohorts  #: list of cohort values - Hack to treat tillering cases : TEMPORARY. Devrait être porté à l'échelle de la plante uniquement mais je ne vois pas comment faire mieux
         self.cohorts_replications = cohorts_replications  #: dictionary of number of replications per cohort rank

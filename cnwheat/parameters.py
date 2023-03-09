@@ -94,6 +94,7 @@ class AxisInitCompartments(object):
     Initial values for compartments of axis.
     """
     def __init__(self):
+        self.SAM_temperature = 20           #: initial temperature of shoot apical meristem (°C)
         self.C_exudated = 0                 #: initial value of C exudated by the roots (:math:`\mu` mol C)
         self.sum_respi_shoot = 0            #: initial value of C respired by the shoot (exept leaf and internode growth respiration) (:math:`\mu` mol C)
         self.sum_respi_roots = 1E-3         #: initial value of C respired by the roots (exept root growth respiration) (:math:`\mu` mol C)
@@ -101,6 +102,25 @@ class AxisInitCompartments(object):
 
 #: The instance of class :class:`cnwheat.parameters.HiddenZoneInitCompartments` for current process
 AXIS_INIT_COMPARTMENTS = AxisInitCompartments()
+
+
+class EndospermParameters(object):
+    """
+    Internal parameters of seed endosperm.
+    """
+    def __init__(self):
+        # self.DELTA_DSTARCH = 1E-7  #: Relative rate of starch degradation (s-1 at 20°C )
+        self.K_STARCH = 5.5E-09          #: Starch hydrolysis constant (µmol-1 s-1 at 20°C)
+        self.STARCH_MIN = 0            #: Maximal starch content of the endosperm (µmol C)
+        self.STARCH_MAX = 1300         #: MInimal starch content of the endosperm (µmol C)
+
+        # self.K_PROTEINS = 3E-8           #: Starch hydrolysis constant (µmol-1 s-1 at 20°C)
+        # self.PROTEINS_MIN = 0            #: Maximal starch content of the endosperm (µmol C)
+        # self.PROTEINS_MAX = 70         #: MInimal starch content of the endosperm (µmol C)
+
+
+#: The instance of class :class:`cnwheat.parameters.SeedParameters` for current process
+ENDOSPERM_PARAMETERS = EndospermParameters()
 
 
 class PhytomerParameters(object):
@@ -256,11 +276,11 @@ class RootsParameters(object):
         self.K_AMINO_ACIDS_EXPORT = 0.045   #: Relative rate of amino acids export from roots (s-1)
 
         # Exudation
-        self.C_EXUDATION = 0.20               #: Proportion of C exudated from C sucrose unloaded to roots (Keith et al., 1986)
+        self.C_EXUDATION = 0.20               #: Proportion of C exudated from roots over C sucrose unloaded (Keith et al., 1986)
         self.N_EXUDATION_MAX = 0.2            #: Parameter used to limit the rate of N exudation (dimensionless)
 
         # Cytokinins
-        self.VMAX_S_CYTOKININS = 0.0009       #: Maximal rate of cytokinins synthesis (UA g-1 mstruct s-1)
+        self.VMAX_S_CYTOKININS = 0.0009*5       #: Maximal rate of cytokinins synthesis (UA g-1 mstruct s-1)
         self.K_NITRATES_CYTOKININS = 50       #: Affinity coefficient of cytokinins synthesis for nitrates (:math:`\mu` mol N nitrates g-1 mstruct)
         self.K_AMINO_ACIDS_CYTOKININS = 12
         self.K_SUCROSE_CYTOKININS = 1200      #: Affinity coefficient of cytokinins synthesis for sucrose (:math:`\mu` mol C sucrose g-1 mstruct)
