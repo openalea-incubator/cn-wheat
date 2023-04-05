@@ -190,9 +190,9 @@ def from_dataframes(organs_inputs=None, hiddenzones_inputs=None, elements_inputs
     if convert_dataframes_to_population and convert_dataframe_to_soils_dict:
         return population, soils
     elif convert_dataframes_to_population:
-        return population
+        return population, None
     else:
-        return soils
+        return None, soils
 
 
 def to_dataframes(population=None, soils=None):
@@ -252,9 +252,13 @@ def to_dataframes(population=None, soils=None):
             append_row(plant, [plant.index], simulation.Simulation.PLANTS_RUN_VARIABLES, all_plants_df)
             for axis in plant.axes:
                 append_row(axis, [plant.index, axis.label], simulation.Simulation.AXES_RUN_VARIABLES, all_axes_df)
-                for organ in (axis.roots, axis.phloem, axis.grains, axis.endosperm):
+                for organ in (axis.roots, axis.phloem, axis.grains):
                     if organ is not None:
                         append_row(organ, [plant.index, axis.label, organ.label], simulation.Simulation.ORGANS_RUN_VARIABLES, all_organs_df)
+
+                if hasattr(axis, 'endosperm') and axis.endosperm is not None:
+                    append_row(axis.endosperm, [plant.index, axis.label, axis.endosperm.label], simulation.Simulation.ORGANS_RUN_VARIABLES, all_organs_df)
+
                 for phytomer in axis.phytomers:
                     append_row(phytomer, [plant.index, axis.label, phytomer.index], simulation.Simulation.PHYTOMERS_RUN_VARIABLES, all_phytomers_df)
                     if phytomer.hiddenzone is not None:

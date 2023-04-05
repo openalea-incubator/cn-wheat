@@ -215,7 +215,7 @@ if RUN_SIMU:
     # Reinitialize the simulation from forced population and soils
     meteo = pd.read_csv(os.path.join(INPUTS_DIRPATH, METEO_INPUTS_FILENAME), index_col='t')
     Tair, Tsoil = meteo.loc[time_grid[0], ['air_temperature', 'soil_temperature']]
-    simulation_.initialize(population, soils, Tair=Tair, Tsoil=Tsoil)
+    simulation_.initialize(population, soils, Tsoil=Tsoil)
 
     # Create empty lists of dataframes to store the outputs at each step of the simulation
     axes_outputs_df_list = []
@@ -251,7 +251,7 @@ if RUN_SIMU:
             force_senescence_and_photosynthesis(t, population, senescence_roots_data_grouped, senescence_elements_data_grouped, photosynthesis_elements_data_grouped)
             # Reinitialize the simulation from forced population and soils
             Tair, Tsoil = meteo.loc[t, ['air_temperature', 'soil_temperature']]
-            simulation_.initialize(population, soils, Tair=Tair, Tsoil=Tsoil)
+            simulation_.initialize(population, soils, Tsoil=Tsoil)
 
     print('Run the simulation... DONE!')
 

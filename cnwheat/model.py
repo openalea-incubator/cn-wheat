@@ -48,6 +48,44 @@ class EcophysiologicalConstants:
     AMINO_ACIDS_MOLAR_MASS_C_RATIO = 0.38  #: (Penning De Vries 1989)
     PROTEINS_MOLAR_MASS_C_RATIO = 0.38  #: As for AA
 
+    @staticmethod
+    def calculate_temperature_effect_on_Vmax(T):
+        """Effect of the temperature on maximal enzyme activity
+        Should multiply the rate at 20°C
+
+        :param float T: temperature (°C)
+
+        :return: Correction to apply to enzyme activity
+        :rtype: float
+        """
+        Tref = 20 + 273.15
+        Tk = T + 273.15
+        R = 8.3144  #: Physical parameter: Gas constant (J mol-1 K-1)
+        deltaHa = 55  #: Enthalpie of activation of parameter pname (kJ mol-1)
+        deltaS = 0.48  #: entropy term of parameter pname (kJ mol-1 K-1)
+        deltaHd = 154  #: Enthalpie of deactivation of parameter pname (kJ mol-1)
+
+        f_activation = np.exp((deltaHa * (Tk - Tref)) / (R * 1E-3 * Tref * Tk))  #: Energy of activation (normalized to unity)
+
+        f_deactivation = (1 + np.exp((Tref * deltaS - deltaHd) / (Tref * R * 1E-3))) / (1 + np.exp((Tk * deltaS - deltaHd) / (Tk * R * 1E-3)))  #: Energy of deactivation (normalized to unity)
+
+        return f_activation * f_deactivation
+
+    @staticmethod
+    def calculate_temperature_effect_on_conductivity(T):
+        """Effect of the temperature on phloeme translocation conductivity (Farrar 1988)
+        Should multiply the rate at 20°C
+
+        :param float T: temperature (°C)
+
+        :return: Correction to apply to conductivity coefficients.
+        :rtype: float
+        """
+        Q10 = 1.3
+        Tref = 20.
+
+        return Q10 ** ((T - Tref) / 10.)
+
 
 class Population(object):
     """
@@ -92,44 +130,6 @@ class Plant(object):
         for axis in self.axes:
             axis.calculate_aggregated_variables()
 
-    @staticmethod
-    def calculate_temperature_effect_on_conductivity(Tair):
-        """Effect of the temperature on phloeme translocation conductivity (Farrar 1988)
-        Should multiply the rate at 20°C
-
-        :param float Tair: Air temperature (°C)
-
-        :return: Correction to apply to conductivity coefficients.
-        :rtype: float
-        """
-        Q10 = 1.3
-        Tref = 20.
-
-        return Q10 ** ((Tair - Tref) / 10.)
-
-    @staticmethod
-    def calculate_temperature_effect_on_Vmax(Tair):
-        """Effect of the temperature on maximal enzyme activity
-        Should multiply the rate at 20°C
-
-        :param float Tair: Air temperature (°C)
-
-        :return: Correction to apply to enzyme activity
-        :rtype: float
-        """
-        Tref = 20 + 273.15
-        Tk = Tair + 273.15
-        R = 8.3144  #: Physical parameter: Gas constant (J mol-1 K-1)
-        deltaHa = 55  #: Enthalpie of activation of parameter pname (kJ mol-1)
-        deltaS = 0.48  #: entropy term of parameter pname (kJ mol-1 K-1)
-        deltaHd = 154  #: Enthalpie of deactivation of parameter pname (kJ mol-1)
-
-        f_activation = np.exp((deltaHa * (Tk - Tref)) / (R * 1E-3 * Tref * Tk))  #: Energy of activation (normalized to unity)
-
-        f_deactivation = (1 + np.exp((Tref * deltaS - deltaHd) / (Tref * R * 1E-3))) / (1 + np.exp((Tk * deltaS - deltaHd) / (Tk * R * 1E-3)))  #: Energy of deactivation (normalized to unity)
-
-        return f_activation * f_deactivation
-
 
 class Axis(object):
     """
@@ -147,7 +147,7 @@ class Axis(object):
     PARAMETERS = parameters.AXIS_PARAMETERS  #: the internal parameters of the axes
     INIT_COMPARTMENTS = parameters.AXIS_INIT_COMPARTMENTS  #: the initial values of compartments and state parameters
 
-    def __init__(self, label=None, roots=None, phloem=None, grains=None, phytomers=None,
+    def __init__(self, label=None, roots=None, phloem=None, grains=None, phytomers=None, endosperm=None,
                  SAM_temperature=INIT_COMPARTMENTS.SAM_temperature, C_exudated=INIT_COMPARTMENTS.C_exudated,
                  sum_respi_shoot=INIT_COMPARTMENTS.sum_respi_shoot, sum_respi_roots=INIT_COMPARTMENTS.sum_respi_roots):
 
@@ -158,6 +158,7 @@ class Axis(object):
         if phytomers is None:
             phytomers = []
         self.phytomers = phytomers  #: the list of phytomers
+        self.endosperm = endosperm
 
         # state variables
         self.SAM_temperature = SAM_temperature
@@ -884,8 +885,9 @@ class Roots(Organ):
     PARAMETERS = parameters.ROOTS_PARAMETERS  #: the internal parameters of the roots
     INIT_COMPARTMENTS = parameters.ROOTS_INIT_COMPARTMENTS  #: the initial values of compartments and state parameters
 
-    def __init__(self, label='roots', mstruct=INIT_COMPARTMENTS.mstruct, senesced_mstruct=INIT_COMPARTMENTS.senesced_mstruct, Nstruct=INIT_COMPARTMENTS.Nstruct, sucrose=INIT_COMPARTMENTS.sucrose,
-                 nitrates=INIT_COMPARTMENTS.nitrates, amino_acids=INIT_COMPARTMENTS.amino_acids, cytokinins=INIT_COMPARTMENTS.cytokinins):
+    def __init__(self, label='roots', mstruct=INIT_COMPARTMENTS.mstruct, senesced_mstruct=INIT_COMPARTMENTS.senesced_mstruct, Nstruct=INIT_COMPARTMENTS.Nstruct,
+                 temperature=INIT_COMPARTMENTS.temperature, sucrose=INIT_COMPARTMENTS.sucrose, nitrates=INIT_COMPARTMENTS.nitrates,
+                 amino_acids=INIT_COMPARTMENTS.amino_acids, cytokinins=INIT_COMPARTMENTS.cytokinins):
 
         super(Roots, self).__init__(label)
 
@@ -893,6 +895,7 @@ class Roots(Organ):
         self.mstruct = mstruct  #: Structural mass (g)
         self.senesced_mstruct = senesced_mstruct  #: Senesced structural mass (g)
         self.Nstruct = Nstruct  #: Structural N mass (g)
+        self.temperature = temperature  #: root temperature (°C)
 
         # state variables
         self.sucrose = sucrose  #: µmol` C sucrose
@@ -1886,44 +1889,6 @@ class Soil(object):
         # intermediate variables
         self.Conc_Nitrates_Soil = None  #: soil nitrate concentration Unloading (µmol` N m-3 soil)
         self.mineralisation = None  #: mineralisation on organic N into nitrates in soil (µmol`)
-
-    @staticmethod
-    def calculate_temperature_effect_on_Vmax(Tsoil):
-        """Effect of the temperature on maximal enzyme activity
-        Should multiply the rate at 20°C
-
-        :param float Tsoil: Soil temperature (°C)
-
-        :return: Correction to apply to enzyme activity
-        :rtype: float
-        """
-        Tref = 20 + 273.15
-        Tk = Tsoil + 273.15
-        R = 8.3144  #: Physical parameter: Gas constant (J mol-1 K-1)
-        deltaHa = 55  # 89.7  #: Enthalpie of activation of parameter pname (kJ mol-1)
-        deltaS = 0.48  # 0.486  #: entropy term of parameter pname (kJ mol-1 K-1)
-        deltaHd = 154  # 149.3 #: Enthalpie of deactivation of parameter pname (kJ mol-1)
-
-        f_activation = np.exp((deltaHa * (Tk - Tref)) / (R * 1E-3 * Tref * Tk))  #: Energy of activation (normalized to unity)
-
-        f_deactivation = (1 + np.exp((Tref * deltaS - deltaHd) / (Tref * R * 1E-3))) / (1 + np.exp((Tk * deltaS - deltaHd) / (Tk * R * 1E-3)))  #: Energy of deactivation (normalized to unity)
-
-        return f_activation * f_deactivation
-
-    @staticmethod
-    def calculate_temperature_effect_on_conductivity(Tsoil):
-        """Effect of the temperature on phloeme translocation conductivity (Farrar 1988)
-        Should multiply the rate at 20°C
-
-        :param float Tsoil: Soil temperature (°C)
-
-        :return: Correction to apply to conductivity coefficients.
-        :rtype: float
-        """
-        Q10 = 1.3
-        Tref = 20.
-
-        return Q10 ** ((Tsoil - Tref) / 10.)
 
     # VARIABLES
 

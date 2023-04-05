@@ -121,7 +121,7 @@ class Simulation(object):
     :param int senescence_forcings_delta_t: the delta t of the senescence forcings (in seconds) ; default is `None`.
            If the user sets `interpolate_forcings` to `True`, then he/she must also set `senescence_forcings_delta_t` to an integer value greater or equal to `delta_t`.
            For example, if `interpolate_forcings` is `True` and `delta_t==3600`, then `senescence_forcings_delta_t` must be greater or equal to `3600`, that is for example `7200`.
-     :param int photosynthesis_forcings_delta_t: the delta t of the photosynthesis forcings (in seconds) ; default is `None`.
+    :param int photosynthesis_forcings_delta_t: the delta t of the photosynthesis forcings (in seconds) ; default is `None`.
            If the user sets `interpolate_forcings` to `True`, then he/she must also set `photosynthesis_forcings_delta_t` to an integer value greater or equal to `delta_t`.
            For example, if `interpolate_forcings` is `True` and `delta_t==3600`, then `photosynthesis_forcings_delta_t` must be greater or equal to `3600`, that is for example `7200`.
 
@@ -136,6 +136,7 @@ class Simulation(object):
           If the user sets `interpolate_forcings` to `True`, then he/she must also set `photosynthesis_forcings_delta_t` to an integer value greater or equal to `delta_t`.
           For example, if `interpolate_forcings` is `True` and `delta_t==3600`, then `photosynthesis_forcings_delta_t` must be greater or equal to `3600`, that is for example `7200`.
 
+    :param bool external_soil_model: whether an external soil model is coupled to cnwheat. If True, cnwheat will skip calculations made in soil and uptake N by roots
     """
 
     #: the name of the compartments attributes in the model, for objects of types
@@ -229,7 +230,7 @@ class Simulation(object):
     #: concatenation of :attr:`T_INDEX` and :attr:`ORGANS_INDEXES`
     ORGANS_T_INDEXES = T_INDEX + ORGANS_INDEXES
     #: the parameters which define the state of the modeled system at organ scale
-    ORGANS_STATE_PARAMETERS = ['mstruct', 'Nstruct', 'senesced_mstruct']
+    ORGANS_STATE_PARAMETERS = ['mstruct', 'Nstruct', 'senesced_mstruct', 'temperature']
     #: the variables which define the state of the modeled system at organ scale,
     #: formed be the concatenation of :attr:`ORGANS_STATE_PARAMETERS` and the names
     #: of the compartments associated to each organ (see :attr:`MODEL_COMPARTMENTS_NAMES`)
@@ -344,7 +345,7 @@ class Simulation(object):
                                      model.PhotosyntheticOrganElement: 'cnwheat.derivatives.elements',
                                      model.Soil: 'cnwheat.derivatives.soils'}}
 
-    def __init__(self, respiration_model, delta_t=1, culm_density=None, interpolate_forcings=False, senescence_forcings_delta_t=None, photosynthesis_forcings_delta_t=None):
+    def __init__(self, respiration_model, delta_t=1, culm_density=None, interpolate_forcings=False, senescence_forcings_delta_t=None, photosynthesis_forcings_delta_t=None, external_soil_model=False):
 
         self.respiration_model = respiration_model  #: the model of respiration to use
 
@@ -371,6 +372,8 @@ class Simulation(object):
         self.culm_density = culm_density  #: culm density (culm m-2)
 
         self.interpolate_forcings = interpolate_forcings  #: a boolean flag which indicates if we want to interpolate or not the forcings (True: interpolate, False: do not interpolate)
+
+        self.external_soil_model = external_soil_model  #: a boolean flag which indicates if an external soil model is coupled to cnwheat.
 
         # set the loggers for compartments and derivatives
         compartments_logger = logging.getLogger('cnwheat.compartments')
@@ -471,7 +474,8 @@ class Simulation(object):
 
         # create new population and soils
         self.population.plants.extend(population.plants)
-        self.soils.update(soils)
+        if not self.external_soil_model:
+            self.soils.update(soils)
 
         # check the consistency of population and soils
         if len(self.population.plants) != 0:  # population must contain at least 1 plant
@@ -525,7 +529,7 @@ class Simulation(object):
                                                                                        axis.label)
                             logger.exception(message)
                             raise SimulationInitializationError(message)
-                        if (plant.index, axis.label) not in self.soils:  # each axis must be associated to a soil
+                        if not self.external_soil_model and (plant.index, axis.label) not in self.soils:  # each axis must be associated to a soil if no external soil model declared
                             message = 'No soil found in (plant={},axis={})'.format(plant.index,
                                                                                    axis.label)
                             logger.exception(message)
@@ -564,7 +568,7 @@ class Simulation(object):
                                         if element_id in self.previous_forcings_values:
                                             setattr(element, forcing_label, self.previous_forcings_values[element_id][forcing_label])
 
-        # Update soil and air temperature using weather data
+        # Update soil temperature using weather data
         for soil_id, soil_inputs in self.soils.items():
             self.soils[soil_id].Tsoil = Tsoil
 
@@ -588,17 +592,20 @@ class Simulation(object):
 
         i = 0
 
-        for soil in soils.values():
+        for soil in self.soils.values():
             i = _init_initial_conditions(soil, i)
 
         for plant in self.population.plants:
             i = _init_initial_conditions(plant, i)
             for axis in plant.axes:
                 i = _init_initial_conditions(axis, i)
-                for organ in (axis.roots, axis.phloem, axis.grains, axis.endosperm):
+                for organ in (axis.roots, axis.phloem, axis.grains):
                     if organ is None:
                         continue
                     i = _init_initial_conditions(organ, i)
+                if hasattr(axis, 'endosperm') and axis.endosperm is not None:
+                    i = _init_initial_conditions(axis.endosperm, i)
+
                 for phytomer in axis.phytomers:
                     i = _init_initial_conditions(phytomer, i)
                     for organ in (phytomer.chaff, phytomer.peduncle, phytomer.lamina, phytomer.internode, phytomer.sheath, phytomer.hiddenzone):
@@ -611,7 +618,7 @@ class Simulation(object):
                             if element is None:
                                 continue
                             i = _init_initial_conditions(element, i)
-
+                axis.roots.temperature = Tsoil
         self.population.calculate_aggregated_variables()
 
         logger.info('Initialization of the simulation DONE')
@@ -856,18 +863,18 @@ class Simulation(object):
         y_derivatives = np.zeros_like(y)
 
         # TODO: TEMP !!!!
-        soil_contributors = []
-        soil = self.soils[(1, 'MS')]
-        soil.nitrates = y[self.initial_conditions_mapping[soil]['nitrates']]
-        soil.Conc_Nitrates_Soil = soil.calculate_Conc_Nitrates(soil.nitrates)
+        if not self.external_soil_model:
+            soil_contributors = []
+            soil = self.soils[(1, 'MS')]
+            soil.nitrates = y[self.initial_conditions_mapping[soil]['nitrates']]
+            soil.Conc_Nitrates_Soil = soil.calculate_Conc_Nitrates(soil.nitrates)
 
-        soil.T_effect_Vmax = soil.calculate_temperature_effect_on_Vmax(soil.Tsoil)
-        soil.T_effect_conductivity = soil.calculate_temperature_effect_on_conductivity(soil.Tsoil)
+            soil.T_effect_Vmax = model.EcophysiologicalConstants.calculate_temperature_effect_on_Vmax(soil.Tsoil)
 
         for plant in self.population.plants:
             for axis in plant.axes:
-                axis.T_effect_conductivity = plant.calculate_temperature_effect_on_conductivity(axis.SAM_temperature)
-                axis.T_effect_Vmax = plant.calculate_temperature_effect_on_Vmax(axis.SAM_temperature)
+                axis.T_effect_conductivity = model.EcophysiologicalConstants.calculate_temperature_effect_on_conductivity(axis.SAM_temperature)
+                axis.T_effect_Vmax = model.EcophysiologicalConstants.calculate_temperature_effect_on_Vmax(axis.SAM_temperature)
 
                 # Phloem
                 phloem_contributors = []
@@ -875,7 +882,7 @@ class Simulation(object):
                 axis.phloem.amino_acids = y[self.initial_conditions_mapping[axis.phloem]['amino_acids']]
 
                 # Endosperm
-                if hasattr(axis, 'endosperm') and axis.endosperm.starch > 0:
+                if axis.endosperm is not None and axis.endosperm.starch > 0:
                     axis.endosperm.starch = y[self.initial_conditions_mapping[axis.endosperm]['starch']]
                     axis.endosperm.proteins = y[self.initial_conditions_mapping[axis.endosperm]['proteins']]
                     phloem_contributors.append(axis.endosperm)
@@ -901,6 +908,9 @@ class Simulation(object):
                 axis.roots.cytokinins = y[self.initial_conditions_mapping[axis.roots]['cytokinins']]
                 phloem_contributors.append(axis.roots)
 
+                axis.roots.T_effect_Vmax = model.EcophysiologicalConstants.calculate_temperature_effect_on_Vmax(axis.roots.temperature)
+                axis.roots.T_effect_conductivity = model.EcophysiologicalConstants.calculate_temperature_effect_on_conductivity(axis.roots.temperature)
+
                 # compute total transpiration at t_inf
                 axis.Total_Transpiration = 0.0  # mmol s-1
                 total_green_area = 0.0  # m2
@@ -917,9 +927,12 @@ class Simulation(object):
                 axis.roots.regul_transpiration = axis.roots.calculate_regul_transpiration(axis.Total_Transpiration)
 
                 # compute the flows from/to the roots to/from photosynthetic organs
-                axis.roots.Uptake_Nitrates, axis.roots.HATS_LATS = axis.roots.calculate_Uptake_Nitrates(soil.Conc_Nitrates_Soil, axis.roots.nitrates, axis.roots.sucrose,
-                                                                                                        soil.T_effect_Vmax)
-                soil_contributors.append((axis.roots.Uptake_Nitrates, plant.index))  #: TODO TEMP!!!
+                if not self.external_soil_model:
+                    axis.roots.Uptake_Nitrates, axis.roots.HATS_LATS = axis.roots.calculate_Uptake_Nitrates(soil.Conc_Nitrates_Soil, axis.roots.nitrates, axis.roots.sucrose,
+                                                                                                            axis.roots.T_effect_Vmax)
+                    soil_contributors.append((axis.roots.Uptake_Nitrates, plant.index))  #: TODO TEMP!!!
+                else:
+                    assert axis.roots is not None
                 axis.roots.R_Nnit_upt = self.respiration_model.RespirationModel.R_Nnit_upt(axis.roots.Uptake_Nitrates, axis.roots.sucrose)
                 axis.roots.Export_Nitrates = axis.roots.calculate_Export_Nitrates(axis.roots.nitrates, axis.roots.regul_transpiration)
                 axis.roots.Export_Amino_Acids = axis.roots.calculate_Export_Amino_Acids(axis.roots.amino_acids, axis.roots.regul_transpiration)
@@ -946,8 +959,8 @@ class Simulation(object):
                             if element is None or element.green_area <= 0.25E-6 or element.mstruct <= 0.0:
                                 continue
 
-                            element.T_effect_conductivity = plant.calculate_temperature_effect_on_conductivity(element.Ts)
-                            element.T_effect_Vmax = plant.calculate_temperature_effect_on_Vmax(element.Ts)
+                            element.T_effect_conductivity = model.EcophysiologicalConstants.calculate_temperature_effect_on_conductivity(element.Ts)
+                            element.T_effect_Vmax = model.EcophysiologicalConstants.calculate_temperature_effect_on_Vmax(element.Ts)
 
                             element.starch = y[self.initial_conditions_mapping[element]['starch']]
                             element.sucrose = y[self.initial_conditions_mapping[element]['sucrose']]
@@ -1084,15 +1097,15 @@ class Simulation(object):
                 # flows
                 axis.roots.Unloading_Sucrose = axis.roots.calculate_Unloading_Sucrose(axis.roots.sucrose, axis.phloem.sucrose, axis.mstruct, axis.T_effect_conductivity)
                 axis.roots.Unloading_Amino_Acids = axis.roots.calculate_Unloading_Amino_Acids(axis.roots.Unloading_Sucrose, axis.phloem.sucrose, axis.phloem.amino_acids)
-                axis.roots.S_Amino_Acids = axis.roots.calculate_S_amino_acids(axis.roots.nitrates, axis.roots.sucrose, soil.T_effect_Vmax)
+                axis.roots.S_Amino_Acids = axis.roots.calculate_S_amino_acids(axis.roots.nitrates, axis.roots.sucrose, axis.roots.T_effect_Vmax)
                 axis.roots.R_Nnit_red, axis.roots.S_Amino_Acids = self.respiration_model.RespirationModel.R_Nnit_red(axis.roots.S_Amino_Acids, axis.roots.sucrose,
                                                                                                                      axis.roots.mstruct * model.Roots.PARAMETERS.ALPHA, root=True)
                 axis.roots.C_exudation, axis.roots.N_exudation = axis.roots.calculate_exudation(axis.roots.Unloading_Sucrose, axis.roots.sucrose, axis.roots.amino_acids, axis.phloem.amino_acids)
-                axis.roots.S_cytokinins = axis.roots.calculate_S_cytokinins(axis.roots.sucrose, axis.roots.nitrates, soil.T_effect_Vmax)
+                axis.roots.S_cytokinins = axis.roots.calculate_S_cytokinins(axis.roots.sucrose, axis.roots.nitrates, axis.roots.T_effect_Vmax)
 
                 # compartments derivatives
                 axis.roots.R_residual = self.respiration_model.RespirationModel.R_residual(axis.roots.sucrose, axis.roots.mstruct * model.Roots.PARAMETERS.ALPHA, axis.roots.Total_Organic_Nitrogen,
-                                                                                           soil.Tsoil)
+                                                                                           axis.roots.temperature)
                 axis.roots.sum_respi = axis.roots.R_Nnit_upt + axis.roots.R_Nnit_red + axis.roots.R_residual
                 sucrose_derivative = axis.roots.calculate_sucrose_derivative(axis.roots.Unloading_Sucrose, axis.roots.S_Amino_Acids, axis.roots.C_exudation, axis.roots.sum_respi)
                 nitrates_derivative = axis.roots.calculate_nitrates_derivative(axis.roots.Uptake_Nitrates, axis.roots.Export_Nitrates, axis.roots.S_Amino_Acids)
@@ -1110,9 +1123,10 @@ class Simulation(object):
                 y_derivatives[self.initial_conditions_mapping[axis.phloem]['sucrose']] = sucrose_phloem_derivative
                 y_derivatives[self.initial_conditions_mapping[axis.phloem]['amino_acids']] = amino_acids_phloem_derivative
 
-        # compute the derivative of each compartment of soil
-        soil.mineralisation = soil.calculate_mineralisation(soil.T_effect_Vmax)
-        y_derivatives[self.initial_conditions_mapping[soil]['nitrates']] = soil.calculate_nitrates_derivative(soil.mineralisation, soil_contributors, self.culm_density, soil.constant_Conc_Nitrates)
+        if not self.external_soil_model:
+            # compute the derivative of each compartment of soil
+            soil.mineralisation = soil.calculate_mineralisation(soil.T_effect_Vmax)
+            y_derivatives[self.initial_conditions_mapping[soil]['nitrates']] = soil.calculate_nitrates_derivative(soil.mineralisation, soil_contributors, self.culm_density, soil.constant_Conc_Nitrates)
 
         if self.show_progressbar:
             self.progressbar.update(t)

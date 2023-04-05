@@ -280,7 +280,7 @@ class RootsParameters(object):
         self.N_EXUDATION_MAX = 0.2            #: Parameter used to limit the rate of N exudation (dimensionless)
 
         # Cytokinins
-        self.VMAX_S_CYTOKININS = 0.0009*5       #: Maximal rate of cytokinins synthesis (UA g-1 mstruct s-1)
+        self.VMAX_S_CYTOKININS = 0.0009       #: Maximal rate of cytokinins synthesis (UA g-1 mstruct s-1)
         self.K_NITRATES_CYTOKININS = 50       #: Affinity coefficient of cytokinins synthesis for nitrates (:math:`\mu` mol N nitrates g-1 mstruct)
         self.K_AMINO_ACIDS_CYTOKININS = 12
         self.K_SUCROSE_CYTOKININS = 1200      #: Affinity coefficient of cytokinins synthesis for sucrose (:math:`\mu` mol C sucrose g-1 mstruct)
@@ -306,6 +306,7 @@ class RootsInitCompartments(object):
         self.mstruct = 0.15    #: initial value of mstruct (g)
         self.senesced_mstruct = 0  #: initial value of senesced_mstruct (g)
         self.Nstruct = 0.0045  #: initial value of Nstruct (g)
+        self.temperature = 12  #: initial root temperature (°C)
 
 
 #: The instance of class :class:`cnwheat.parameters.RootsInitCompartments` for current process
