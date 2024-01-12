@@ -110,7 +110,7 @@ class EndospermParameters(object):
     """
     def __init__(self):
         # self.DELTA_DSTARCH = 1E-7  #: Relative rate of starch degradation (s-1 at 20°C )
-        self.K_STARCH = 5.5E-09          #: Starch hydrolysis constant (µmol-1 s-1 at 20°C)
+        self.K_STARCH = 4.5E-09          #: Starch hydrolysis constant (µmol-1 s-1 at 20°C)
         self.STARCH_MIN = 0            #: Maximal starch content of the endosperm (µmol C)
         self.STARCH_MAX = 1300         #: MInimal starch content of the endosperm (µmol C)
 
@@ -280,7 +280,7 @@ class RootsParameters(object):
         self.N_EXUDATION_MAX = 0.2            #: Parameter used to limit the rate of N exudation (dimensionless)
 
         # Cytokinins
-        self.VMAX_S_CYTOKININS = 0.0009*5       #: Maximal rate of cytokinins synthesis (UA g-1 mstruct s-1)
+        self.VMAX_S_CYTOKININS = 0.0009       #: Maximal rate of cytokinins synthesis (UA g-1 mstruct s-1)
         self.K_NITRATES_CYTOKININS = 50       #: Affinity coefficient of cytokinins synthesis for nitrates (:math:`\mu` mol N nitrates g-1 mstruct)
         self.K_AMINO_ACIDS_CYTOKININS = 12
         self.K_SUCROSE_CYTOKININS = 1200      #: Affinity coefficient of cytokinins synthesis for sucrose (:math:`\mu` mol C sucrose g-1 mstruct)

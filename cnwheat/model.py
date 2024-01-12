@@ -1002,7 +1002,7 @@ class Roots(Organ):
         """Rate of nitrate uptake by roots
             - Nitrate uptake is calculated as the sum of the 2 transport systems: HATS and LATS
             - HATS and LATS parameters are calculated as a function of root nitrate concentration (negative regulation)
-            - Nitrate uptake is finally regulated by the total culm transpiration and sucrose concentration (positive regulation)
+            - Nitrate uptake is finally regulated by sucrose concentration (positive regulation)
 
         :param float Conc_Nitrates_Soil: Soil nitrate concentration Unloading (µmol` N m-3 soil)
         :param float nitrates_roots: Amount of nitrates in roots (µmol` N)
@@ -1823,7 +1823,7 @@ class PhotosyntheticOrganElement(object):
         :return: delta cytokinins (AU cytokinins)
         :rtype: float
         """
-        return import_cytokinins - D_cytokinins * (self.mstruct * self.__class__.PARAMETERS.ALPHA)
+        return 0#import_cytokinins - D_cytokinins * (self.mstruct * self.__class__.PARAMETERS.ALPHA)
 
 
 class ChaffElement(PhotosyntheticOrganElement):
