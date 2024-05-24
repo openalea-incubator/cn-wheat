@@ -794,7 +794,7 @@ class Element:
         :param float mstruct: Structural mass (g)
         :param float green_area: Green area (m-2)
 
-        :return: Surfacic non structural mass (g m-2)
+        :return: Surfacic non-structural mass (g m-2)
         :rtype: float
         """
         return (dry_mass - mstruct) / green_area
@@ -806,7 +806,7 @@ class Element:
         :param float dry_mass: Dry mass (g)
         :param float mstruct: Structural mass (g)
 
-        :return: Surfacic non structural mass (g m-2)
+        :return: Surfacic non-structural mass (g m-2)
         :rtype: float
         """
         return (1 - mstruct / dry_mass) * 100
@@ -1161,9 +1161,6 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
             sum_N_g = (organs_df[organs_df['axis'] == 'MS'].groupby(['t', 'plant', 'axis'])['N_g'].agg('sum') +
                        hz_df_MS.groupby(['t', 'plant', 'axis'])['N_g_tillers'].agg('sum') +
                        elt_df_MS.groupby(['t', 'plant', 'axis'])['N_g_tillers'].agg('sum'))
-            # sum_N_g_total = (organs_df[organs_df['axis'] == 'MS'].groupby(['t', 'plant', 'axis'])['N_g'].agg('sum') +
-            #                  hz_df_MS.groupby(['t', 'plant', 'axis'])['N_g_tillers'].agg('sum') +
-            #                  elt_df_MS.groupby(['t', 'plant', 'axis'])['N_g_total_tillers'].agg('sum'))
             N_content = sum_N_g / sum_dry_mass * 100
             N_content_mstruct = sum_N_g / sum_mstruct * 100
 
@@ -1184,7 +1181,7 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
             hz_df_MS['WSC_g_tillers'] = hz_df_MS['WSC_g'] * hz_df_MS['nb_replications']
             elt_df_MS['WSC_g_tillers'] = elt_df_MS['WSC_g'] * elt_df_MS['nb_replications']
 
-            WSC_g_plant = hz_df_MS.groupby(['t', 'plant', 'axis'])['WSC_g_tillers'].agg('sum') + elt_df_MS.groupby(['t', 'plant', 'axis'])['WSC_g_tillers'].agg('sum') +\
+            WSC_g_plant = hz_df_MS.groupby(['t', 'plant', 'axis'])['WSC_g_tillers'].agg('sum') + elt_df_MS.groupby(['t', 'plant', 'axis'])['WSC_g_tillers'].agg('sum') + \
                           pp_organs_df.groupby(['t', 'plant', 'axis'])['WSC_g'].agg('sum')
 
             sum_WSC_g_shoot = (sum_WSC_g_phloem_shoot +
@@ -1222,7 +1219,7 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
                 elements_df['Tillers_Photosynthesis'] = elements_df['Photosynthesis'] * elements_df['nb_replications']
                 elements_df['Tillers_Photosynthesis_An'] = elements_df['An'] * elements_df['green_area'] * 3600 * elements_df['nb_replications']
                 tillers_photosynthesis = elements_df[elements_df['axis'] == 'MS'].groupby(['t', 'plant', 'axis'])['Tillers_Photosynthesis'].agg('sum')  # TEMPORARY : porter au niveau de la plante
-                mux = (pd.MultiIndex.from_product((range(0, tillers_photosynthesis.index.get_level_values(0).max()+1),
+                mux = (pd.MultiIndex.from_product((range(0, tillers_photosynthesis.index.get_level_values(0).max() + 1),
                                                    tillers_photosynthesis.index.get_level_values(1).unique(), tillers_photosynthesis.index.get_level_values(2).unique())))
                 tillers_photosynthesis = tillers_photosynthesis.reindex(mux, fill_value=0)
                 tillers_photosynthesis_An = elements_df[elements_df['axis'] == 'MS'].groupby(['t', 'plant', 'axis'])['Tillers_Photosynthesis_An'].agg('sum')
@@ -1263,7 +1260,8 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
             C_respired_roots = roots_df['sum_respi_roots'].reset_index(drop=True)
 
             # C exudated
-            roots_df['sum_C_exudated'] = (roots_df.C_exudation + roots_df.N_exudation * cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_C_RATIO / cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_N_RATIO) * roots_df.mstruct
+            roots_df['sum_C_exudated'] = (roots_df.C_exudation + roots_df.N_exudation * cnwheat_model.EcophysiologicalConstants.AMINO_ACIDS_C_RATIO / cnwheat_model.
+                                          EcophysiologicalConstants.AMINO_ACIDS_N_RATIO) * roots_df.mstruct
             C_exudated_roots = roots_df['sum_C_exudated'].reset_index(drop=True)
 
             # Add to axes df
@@ -1397,7 +1395,8 @@ def generate_graphs(axes_df=None, hiddenzones_df=None, organs_df=None, elements_
     if organs_df is not None:
         # 'R_growth': u'Growth respiration of roots (µmol C h$^{-1}$)',
         graph_variables_organs = {'Conc_Sucrose': u'[Sucrose] (µmol g$^{-1}$ mstruct)', 'Dry_Mass': 'Dry mass (g)', 'Conc_Nitrates': u'[Nitrates] (µmol g$^{-1}$ mstruct)',
-                                  'Conc_Amino_Acids': u'[Amino Acids] (µmol g$^{-1}$ mstruct)', 'Proteins_N_Mass': 'N Proteins (g)', 'Starch_g': 'Endosperm starch (g)', 'Uptake_Nitrates': u'Nitrates uptake (µmol h$^{-1}$)',
+                                  'Conc_Amino_Acids': u'[Amino Acids] (µmol g$^{-1}$ mstruct)', 'Proteins_N_Mass': 'N Proteins (g)', 'Starch_g': 'Endosperm starch (g)',
+                                  'Uptake_Nitrates': u'Nitrates uptake (µmol h$^{-1}$)',
                                   'sucrose': u'Sucrose (µmol)', 'amino_acids': u'Amino Acids (µmol)', 'Unloading_Sucrose': u'Unloaded sucrose (µmol C g$^{-1}$ mstruct h$^{-1}$)',
                                   'Unloading_Amino_Acids': u'Unloaded Amino Acids (µmol N AA g$^{-1}$ mstruct h$^{-1}$)',
                                   'S_Amino_Acids': u'Rate of amino acids synthesis (µmol N g$^{-1}$ mstruct h$^{-1}$)', 'S_Proteins': u'Rate of protein synthesis (µmol N h$^{-1}$)',

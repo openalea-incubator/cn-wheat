@@ -415,8 +415,8 @@ class Simulation(object):
         if interpolate_forcings:
             if senescence_forcings_delta_t is not None and photosynthesis_forcings_delta_t is not None and \
                     senescence_forcings_delta_t >= delta_t and photosynthesis_forcings_delta_t >= delta_t:
-                self.senescence_forcings_delta_t_ratio = senescence_forcings_delta_t / delta_t  #: the ratio between the delta t of the senescence forcings and the delta t of the simulation
-                self.photosynthesis_forcings_delta_t_ratio = photosynthesis_forcings_delta_t / delta_t  #: the ratio between the delta t of the photosynthesis forcings and the delta t of the simulation
+                self.senescence_forcings_delta_t_ratio = senescence_forcings_delta_t / delta_t  #: ratio between the delta t of the senescence forcings and the delta t of the simulation
+                self.photosynthesis_forcings_delta_t_ratio = photosynthesis_forcings_delta_t / delta_t  #: ratio between delta t of the photosynthesis forcings and the delta t of the simulation
             elif senescence_forcings_delta_t is None:
                 message = """The value of `interpolate_forcings` passed to the Simulation constructor is `True`, but `senescence_forcings_delta_t` is `None`. 
         Please set `senescence_forcings_delta_t` (through the Simulation constructor) to a not `None` value."""
@@ -1004,7 +1004,7 @@ class Simulation(object):
                             amino_acids_derivative = element.calculate_amino_acids_derivative(element.Amino_Acids_import, element.S_Amino_Acids, element.S_Proteins, element.D_Proteins,
                                                                                               element.Loading_Amino_Acids)
                             proteins_derivative = element.calculate_proteins_derivative(element.S_Proteins, element.D_Proteins)
-                            cytokinins_derivative = element.calculate_cytokinins_derivative(element.cytokinins_import, element.D_cytokinins)
+                            cytokinins_derivative = element.calculate_cytokinins_derivative(element.cytokinins_import, element.D_cytokinins, phytomer.index)
 
                             y_derivatives[self.initial_conditions_mapping[element]['starch']] = starch_derivative
                             y_derivatives[self.initial_conditions_mapping[element]['sucrose']] = sucrose_derivative

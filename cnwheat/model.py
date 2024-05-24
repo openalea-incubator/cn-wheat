@@ -221,7 +221,8 @@ class Phytomer(object):
         self.nitrates = None  #: nitrates of the phytomer (µmol N)
         if cohorts is None:
             cohorts = []
-        self.cohorts = cohorts  #: list of cohort values - Hack to treat tillering cases : TEMPORARY. Devrait être porté à l'échelle de la plante uniquement mais je ne vois pas comment faire mieux
+        # TODO: Hack to deal with tillering cases: TEMPORARY.Devrait être porté à l'échelle de la plante uniquement mais je ne vois pas comment faire mieux
+        self.cohorts = cohorts  #: list of cohort values
         self.cohorts_replications = cohorts_replications  #: dictionary of number of replications per cohort rank
 
     def calculate_aggregated_variables(self):
@@ -270,23 +271,23 @@ class Endosperm(Organ):
     The class :class:`Endosperm` defines the CN exchanges from the seed during germination.
     """
 
-    PARAMETERS = parameters.ENDOSPERM_PARAMETERS           #: the internal parameters of seed endosperm
+    PARAMETERS = parameters.ENDOSPERM_PARAMETERS  #: the internal parameters of seed endosperm
 
     def __init__(self, label='endosperm', starch=0, proteins=0, mstruct=0):
 
         super(Endosperm, self).__init__(label)
 
         # state variables
-        self.starch = starch                  #: µmol` of C starch (endosperm)
-        self.proteins = proteins              #: µmol` of N (endosperm)
-        self.mstruct = mstruct                #: g of MS (~ pericarp)
+        self.starch = starch  #: µmol` of C starch (endosperm)
+        self.proteins = proteins  #: µmol` of N (endosperm)
+        self.mstruct = mstruct  #: g of MS (~ pericarp)
 
         # fluxes to the phloem
-        self.D_starch = None    #: current degradation of starch integrated over a delta t (µmol` C g-1)
+        self.D_starch = None  #: current degradation of starch integrated over a delta t (µmol` C g-1)
         self.D_proteins = None  #: current degradation of proteins integrated over a delta t (µmol` N g-1)
 
         # intermediate variables
-        self.R_residual = None      #: maintenance respiration of endosperm (µmol` C respired)
+        self.R_residual = None  #: maintenance respiration of endosperm (µmol` C respired)
 
     # VARIABLES
     @staticmethod
@@ -333,8 +334,8 @@ class Endosperm(Organ):
         return self.modified_Arrhenius_equation(Tair) / Grains.PARAMETERS.Arrhenius_ref
 
     # FLUXES
-
-    def calculate_D_starch(self, starch, T_effect_Vmax):
+    @staticmethod
+    def calculate_D_starch(starch, T_effect_Vmax):
         """Rate of starch degradation from seed endosperm (µmol` C starch h-1).
         First order kinetic.
 
@@ -344,9 +345,8 @@ class Endosperm(Organ):
         :return: Starch degradation (µmol` C h-1)
         :rtype: float
         """
-        # return max(0, Endosperm.PARAMETERS.DELTA_DSTARCH * (starch / self.mstruct)) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
-        return max(0, Endosperm.PARAMETERS.K_STARCH * (Endosperm.PARAMETERS.STARCH_MAX - starch) * (starch - Endosperm.PARAMETERS.STARCH_MIN)) *\
-               parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
+        return max(0, Endosperm.PARAMETERS.K_STARCH * (Endosperm.PARAMETERS.STARCH_MAX - starch) * (starch - Endosperm.PARAMETERS.STARCH_MIN)) * \
+            parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
 
     @staticmethod
     def calculate_D_proteins(D_starch, starch, proteins):
@@ -363,7 +363,8 @@ class Endosperm(Organ):
         return D_starch * (proteins / starch)
 
     # COMPARTMENTS
-    def calculate_starch_derivative(self, D_grain_starch, R_residual):
+    @staticmethod
+    def calculate_starch_derivative(D_grain_starch, R_residual):
         """delta starch of seed endosperm.
 
         :param float D_grain_starch: Degradation of starch in endosperm (µmol` C g-1 h-1)
@@ -372,9 +373,10 @@ class Endosperm(Organ):
         :return: delta seed starch (µmol` C starch)
         :rtype: float
         """
-        return -(D_grain_starch) - R_residual
+        return -D_grain_starch - R_residual
 
-    def calculate_proteins_derivative(self, D_Proteins):
+    @staticmethod
+    def calculate_proteins_derivative(D_Proteins):
         """delta proteins of seed endosperm.
 
         :param float D_Proteins: Degradation of proteins in endosperm (µmol` N g-1)
@@ -382,7 +384,7 @@ class Endosperm(Organ):
         :return: delta grain proteins (µmol` N proteins)
         :rtype: float
         """
-        return -D_Proteins #* self.mstruct
+        return -D_Proteins
 
 
 class HiddenZone(Organ):
@@ -401,7 +403,8 @@ class HiddenZone(Organ):
 
         if cohorts is None:
             cohorts = []
-        self.cohorts = cohorts  #: list of cohort values - Hack to treat tillering cases : TEMPORARY. Devrait être porté à l'échelle de la plante uniquement mais je ne vois pas comment faire mieux
+        # TODO: Hack to deal with tillering cases: TEMPORARY.Devrait être porté à l'échelle de la plante uniquement mais je ne vois pas comment faire mieux
+        self.cohorts = cohorts  #: list of cohort values
         self.cohorts_replications = cohorts_replications  #: dictionary of number of replications per cohort rank
         self.index = index  #: the index of the phytomer TEMPORARY
 
@@ -547,7 +550,7 @@ class HiddenZone(Organ):
         :rtype: float
         """
         return ((max(0., sucrose) / self.mstruct) * HiddenZone.PARAMETERS.VMAX_SFRUCTAN_RELATIVE * Regul_S_Fructan) / \
-               ((max(0., sucrose) / self.mstruct) + HiddenZone.PARAMETERS.K_SFRUCTAN) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
+            ((max(0., sucrose) / self.mstruct) + HiddenZone.PARAMETERS.K_SFRUCTAN) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
 
     def calculate_D_Fructan(self, sucrose, fructan, T_effect_Vmax):
         """Rate of fructan degradation (µmol` C fructan g-1 mstruct h-1).
@@ -655,7 +658,7 @@ class Phloem(Organ):
             elif isinstance(contributor, HiddenZone):
                 sucrose_derivative -= contributor.Unloading_Sucrose * contributor.nb_replications
             elif isinstance(contributor, Endosperm):
-                sucrose_derivative += contributor.D_starch * 0.5
+                sucrose_derivative += contributor.D_starch
 
         return sucrose_derivative
 
@@ -679,7 +682,7 @@ class Phloem(Organ):
             elif isinstance(contributor, HiddenZone):
                 amino_acids_derivative -= contributor.Unloading_Amino_Acids * contributor.nb_replications
             elif isinstance(contributor, Endosperm):
-                amino_acids_derivative += contributor.D_proteins * 1
+                amino_acids_derivative += contributor.D_proteins
 
         return amino_acids_derivative
 
@@ -976,7 +979,7 @@ class Roots(Organ):
         #: Gradient of sucrose between the roots and the phloem (µmol` C g-1 mstruct)
         diff_sucrose = conc_sucrose_phloem - conc_sucrose_roots
         #: Conductance depending on mstruct (g2 µmol`-1 s-1)
-        conductance = Roots.PARAMETERS.SIGMA_SUCROSE * Roots.PARAMETERS.BETA * self.mstruct ** (2 / 3) * T_effect_conductivity * 10
+        conductance = Roots.PARAMETERS.SIGMA_SUCROSE * Roots.PARAMETERS.BETA * self.mstruct ** (2 / 3) * T_effect_conductivity
 
         return driving_sucrose_compartment * diff_sucrose * conductance * parameters.SECOND_TO_HOUR_RATE_CONVERSION
 
@@ -1017,7 +1020,7 @@ class Roots(Organ):
 
         #: High Affinity Transport System (HATS)
         VMAX_HATS_MAX = max(0.,
-                            Roots.PARAMETERS.A_VMAX_HATS * conc_nitrates_roots + Roots.PARAMETERS.B_VMAX_HATS)  #: Maximal rate of nitrates influx at saturating soil N concentration;HATS (µ  mol` N nitrates g-1 mstruct s-1)
+                            Roots.PARAMETERS.A_VMAX_HATS * conc_nitrates_roots + Roots.PARAMETERS.B_VMAX_HATS)  #: Maximal rate of nitrates influx at saturating soil N concentration;HATS (µmol` N nitrates g-1 mstruct s-1)
         K_HATS = max(0.,
                      Roots.PARAMETERS.A_K_HATS * conc_nitrates_roots + Roots.PARAMETERS.B_K_HATS)  #: Affinity coefficient of nitrates influx at saturating soil N concentration;HATS (µmol` m-3)
         HATS = (VMAX_HATS_MAX * Conc_Nitrates_Soil) / (K_HATS + Conc_Nitrates_Soil)  #: Rate of nitrate influx by HATS (µmol` N nitrates uptaked s-1 g-1 mstruct)
@@ -1028,7 +1031,7 @@ class Roots(Organ):
 
         #: Nitrate influx (µmol` N)
         HATS_LATS = (HATS + LATS)
-        nitrate_influx = HATS_LATS * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax * self.mstruct
+        nitrate_influx = HATS_LATS * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax * (self.mstruct ** (2 / 3))
 
         # Regulations
         regul_C = (sucrose_roots / self.mstruct) * Roots.PARAMETERS.RELATIVE_VMAX_N_UPTAKE / ((sucrose_roots / self.mstruct) + Roots.PARAMETERS.K_C)  #: Nitrate uptake regulation by root C
@@ -1111,7 +1114,7 @@ class Roots(Organ):
 
     def calculate_S_cytokinins(self, sucrose_roots, nitrates_roots, T_effect_Vmax):
         """ Rate of cytokinin synthesis (AU cytokinins g-1 mstruct h-1).
-        Cytokinin synthesis regulated by both root sucrose and nitrates. As a signal molecule, cytokinins are assumed have a neglected effect on sucrose.
+        Cytokinin synthesis regulated by both root sucrose and nitrates. As a signal molecule, cytokinins are assumed to have a neglected effect on sucrose.
         Thus, no cost in C is applied to the sucrose pool.
 
         :param float sucrose_roots: Amount of sucrose in roots (µmol` C)
@@ -1312,9 +1315,10 @@ class PhotosyntheticOrganElement(object):
                  Tr=INIT_COMPARTMENTS.Tr, Ag=INIT_COMPARTMENTS.Ag, Ts=INIT_COMPARTMENTS.Ts, is_growing=INIT_COMPARTMENTS.is_growing, cohorts=None, cohorts_replications=None, index=None):
 
         self.label = label  #: the label of the element
-        if cohorts is None:  #: list of cohort values - Hack to treat tillering cases : TEMPORARY. Devrait être porté à l'échelle de la plante uniquement mais je ne vois pas comment faire mieux
+        if cohorts is None:  #: list of cohort values - TODO: Hack to treat tillering cases : TEMPORARY. Devrait être porté à l'échelle de la plante uniquement mais je ne vois pas comment faire mieux
             cohorts = []
-        self.cohorts = cohorts  #: list of cohort values - Hack to treat tillering cases : TEMPORARY. Devrait être porté à l'échelle de la plante uniquement mais je ne vois pas comment faire mieux
+        # TODO: Hack to deal with tillering cases: TEMPORARY.Devrait être porté à l'échelle de la plante uniquement mais je ne vois pas comment faire mieux
+        self.cohorts = cohorts  #: list of cohort values
         self.cohorts_replications = cohorts_replications  #: dictionary of number of replications per cohort rank
         self.index = index  #: the index of the phytomer TEMPORARY
 
@@ -1540,7 +1544,7 @@ class PhotosyntheticOrganElement(object):
         :rtype: float
         """
         return ((max(0., sucrose) / (self.mstruct * self.__class__.PARAMETERS.ALPHA)) * Regul_S_Fructan) / \
-               ((max(0., sucrose) / (self.mstruct * self.__class__.PARAMETERS.ALPHA)) + self.__class__.PARAMETERS.K_SFRUCTAN) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
+            ((max(0., sucrose) / (self.mstruct * self.__class__.PARAMETERS.ALPHA)) + self.__class__.PARAMETERS.K_SFRUCTAN) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
 
     def calculate_D_Fructan(self, sucrose, fructan, T_effect_Vmax):
         """Rate of fructan degradation (µmol` C fructan g-1 mstruct h-1).
@@ -1814,7 +1818,7 @@ class PhotosyntheticOrganElement(object):
         """
         return (S_Proteins - D_Proteins) * (self.mstruct * self.__class__.PARAMETERS.ALPHA)
 
-    def calculate_cytokinins_derivative(self, import_cytokinins, D_cytokinins):
+    def calculate_cytokinins_derivative(self, import_cytokinins, D_cytokinins, leaf_rank):
         """delta cytokinins of element.
 
         :param float import_cytokinins: Cytokinin import (AU)
@@ -1823,7 +1827,10 @@ class PhotosyntheticOrganElement(object):
         :return: delta cytokinins (AU cytokinins)
         :rtype: float
         """
-        return 0#import_cytokinins - D_cytokinins * (self.mstruct * self.__class__.PARAMETERS.ALPHA)
+        if leaf_rank in (1,2,3):
+            return 0
+        else:
+            return import_cytokinins - D_cytokinins * (self.mstruct * self.__class__.PARAMETERS.ALPHA)
 
 
 class ChaffElement(PhotosyntheticOrganElement):
