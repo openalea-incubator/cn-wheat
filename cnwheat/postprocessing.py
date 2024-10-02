@@ -908,7 +908,7 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
         pp_organs_df['N_tot'] = organs_df['N_g']
 
         # roots
-        roots_df = organs_df.loc[organs_df.organ == 'roots']
+        roots_df = organs_df[organs_df.organ == 'roots'].copy()
         pp_organs_df.loc[pp_organs_df.organ == 'roots', 'WSC_g'] = Roots.calculate_WSC_g(roots_df['sucrose'])
         pp_organs_df.loc[pp_organs_df.organ == 'roots', 'Conc_Nitrates'] = Roots.calculate_Conc_Nitrates(roots_df['nitrates'], roots_df['mstruct'])
         pp_organs_df.loc[pp_organs_df.organ == 'roots', 'Conc_Amino_Acids'] = Roots.calculate_Conc_Amino_Acids(roots_df['amino_acids'], roots_df['mstruct'])
@@ -1256,7 +1256,7 @@ def postprocessing(plants_df=None, axes_df=None, metamers_df=None, hiddenzones_d
             C_respired_shoot = hz_respi.add(elements_respi, fill_value=0).add(grains_respi, fill_value=0)
 
             # C_respired_roots
-            roots_df['sum_respi_roots'] = roots_df.Respi_growth + roots_df.sum_respi
+            roots_df['sum_respi_roots'] = roots_df['Respi_growth'] + roots_df['sum_respi']
             C_respired_roots = roots_df['sum_respi_roots'].reset_index(drop=True)
 
             # C exudated

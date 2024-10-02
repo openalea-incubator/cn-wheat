@@ -56,11 +56,12 @@ CNWHEAT_CLASSES_TO_DATAFRAME_ORGANS_MAPPING = {model.Internode: 'internode', mod
 DATAFRAME_TO_CNWHEAT_ELEMENTS_NAMES_MAPPING = {'HiddenElement': 'enclosed_element', 'StemElement': 'exposed_element', 'LeafElement1': 'exposed_element'}
 
 
-def from_dataframes(organs_inputs=None, hiddenzones_inputs=None, elements_inputs=None, soils_inputs=None, update_parameters=None):
+def from_dataframes(axes_inputs=None, organs_inputs=None, hiddenzones_inputs=None, elements_inputs=None, soils_inputs=None, update_parameters=None):
     """ If `organs_inputs`, `hiddenzones_inputs` and `elements_inputs` are not `None`,
     convert `organs_inputs`, `hiddenzones_inputs` and  `elements_inputs` to a :class:`population <model.Population>`.
     If `soils_inputs` is not `None`, convert `soils_inputs` to a dictionary of :class:`soils <model.Soil>`.
 
+    :param pandas.DataFrame axes_inputs: Organs inputs, with one line by axis.
     :param pandas.DataFrame organs_inputs: Organs inputs, with one line by organ.
     :param pandas.DataFrame hiddenzones_inputs: Hidden zones inputs, with one line by hidden zone.
     :param pandas.DataFrame elements_inputs: Elements inputs, with one line by element.
@@ -95,6 +96,11 @@ def from_dataframes(organs_inputs=None, hiddenzones_inputs=None, elements_inputs
             for axis_label in curr_axes_labels:
                 # create a new axis
                 axis = model.Axis(axis_label)
+                axis_attributes_names = [state_var_name for state_var_name in simulation.Simulation.AXES_STATE if hasattr(axis, state_var_name)]
+                axis_row = axes_inputs.loc[axes_inputs.first_valid_index()]
+                axis_attributes_values = axis_row[axis_attributes_names].tolist()
+                axis_attributes = dict(zip(axis_attributes_names, axis_attributes_values))
+                axis.__dict__.update(axis_attributes)
                 curr_organs_inputs = organs_inputs[(organs_inputs['plant'] == plant_index) & (organs_inputs['axis'] == axis_label)]
                 for axis_attribute_name, axis_attribute_class in (('roots', model.Roots), ('phloem', model.Phloem), ('grains', model.Grains), ('endosperm', model.Endosperm)):
                     organ_label = CNWHEAT_CLASSES_TO_DATAFRAME_ORGANS_MAPPING[axis_attribute_class]

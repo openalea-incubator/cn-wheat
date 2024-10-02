@@ -147,14 +147,16 @@ class Axis(object):
     PARAMETERS = parameters.AXIS_PARAMETERS  #: the internal parameters of the axes
     INIT_COMPARTMENTS = parameters.AXIS_INIT_COMPARTMENTS  #: the initial values of compartments and state parameters
 
-    def __init__(self, label=None, roots=None, phloem=None, grains=None, phytomers=None,
+    def __init__(self, label=None, roots=None, phloem=None, grains=None, endosperm=None, phytomers=None,
                  SAM_temperature=INIT_COMPARTMENTS.SAM_temperature, C_exudated=INIT_COMPARTMENTS.C_exudated,
-                 sum_respi_shoot=INIT_COMPARTMENTS.sum_respi_shoot, sum_respi_roots=INIT_COMPARTMENTS.sum_respi_roots):
+                 sum_respi_shoot=INIT_COMPARTMENTS.sum_respi_shoot, sum_respi_roots=INIT_COMPARTMENTS.sum_respi_roots, nb_leaves=INIT_COMPARTMENTS.nb_leaves):
 
         self.label = label  #: the label of the axis
         self.roots = roots  #: the roots
         self.phloem = phloem  #: the phloem
         self.grains = grains  #: the grains
+        self.endosperm = endosperm  #: the grains
+
         if phytomers is None:
             phytomers = []
         self.phytomers = phytomers  #: the list of phytomers
@@ -164,6 +166,7 @@ class Axis(object):
         self.C_exudated = C_exudated
         self.sum_respi_shoot = sum_respi_shoot
         self.sum_respi_roots = sum_respi_roots
+        self.nb_leaves = nb_leaves
 
         # integrative variables
         self.Total_Transpiration = None  #: the total transpiration (mmol s-1)
@@ -349,18 +352,17 @@ class Endosperm(Organ):
             parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
 
     @staticmethod
-    def calculate_D_proteins(D_starch, starch, proteins):
+    def calculate_D_proteins(proteins, T_effect_Vmax):
         """Protein degradation in seed endosperm.
-        N is assumed to be degradated at the same rate as starch.
 
-        :param float D_starch: Degradation of seed starch (µmol` C)
-        :param float starch: Starch amount in endosperm (µmol` C)
         :param float proteins: Protein amount in endosperm (µmol` N)
+        :param float T_effect_Vmax: Correction to apply to enzyme activity
 
         :return: Proteins degradation (µmol` N h-1)
         :rtype: float
         """
-        return D_starch * (proteins / starch)
+        return max(0, Endosperm.PARAMETERS.K_PROTEINS * (Endosperm.PARAMETERS.PROTEINS_MAX - proteins) * (proteins - Endosperm.PARAMETERS.PROTEINS_MIN)) * \
+            parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
 
     # COMPARTMENTS
     @staticmethod
@@ -767,18 +769,18 @@ class Grains(Organ):
 
         return res
 
-    def calculate_temperature_effect_on_growth(self, Tair):
+    def calculate_temperature_effect_on_growth(self, SAM_temperature):
         """Effect of the temperature on grain growth.
         Return value of equation from Johnson and Lewin (1946) for temperature. The equation is modified to return zero below zero degree.
         Identical to modified_Arrhenius_equation in ElongWheat.
         Should multiply the rate at 20°C
 
-        :param float Tair: Air temperature(°C)
+        :param float SAM_temperature: Temperature of the Shoot Apical Meristem (°C)
 
         :return: Correction to apply to RGR Structure of the grains (dimensionless)
         :rtype: float
         """
-        return self.modified_Arrhenius_equation(Tair) / Grains.PARAMETERS.Arrhenius_ref
+        return self.modified_Arrhenius_equation(SAM_temperature) / Grains.PARAMETERS.Arrhenius_ref
 
     # FLUXES
 
@@ -960,7 +962,7 @@ class Roots(Organ):
 
     # FLUXES
 
-    def calculate_Unloading_Sucrose(self, sucrose_roots, sucrose_phloem, mstruct_axis, T_effect_conductivity):
+    def calculate_Unloading_Sucrose(self, sucrose_roots, sucrose_phloem, mstruct_axis, T_effect_conductivity, nb_leaves, starch_endosperm=0, mstruct_endosperm=1):
         """Rate of sucrose Unloading from phloem to roots (µmol` C sucrose unloaded g-1 mstruct h-1).
 
 
@@ -979,7 +981,21 @@ class Roots(Organ):
         #: Gradient of sucrose between the roots and the phloem (µmol` C g-1 mstruct)
         diff_sucrose = conc_sucrose_phloem - conc_sucrose_roots
         #: Conductance depending on mstruct (g2 µmol`-1 s-1)
-        conductance = Roots.PARAMETERS.SIGMA_SUCROSE * Roots.PARAMETERS.BETA * self.mstruct ** (2 / 3) * T_effect_conductivity
+
+        # if nb_leaves <= 6:
+        #     SIGMA_SUCROSE = 0.05
+        # else:
+        #     SIGMA_SUCROSE = 5e-6
+        # else:
+        #     SIGMA_SUCROSE = -6.25E-3 * nb_leaves + 0.044
+        # SIGMA_SUCROSE = max(1e-8, -2.5E-4 * nb_leaves + 0.00175)
+        tb, tm, te = 0, 50000, 210000
+        sigma_max = 1e-5
+        conc_starch_endosperm = starch_endosperm / mstruct_endosperm
+        SIGMA_SUCROSE = max(1e-7, sigma_max * ((1 + (te - max(0, conc_starch_endosperm)) / (te - tm)) * ((max(0, conc_starch_endosperm) - tb) / (te - tb)) ** ((te - tb) / (te - tm))))
+
+        conductance = SIGMA_SUCROSE * Roots.PARAMETERS.BETA * self.mstruct ** (2 / 3) * T_effect_conductivity
+        # conductance = Roots.PARAMETERS.SIGMA_SUCROSE * Roots.PARAMETERS.BETA * self.mstruct ** (2 / 3) * T_effect_conductivity
 
         return driving_sucrose_compartment * diff_sucrose * conductance * parameters.SECOND_TO_HOUR_RATE_CONVERSION
 

@@ -98,6 +98,7 @@ class AxisInitCompartments(object):
         self.C_exudated = 0                 #: initial value of C exudated by the roots (:math:`\mu` mol C)
         self.sum_respi_shoot = 0            #: initial value of C respired by the shoot (exept leaf and internode growth respiration) (:math:`\mu` mol C)
         self.sum_respi_roots = 1E-3         #: initial value of C respired by the roots (exept root growth respiration) (:math:`\mu` mol C)
+        self.nb_leaves = 11
 
 
 #: The instance of class :class:`cnwheat.parameters.HiddenZoneInitCompartments` for current process
@@ -109,14 +110,13 @@ class EndospermParameters(object):
     Internal parameters of seed endosperm.
     """
     def __init__(self):
-        # self.DELTA_DSTARCH = 1E-7  #: Relative rate of starch degradation (s-1 at 20°C )
-        self.K_STARCH = 4.5E-09          #: Starch hydrolysis constant (µmol-1 s-1 at 20°C)
-        self.STARCH_MIN = 0            #: Maximal starch content of the endosperm (µmol C)
-        self.STARCH_MAX = 1300         #: MInimal starch content of the endosperm (µmol C)
+        self.K_STARCH = 2.E-09         #: Starch hydrolysis constant (µmol-1 s-1 at 20°C)
+        self.STARCH_MIN = 0            #: Minimal starch content of the endosperm (µmol C)
+        self.STARCH_MAX = 1300         #: Maximal starch content of the endosperm (µmol C)
 
-        # self.K_PROTEINS = 3E-8           #: Starch hydrolysis constant (µmol-1 s-1 at 20°C)
-        # self.PROTEINS_MIN = 0            #: Maximal starch content of the endosperm (µmol C)
-        # self.PROTEINS_MAX = 70         #: MInimal starch content of the endosperm (µmol C)
+        self.K_PROTEINS = 1.E-7         #: Starch hydrolysis constant (µmol-1 s-1 at 20°C)
+        self.PROTEINS_MIN = 0           #: Maximal starch content of the endosperm (µmol C)
+        self.PROTEINS_MAX = 60          #: MInimal starch content of the endosperm (µmol C)
 
 
 #: The instance of class :class:`cnwheat.parameters.SeedParameters` for current process

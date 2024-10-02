@@ -187,7 +187,7 @@ class Simulation(object):
     #: concatenation of :attr:`T_INDEX` and :attr:`AXES_INDEXES`
     AXES_T_INDEXES = T_INDEX + AXES_INDEXES
     #: the parameters which define the state of the modeled system at axis scale
-    AXES_STATE_PARAMETERS = ['mstruct', 'senesced_mstruct', 'SAM_temperature']
+    AXES_STATE_PARAMETERS = ['mstruct', 'SAM_temperature', 'nb_leaves']
     #: the variables which define the state of the modeled system at axis scale,
     #: formed be the concatenation of :attr:`AXES_STATE_PARAMETERS` and the names
     #: of the compartments associated to each axis (see :attr:`MODEL_COMPARTMENTS_NAMES`)
@@ -875,7 +875,7 @@ class Simulation(object):
                 axis.phloem.amino_acids = y[self.initial_conditions_mapping[axis.phloem]['amino_acids']]
 
                 # Endosperm
-                if hasattr(axis, 'endosperm') and axis.endosperm.starch > 0:
+                if axis.endosperm is not None and (axis.endosperm.starch > 0 or axis.endosperm.proteins > 0):
                     axis.endosperm.starch = y[self.initial_conditions_mapping[axis.endosperm]['starch']]
                     axis.endosperm.proteins = y[self.initial_conditions_mapping[axis.endosperm]['proteins']]
                     phloem_contributors.append(axis.endosperm)
@@ -885,10 +885,10 @@ class Simulation(object):
 
                     # flows
                     axis.endosperm.D_starch = axis.endosperm.calculate_D_starch(axis.endosperm.starch, T_effect_Vmax)
-                    axis.endosperm.D_proteins = axis.endosperm.calculate_D_proteins(axis.endosperm.D_starch, axis.endosperm.starch, axis.endosperm.proteins)
+                    axis.endosperm.D_proteins = axis.endosperm.calculate_D_proteins(axis.endosperm.proteins, T_effect_Vmax)
 
                     # compartments derivatives
-                    axis.endosperm.R_residual = self.respiration_model.RespirationModel.R_residual(axis.endosperm.starch, axis.endosperm.mstruct, axis.endosperm.proteins, soil.Tsoil)
+                    axis.endosperm.R_residual = self.respiration_model.RespirationModel.R_endosperm(axis.endosperm.starch, axis.endosperm.mstruct, axis.endosperm.proteins, soil.Tsoil)
                     starch_derivative = axis.endosperm.calculate_starch_derivative(axis.endosperm.D_starch, axis.endosperm.R_residual)
                     proteins_derivative = axis.endosperm.calculate_proteins_derivative(axis.endosperm.D_proteins)
                     y_derivatives[self.initial_conditions_mapping[axis.endosperm]['starch']] = starch_derivative
@@ -1082,7 +1082,13 @@ class Simulation(object):
 
                 # compute the derivative of each compartment of roots
                 # flows
-                axis.roots.Unloading_Sucrose = axis.roots.calculate_Unloading_Sucrose(axis.roots.sucrose, axis.phloem.sucrose, axis.mstruct, axis.T_effect_conductivity)
+                if axis.endosperm is not None:
+                    axis.roots.Unloading_Sucrose = axis.roots.calculate_Unloading_Sucrose(axis.roots.sucrose, axis.phloem.sucrose, axis.mstruct, axis.T_effect_conductivity, axis.nb_leaves,
+                                                                                          axis.endosperm.starch, axis.endosperm.mstruct)
+
+                else:
+                    axis.roots.Unloading_Sucrose = axis.roots.calculate_Unloading_Sucrose(axis.roots.sucrose, axis.phloem.sucrose, axis.mstruct, axis.T_effect_conductivity, axis.nb_leaves)
+
                 axis.roots.Unloading_Amino_Acids = axis.roots.calculate_Unloading_Amino_Acids(axis.roots.Unloading_Sucrose, axis.phloem.sucrose, axis.phloem.amino_acids)
                 axis.roots.S_Amino_Acids = axis.roots.calculate_S_amino_acids(axis.roots.nitrates, axis.roots.sucrose, soil.T_effect_Vmax)
                 axis.roots.R_Nnit_red, axis.roots.S_Amino_Acids = self.respiration_model.RespirationModel.R_Nnit_red(axis.roots.S_Amino_Acids, axis.roots.sucrose,
