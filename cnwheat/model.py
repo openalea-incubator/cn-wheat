@@ -370,7 +370,7 @@ class Endosperm(Organ):
         """delta starch of seed endosperm.
 
         :param float D_grain_starch: Degradation of starch in endosperm (µmol` C g-1 h-1)
-        :param float R_residual: Residual resipration (maintenance) of the seed (µmol` C respired)
+        :param float R_residual: Residual respiration (maintenance) of the seed (µmol` C respired)
 
         :return: delta seed starch (µmol` C starch)
         :rtype: float
@@ -989,8 +989,8 @@ class Roots(Organ):
         # else:
         #     SIGMA_SUCROSE = -6.25E-3 * nb_leaves + 0.044
         # SIGMA_SUCROSE = max(1e-8, -2.5E-4 * nb_leaves + 0.00175)
-        tb, tm, te = 0, 50000, 210000
-        sigma_max = 1e-5
+        tb, tm, te = 0, 150000, 210000
+        sigma_max = 2e-5
         conc_starch_endosperm = starch_endosperm / mstruct_endosperm
         SIGMA_SUCROSE = max(1e-7, sigma_max * ((1 + (te - max(0, conc_starch_endosperm)) / (te - tm)) * ((max(0, conc_starch_endosperm) - tb) / (te - tb)) ** ((te - tb) / (te - tm))))
 

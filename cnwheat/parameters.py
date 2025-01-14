@@ -110,7 +110,7 @@ class EndospermParameters(object):
     Internal parameters of seed endosperm.
     """
     def __init__(self):
-        self.K_STARCH = 2.E-09         #: Starch hydrolysis constant (µmol-1 s-1 at 20°C)
+        self.K_STARCH = 1.5E-9#4.5E-09         #: Starch hydrolysis constant (µmol-1 s-1 at 20°C)
         self.STARCH_MIN = 0            #: Minimal starch content of the endosperm (µmol C)
         self.STARCH_MAX = 1300         #: Maximal starch content of the endosperm (µmol C)
 

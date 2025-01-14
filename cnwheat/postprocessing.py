@@ -1386,7 +1386,7 @@ def generate_graphs(axes_df=None, hiddenzones_df=None, organs_df=None, elements_
                                                   x_label=x_label,
                                                   y_label=variable_label,
                                                   colors=[colors[i - 1] for i in elements_df.metamer.unique().tolist()],
-                                                  filters={'organ': org_ph},
+                                                  filters={'axis': 'MS', 'organ': org_ph},
                                                   plot_filepath=os.path.join(graphs_dirpath, graph_name),
                                                   meteo_data=meteo_data,
                                                   explicit_label=False)

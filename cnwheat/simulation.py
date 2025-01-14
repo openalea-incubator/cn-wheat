@@ -888,7 +888,7 @@ class Simulation(object):
                     axis.endosperm.D_proteins = axis.endosperm.calculate_D_proteins(axis.endosperm.proteins, T_effect_Vmax)
 
                     # compartments derivatives
-                    axis.endosperm.R_residual = self.respiration_model.RespirationModel.R_endosperm(axis.endosperm.starch, axis.endosperm.mstruct, axis.endosperm.proteins, soil.Tsoil)
+                    axis.endosperm.R_residual = self.respiration_model.RespirationModel.R_endosperm(axis.endosperm.starch, axis.endosperm.mstruct, soil.Tsoil)
                     starch_derivative = axis.endosperm.calculate_starch_derivative(axis.endosperm.D_starch, axis.endosperm.R_residual)
                     proteins_derivative = axis.endosperm.calculate_proteins_derivative(axis.endosperm.D_proteins)
                     y_derivatives[self.initial_conditions_mapping[axis.endosperm]['starch']] = starch_derivative
