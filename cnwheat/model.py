@@ -1843,7 +1843,7 @@ class PhotosyntheticOrganElement(object):
         :return: delta cytokinins (AU cytokinins)
         :rtype: float
         """
-        if leaf_rank in (1,2,3):
+        if leaf_rank in (1,2):
             return 0
         else:
             return import_cytokinins - D_cytokinins * (self.mstruct * self.__class__.PARAMETERS.ALPHA)
