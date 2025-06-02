@@ -1209,7 +1209,7 @@ class Roots(Organ):
         """
         return (Unloading_Amino_Acids + S_Amino_Acids - N_exudation) * self.mstruct - Export_Amino_Acids
 
-    def calculate_cytokinins_derivative(self, S_cytokinins, Export_cytokinins):
+    def calculate_cytokinins_derivative(self, S_cytokinins, Export_cytokinins, cytokinins, empty_endosperm):
         """delta root cytokinins.
 
         :param float S_cytokinins: Cytokinin synthesis (AU g-1 mstruct)
@@ -1218,7 +1218,10 @@ class Roots(Organ):
         :return: delta root cytokinins (AU cytokinins)
         :rtype: float
         """
-        return S_cytokinins * self.mstruct - Export_cytokinins
+        if not empty_endosperm:
+            return (Roots.PARAMETERS.ROOT_INIT_CONC_CYTOKININS * self.mstruct) - cytokinins
+        else:
+             return S_cytokinins * self.mstruct - Export_cytokinins
 
 
 class PhotosyntheticOrgan(Organ):
@@ -1834,7 +1837,7 @@ class PhotosyntheticOrganElement(object):
         """
         return (S_Proteins - D_Proteins) * (self.mstruct * self.__class__.PARAMETERS.ALPHA)
 
-    def calculate_cytokinins_derivative(self, import_cytokinins, D_cytokinins, leaf_rank):
+    def calculate_cytokinins_derivative(self, import_cytokinins, D_cytokinins, phyto_id, cytokinins, endosperm_empty, is_lamina):
         """delta cytokinins of element.
 
         :param float import_cytokinins: Cytokinin import (AU)
@@ -1843,8 +1846,8 @@ class PhotosyntheticOrganElement(object):
         :return: delta cytokinins (AU cytokinins)
         :rtype: float
         """
-        if leaf_rank in (1,2):
-            return 0
+        if phyto_id in (1,2) and is_lamina:
+            return (self.__class__.PARAMETERS.ELEMENT_INIT_CONC_CYTOKININS * self.mstruct) - cytokinins
         else:
             return import_cytokinins - D_cytokinins * (self.mstruct * self.__class__.PARAMETERS.ALPHA)
 

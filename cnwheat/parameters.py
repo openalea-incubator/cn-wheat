@@ -110,7 +110,7 @@ class EndospermParameters(object):
     Internal parameters of seed endosperm.
     """
     def __init__(self):
-        self.K_STARCH = 1.5E-9#4.5E-09         #: Starch hydrolysis constant (µmol-1 s-1 at 20°C)
+        self.K_STARCH = 1.5E-9         #: Starch hydrolysis constant (µmol-1 s-1 at 20°C)
         self.STARCH_MIN = 0            #: Minimal starch content of the endosperm (µmol C)
         self.STARCH_MAX = 1300         #: Maximal starch content of the endosperm (µmol C)
 
@@ -262,7 +262,7 @@ class RootsParameters(object):
         self.A_VMAX_HATS = -0.00004          #: Parameter for estimating the maximal rate of nitrates uptake at saturating soil N concentration;HATS (:math:`\mu` mol g-1 s-1)
         self.B_VMAX_HATS = 0.0549            #: Parameter for estimating the maximal rate of nitrates uptake at saturating soil N concentration;HATS (g :math:`\mu` mol-1)
         self.A_K_HATS = -85.324              #: Parameter for estimating the affinity coefficient of nitrates uptake at saturating soil N concentration;HATS (:math:`\mu` mol m-3)
-        self.B_K_HATS = 124476               #: Parameter for estimating the affinity coefficient of nitrates uptake at saturating soil N concentration;HATS (g :math:`\mu` mol-1)
+        self.B_K_HATS = 124476               #: Parameter for estim ating the affinity coefficient of nitrates uptake at saturating soil N concentration;HATS (g :math:`\mu` mol-1)
         self.A_LATS = -1.98E-12              #: Parameter for estimating the rate of nitrates uptake at low soil N concentration; LATS (m3 g-1 s-1)
         self.B_LATS = 2.93E-09               #: Parameter for estimating the rate of nitrates uptake at low soil N concentration; LATS (g :math:`\mu` mol-1)
 
@@ -288,6 +288,7 @@ class RootsParameters(object):
         self.N_NIT_CYTOKININS = 1             #: A parameter for cytokinins synthesis (dimensionless)
         self.N_AMINO_ACIDS_CYTOKININS = 1
         self.K_CYTOKININS_EXPORT = 1.67E-3    #: Relative rate of cytokinins export from roots (s-1)
+        self.ROOT_INIT_CONC_CYTOKININS = 200  #: Root concentration in cytokinins in the seed
 
 
 #: The instance of class :class:`cnwheat.parameters.RootsParameters` for current process
@@ -355,6 +356,7 @@ class PhotosyntheticOrganParameters(object):
 
         # cytokinins
         self.DELTA_D_CYTOKININS = 1.5e-05    #: Relative rate of cytokinins degradation (s-1)
+        self.ELEMENT_INIT_CONC_CYTOKININS = 200  #: Element concentration in cytokinins in the seed
 
 
 #: The instance of class :class:`cnwheat.parameters.PhotosyntheticOrganParameters` for current process

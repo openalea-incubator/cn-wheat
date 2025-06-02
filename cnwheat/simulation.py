@@ -875,10 +875,12 @@ class Simulation(object):
                 axis.phloem.amino_acids = y[self.initial_conditions_mapping[axis.phloem]['amino_acids']]
 
                 # Endosperm
-                if axis.endosperm is not None and (axis.endosperm.starch > 0 or axis.endosperm.proteins > 0):
+                empty_endosperm = True
+                if axis.endosperm is not None and (axis.endosperm.starch > 0 or axis.endosperm.proteins > 0.5):
                     axis.endosperm.starch = y[self.initial_conditions_mapping[axis.endosperm]['starch']]
                     axis.endosperm.proteins = y[self.initial_conditions_mapping[axis.endosperm]['proteins']]
                     phloem_contributors.append(axis.endosperm)
+                    empty_endosperm = False
 
                     # intermediate variables
                     T_effect_Vmax = axis.endosperm.calculate_temperature_effect_on_growth(soil.Tsoil)
@@ -1004,7 +1006,7 @@ class Simulation(object):
                             amino_acids_derivative = element.calculate_amino_acids_derivative(element.Amino_Acids_import, element.S_Amino_Acids, element.S_Proteins, element.D_Proteins,
                                                                                               element.Loading_Amino_Acids)
                             proteins_derivative = element.calculate_proteins_derivative(element.S_Proteins, element.D_Proteins)
-                            cytokinins_derivative = element.calculate_cytokinins_derivative(element.cytokinins_import, element.D_cytokinins, phytomer.index)
+                            cytokinins_derivative = element.calculate_cytokinins_derivative(element.cytokinins_import, element.D_cytokinins, phytomer.index, element.cytokinins, empty_endosperm, organ==phytomer.lamina)
 
                             y_derivatives[self.initial_conditions_mapping[element]['starch']] = starch_derivative
                             y_derivatives[self.initial_conditions_mapping[element]['sucrose']] = sucrose_derivative
@@ -1103,7 +1105,7 @@ class Simulation(object):
                 sucrose_derivative = axis.roots.calculate_sucrose_derivative(axis.roots.Unloading_Sucrose, axis.roots.S_Amino_Acids, axis.roots.C_exudation, axis.roots.sum_respi)
                 nitrates_derivative = axis.roots.calculate_nitrates_derivative(axis.roots.Uptake_Nitrates, axis.roots.Export_Nitrates, axis.roots.S_Amino_Acids)
                 amino_acids_derivative = axis.roots.calculate_amino_acids_derivative(axis.roots.Unloading_Amino_Acids, axis.roots.S_Amino_Acids, axis.roots.Export_Amino_Acids, axis.roots.N_exudation)
-                cytokinins_derivative = axis.roots.calculate_cytokinins_derivative(axis.roots.S_cytokinins, axis.roots.Export_cytokinins)
+                cytokinins_derivative = axis.roots.calculate_cytokinins_derivative(axis.roots.S_cytokinins, axis.roots.Export_cytokinins, axis.roots.cytokinins, empty_endosperm)
 
                 y_derivatives[self.initial_conditions_mapping[axis.roots]['sucrose']] = sucrose_derivative
                 y_derivatives[self.initial_conditions_mapping[axis.roots]['nitrates']] = nitrates_derivative
