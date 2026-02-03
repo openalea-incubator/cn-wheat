@@ -146,7 +146,7 @@ class Simulation(object):
                                 model.Axis: [],
                                 model.Phytomer: [],
                                 model.Organ: ['age_from_flowering', 'amino_acids', 'cytokinins',
-                                              'nitrates', 'proteins', 'starch', 'structure', 'sucrose'],
+                                              'nitrates', 'proteins', 'starch', 'structure', 'sucrose', 'moistening'],
                                 model.HiddenZone: ['amino_acids', 'fructan', 'proteins', 'sucrose'],
                                 model.PhotosyntheticOrganElement: ['amino_acids', 'cytokinins', 'fructan',
                                                                    'nitrates', 'proteins', 'starch', 'sucrose', 'triosesP'],
@@ -854,7 +854,6 @@ class Simulation(object):
             raise SimulationRunError(message)
 
         y_derivatives = np.zeros_like(y)
-
         # TODO: TEMP !!!!
         soil_contributors = []
         soil = self.soils[(1, 'MS')]
@@ -876,25 +875,30 @@ class Simulation(object):
 
                 # Endosperm
                 empty_endosperm = True
-                if axis.endosperm is not None and (axis.endosperm.starch > 0 or axis.endosperm.proteins > 0.5):
-                    axis.endosperm.starch = y[self.initial_conditions_mapping[axis.endosperm]['starch']]
-                    axis.endosperm.proteins = y[self.initial_conditions_mapping[axis.endosperm]['proteins']]
-                    phloem_contributors.append(axis.endosperm)
+                if axis.endosperm is not None and (axis.endosperm.starch > 0 or axis.endosperm.proteins > 0):
                     empty_endosperm = False
+                    axis.endosperm.moistening = y[self.initial_conditions_mapping[axis.endosperm]['moistening']]
+                    if axis.endosperm.moistening < 1:
+                        y_derivatives[self.initial_conditions_mapping[axis.endosperm]['moistening']] = axis.endosperm.calculate_moistening()
+                        continue
+                    else:
+                        axis.endosperm.starch = y[self.initial_conditions_mapping[axis.endosperm]['starch']]
+                        axis.endosperm.proteins = y[self.initial_conditions_mapping[axis.endosperm]['proteins']]
+                        phloem_contributors.append(axis.endosperm)
 
-                    # intermediate variables
-                    T_effect_Vmax = axis.endosperm.calculate_temperature_effect_on_growth(soil.Tsoil)
+                        # intermediate variables
+                        T_effect_Vmax = axis.endosperm.calculate_temperature_effect_on_growth(soil.Tsoil)
 
-                    # flows
-                    axis.endosperm.D_starch = axis.endosperm.calculate_D_starch(axis.endosperm.starch, T_effect_Vmax)
-                    axis.endosperm.D_proteins = axis.endosperm.calculate_D_proteins(axis.endosperm.proteins, T_effect_Vmax)
+                        # flows
+                        axis.endosperm.D_starch = axis.endosperm.calculate_D_starch(axis.endosperm.starch, T_effect_Vmax)
+                        axis.endosperm.D_proteins = axis.endosperm.calculate_D_proteins(axis.endosperm.proteins, T_effect_Vmax, axis.endosperm.starch, axis.endosperm.D_starch)
 
-                    # compartments derivatives
-                    axis.endosperm.R_residual = self.respiration_model.RespirationModel.R_endosperm(axis.endosperm.starch, axis.endosperm.mstruct, soil.Tsoil)
-                    starch_derivative = axis.endosperm.calculate_starch_derivative(axis.endosperm.D_starch, axis.endosperm.R_residual)
-                    proteins_derivative = axis.endosperm.calculate_proteins_derivative(axis.endosperm.D_proteins)
-                    y_derivatives[self.initial_conditions_mapping[axis.endosperm]['starch']] = starch_derivative
-                    y_derivatives[self.initial_conditions_mapping[axis.endosperm]['proteins']] = proteins_derivative
+                        # compartments derivatives
+                        axis.endosperm.R_residual = self.respiration_model.RespirationModel.R_endosperm(axis.endosperm.starch, axis.endosperm.mstruct, soil.Tsoil)
+                        starch_derivative = axis.endosperm.calculate_starch_derivative(axis.endosperm.D_starch, axis.endosperm.R_residual)
+                        proteins_derivative = axis.endosperm.calculate_proteins_derivative(axis.endosperm.D_proteins)
+                        y_derivatives[self.initial_conditions_mapping[axis.endosperm]['starch']] = starch_derivative
+                        y_derivatives[self.initial_conditions_mapping[axis.endosperm]['proteins']] = proteins_derivative
 
                 # Roots
                 axis.roots.nitrates = y[self.initial_conditions_mapping[axis.roots]['nitrates']]
@@ -990,8 +994,8 @@ class Simulation(object):
                                                                                                                            element.mstruct * element.__class__.PARAMETERS.ALPHA)
                             element.S_Proteins = element.calculate_S_proteins(element.amino_acids, element.T_effect_Vmax)
                             element.D_Proteins = element.calculate_D_Proteins(element.proteins, element.cytokinins, element.T_effect_Vmax)
-                            element.cytokinins_import = element.calculate_cytokinins_import(axis.roots.Export_cytokinins, element.Transpiration, axis.Total_Transpiration)
-                            element.D_cytokinins = element.calculate_D_cytokinins(element.cytokinins, element.T_effect_Vmax)
+                            element.cytokinins_import = element.calculate_cytokinins_import(axis.roots.Export_cytokinins, element.Transpiration, axis.Total_Transpiration, phytomer.index, organ==phytomer.lamina)
+                            element.D_cytokinins = element.calculate_D_cytokinins(element.cytokinins, element.T_effect_Vmax, phytomer.index, organ==phytomer.lamina)
 
                             # compartments derivatives
                             starch_derivative = element.calculate_starch_derivative(element.S_Starch, element.D_Starch)
@@ -1084,14 +1088,10 @@ class Simulation(object):
 
                 # compute the derivative of each compartment of roots
                 # flows
-                if axis.endosperm is not None:
-                    axis.roots.Unloading_Sucrose = axis.roots.calculate_Unloading_Sucrose(axis.roots.sucrose, axis.phloem.sucrose, axis.mstruct, axis.T_effect_conductivity, axis.nb_leaves,
-                                                                                          axis.endosperm.starch, axis.endosperm.mstruct)
+                axis.roots.Unloading_Sucrose = axis.roots.calculate_Unloading_Sucrose(axis.roots.sucrose, axis.phloem.sucrose, axis.mstruct, axis.T_effect_conductivity, axis.nb_leaves)
 
-                else:
-                    axis.roots.Unloading_Sucrose = axis.roots.calculate_Unloading_Sucrose(axis.roots.sucrose, axis.phloem.sucrose, axis.mstruct, axis.T_effect_conductivity, axis.nb_leaves)
-
-                axis.roots.Unloading_Amino_Acids = axis.roots.calculate_Unloading_Amino_Acids(axis.roots.Unloading_Sucrose, axis.phloem.sucrose, axis.phloem.amino_acids)
+                #axis.roots.Unloading_Amino_Acids = axis.roots.calculate_Unloading_Amino_Acids(axis.roots.Unloading_Sucrose, axis.phloem.sucrose, axis.phloem.amino_acids)
+                axis.roots.Unloading_Amino_Acids = axis.roots.calculate_Unloading_Amino_Acids(axis.roots.amino_acids, axis.phloem.amino_acids,  axis.phloem.sucrose, axis.roots.Unloading_Sucrose, axis.mstruct, axis.T_effect_conductivity, axis.nb_leaves)
                 axis.roots.S_Amino_Acids = axis.roots.calculate_S_amino_acids(axis.roots.nitrates, axis.roots.sucrose, soil.T_effect_Vmax)
                 axis.roots.R_Nnit_red, axis.roots.S_Amino_Acids = self.respiration_model.RespirationModel.R_Nnit_red(axis.roots.S_Amino_Acids, axis.roots.sucrose,
                                                                                                                      axis.roots.mstruct * model.Roots.PARAMETERS.ALPHA, root=True)
@@ -1128,5 +1128,4 @@ class Simulation(object):
         derivatives_logger = logging.getLogger('cnwheat.derivatives')
         if logger.isEnabledFor(logging.DEBUG) and derivatives_logger.isEnabledFor(logging.DEBUG):
             self._log_compartments(t_abs, y_derivatives, Simulation.LOGGERS_NAMES['derivatives'])
-
         return y_derivatives

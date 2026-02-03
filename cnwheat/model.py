@@ -276,7 +276,7 @@ class Endosperm(Organ):
 
     PARAMETERS = parameters.ENDOSPERM_PARAMETERS  #: the internal parameters of seed endosperm
 
-    def __init__(self, label='endosperm', starch=0, proteins=0, mstruct=0):
+    def __init__(self, label='endosperm', starch=0, proteins=0, mstruct=0, moistening=1):
 
         super(Endosperm, self).__init__(label)
 
@@ -284,6 +284,7 @@ class Endosperm(Organ):
         self.starch = starch  #: µmol` of C starch (endosperm)
         self.proteins = proteins  #: µmol` of N (endosperm)
         self.mstruct = mstruct  #: g of MS (~ pericarp)
+        self.moistening = moistening  # Progression of seed moistening (relative, 0 to 1)
 
         # fluxes to the phloem
         self.D_starch = None  #: current degradation of starch integrated over a delta t (µmol` C g-1)
@@ -336,6 +337,10 @@ class Endosperm(Organ):
         """
         return self.modified_Arrhenius_equation(Tair) / Grains.PARAMETERS.Arrhenius_ref
 
+    @staticmethod
+    def calculate_moistening():
+        return 3.86E-6 * parameters.SECOND_TO_HOUR_RATE_CONVERSION
+
     # FLUXES
     @staticmethod
     def calculate_D_starch(starch, T_effect_Vmax):
@@ -348,11 +353,11 @@ class Endosperm(Organ):
         :return: Starch degradation (µmol` C h-1)
         :rtype: float
         """
-        return max(0, Endosperm.PARAMETERS.K_STARCH * (Endosperm.PARAMETERS.STARCH_MAX - starch) * (starch - Endosperm.PARAMETERS.STARCH_MIN)) * \
-            parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
+        return max(0., min(starch, Endosperm.PARAMETERS.K_STARCH * (Endosperm.PARAMETERS.STARCH_MAX - starch) * (starch - Endosperm.PARAMETERS.STARCH_MIN) * \
+            parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax))
 
     @staticmethod
-    def calculate_D_proteins(proteins, T_effect_Vmax):
+    def calculate_D_proteins(proteins, T_effect_Vmax, starch, D_starch):
         """Protein degradation in seed endosperm.
 
         :param float proteins: Protein amount in endosperm (µmol` N)
@@ -361,8 +366,10 @@ class Endosperm(Organ):
         :return: Proteins degradation (µmol` N h-1)
         :rtype: float
         """
-        return max(0, Endosperm.PARAMETERS.K_PROTEINS * (Endosperm.PARAMETERS.PROTEINS_MAX - proteins) * (proteins - Endosperm.PARAMETERS.PROTEINS_MIN)) * \
-            parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
+        # return max(0., min(proteins, Endosperm.PARAMETERS.K_PROTEINS * (Endosperm.PARAMETERS.PROTEINS_MAX - proteins) * (proteins - Endosperm.PARAMETERS.PROTEINS_MIN) * \
+        #     parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax))
+        return proteins - Endosperm.PARAMETERS.PROTEINS_MAX * (starch/Endosperm.PARAMETERS.STARCH_MAX)
+
 
     # COMPARTMENTS
     @staticmethod
@@ -962,7 +969,7 @@ class Roots(Organ):
 
     # FLUXES
 
-    def calculate_Unloading_Sucrose(self, sucrose_roots, sucrose_phloem, mstruct_axis, T_effect_conductivity, nb_leaves, starch_endosperm=0, mstruct_endosperm=1):
+    def calculate_Unloading_Sucrose(self, sucrose_roots, sucrose_phloem, mstruct_axis, T_effect_conductivity, nb_leaves):
         """Rate of sucrose Unloading from phloem to roots (µmol` C sucrose unloaded g-1 mstruct h-1).
 
 
@@ -989,18 +996,25 @@ class Roots(Organ):
         # else:
         #     SIGMA_SUCROSE = -6.25E-3 * nb_leaves + 0.044
         # SIGMA_SUCROSE = max(1e-8, -2.5E-4 * nb_leaves + 0.00175)
-        tb, tm, te = 0, 150000, 210000
-        sigma_max = 2e-5
-        conc_starch_endosperm = starch_endosperm / mstruct_endosperm
-        SIGMA_SUCROSE = max(1e-7, sigma_max * ((1 + (te - max(0, conc_starch_endosperm)) / (te - tm)) * ((max(0, conc_starch_endosperm) - tb) / (te - tb)) ** ((te - tb) / (te - tm))))
-
+        # tb, tm, te = 0, 150000, 210000
+        # sigma_max = 2e-5 #2
+        # K = 7.5
+        # N = 13
+        sigma_max = 1e-4
+        K =5.4
+        N = 9
+        # conc_starch_endosperm = starch_endosperm / mstruct_endosperm
+        # SIGMA_SUCROSE = max(1e-7, sigma_max * ((1 + (te - max(0, conc_starch_endosperm)) / (te - tm)) * ((max(0, conc_starch_endosperm) - tb) / (te - tb)) ** ((te - tb) / (te - tm))))
+        SIGMA_SUCROSE = max(1e-7, ((sigma_max * K ** N) / (max(0, nb_leaves ** N) + K ** N)))
+        # SIGMA_SUCROSE = max(Roots.PARAMETERS.SIGMA_SUCROSE, ((sigma_max * K ** N) / (
+        #             max(0, nb_leaves ** N) + K ** N)))
         conductance = SIGMA_SUCROSE * Roots.PARAMETERS.BETA * self.mstruct ** (2 / 3) * T_effect_conductivity
         # conductance = Roots.PARAMETERS.SIGMA_SUCROSE * Roots.PARAMETERS.BETA * self.mstruct ** (2 / 3) * T_effect_conductivity
 
         return driving_sucrose_compartment * diff_sucrose * conductance * parameters.SECOND_TO_HOUR_RATE_CONVERSION
 
-    @staticmethod
-    def calculate_Unloading_Amino_Acids(Unloading_Sucrose, sucrose_phloem, amino_acids_phloem):
+    #@staticmethod
+    def calculate_Unloading_Amino_Acids(self, amino_acids_roots, amino_acids_phloem, sucrose_phloem,Unloading_Sucrose,  mstruct_axis, T_effect_conductivity, nb_leaves):
         """Unloading of amino_acids from phloem to roots.
         Amino acids are assumed to be co-transported along with the unloaded sucrose from phloem (using the ratio amino acids:sucrose of phloem).
 
@@ -1011,11 +1025,26 @@ class Roots(Organ):
         :return: Amino acids Unloading (µmol` N g-1 mstruct)
         :rtype: float
         """
-        if amino_acids_phloem <= 0 or sucrose_phloem <= 0 or Unloading_Sucrose <= 0:
-            Unloading_Amino_Acids = 0
-        else:
-            Unloading_Amino_Acids = Unloading_Sucrose * (amino_acids_phloem / sucrose_phloem)
-        return Unloading_Amino_Acids
+        # if amino_acids_phloem <= 0 or sucrose_phloem <= 0 or Unloading_Sucrose <= 0:
+        #     Unloading_Amino_Acids = 0
+        # else:
+        #     Unloading_Amino_Acids = Unloading_Sucrose * (amino_acids_phloem / sucrose_phloem)
+        # return Unloading_Amino_Acids
+
+        conc_amino_acids_roots = amino_acids_roots / (self.mstruct * self.__class__.PARAMETERS.ALPHA)
+        conc_amino_acids_phloem = amino_acids_phloem / (mstruct_axis * parameters.AXIS_PARAMETERS.ALPHA)
+        #: Driving compartment (µmol` N g-1 mstruct)
+        driving_amino_acids_compartment = max(conc_amino_acids_roots, conc_amino_acids_phloem)
+        #: Gradient of sucrose between the roots and the phloem (µmol` C g-1 mstruct)
+        diff_amino_acids = conc_amino_acids_phloem - conc_amino_acids_roots
+        #: Conductance depending on mstruct (g2 µmol`-1 s-1)
+        sigma_max = 5e-7
+        K = 5.4
+        N = 9
+        SIGMA_AA = max(1e-7, ((sigma_max * K ** N) / (max(0, nb_leaves ** N) + K ** N)))
+        conductance = SIGMA_AA * Roots.PARAMETERS.BETA * self.mstruct ** (2 / 3) * T_effect_conductivity
+
+        return driving_amino_acids_compartment * diff_amino_acids * conductance * parameters.SECOND_TO_HOUR_RATE_CONVERSION
 
     def calculate_Uptake_Nitrates(self, Conc_Nitrates_Soil, nitrates_roots, sucrose_roots, T_effect_Vmax):
         """Rate of nitrate uptake by roots
@@ -1047,7 +1076,7 @@ class Roots(Organ):
 
         #: Nitrate influx (µmol` N)
         HATS_LATS = (HATS + LATS)
-        nitrate_influx = HATS_LATS * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax * (self.mstruct ** (2 / 3))
+        nitrate_influx = HATS_LATS * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax * self.mstruct#(self.mstruct ** (2 / 3))
 
         # Regulations
         regul_C = (sucrose_roots / self.mstruct) * Roots.PARAMETERS.RELATIVE_VMAX_N_UPTAKE / ((sucrose_roots / self.mstruct) + Roots.PARAMETERS.K_C)  #: Nitrate uptake regulation by root C
@@ -1717,7 +1746,7 @@ class PhotosyntheticOrganElement(object):
         return diff_amino_acids * conductance * parameters.SECOND_TO_HOUR_RATE_CONVERSION
 
     @staticmethod
-    def calculate_cytokinins_import(roots_exporteD_cytokinins, element_transpiration, Total_Transpiration):
+    def calculate_cytokinins_import(roots_exporteD_cytokinins, element_transpiration, Total_Transpiration, phyto_id, is_lamina):
         """Import of cytokinins (AU).
         Cytokinin exported by roots are distributed according to the contribution of the element to culm transpiration.
 
@@ -1732,9 +1761,10 @@ class PhotosyntheticOrganElement(object):
             cytokinins_import = roots_exporteD_cytokinins * (element_transpiration / Total_Transpiration)
         else:
             cytokinins_import = 0
+
         return cytokinins_import
 
-    def calculate_D_cytokinins(self, cytokinins, T_effect_Vmax):
+    def calculate_D_cytokinins(self, cytokinins, T_effect_Vmax, phyto_id, is_lamina):
         """Rate of cytokinins degradation (AU g-1 mstruct h-1).
         First order kinetic. Vary with organ temperature.
 
@@ -1744,6 +1774,10 @@ class PhotosyntheticOrganElement(object):
         :return: Rate of Cytokinin degradation (AU g-1 mstruct h-1)
         :rtype: float
         """
+        # if phyto_id in (1, 2) and is_lamina:
+        #     return max(0, self.__class__.PARAMETERS.DELTA_D_CYTOKININS * (cytokinins / (
+        #         (self.mstruct * self.__class__.PARAMETERS.ALPHA))) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax) / 3
+        # else:
         return max(0, self.__class__.PARAMETERS.DELTA_D_CYTOKININS * (cytokinins / (self.mstruct * self.__class__.PARAMETERS.ALPHA))) * parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax
 
     # COMPARTMENTS
@@ -1846,8 +1880,10 @@ class PhotosyntheticOrganElement(object):
         :return: delta cytokinins (AU cytokinins)
         :rtype: float
         """
-        if phyto_id in (1,2) and is_lamina:
+        if phyto_id in (1,2):
             return (self.__class__.PARAMETERS.ELEMENT_INIT_CONC_CYTOKININS * self.mstruct) - cytokinins
+        # if not endosperm_empty:
+        #     return (self.__class__.PARAMETERS.ELEMENT_INIT_CONC_CYTOKININS * self.mstruct) - cytokinins
         else:
             return import_cytokinins - D_cytokinins * (self.mstruct * self.__class__.PARAMETERS.ALPHA)
 
