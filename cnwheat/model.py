@@ -366,9 +366,9 @@ class Endosperm(Organ):
         :return: Proteins degradation (µmol` N h-1)
         :rtype: float
         """
-        # return max(0., min(proteins, Endosperm.PARAMETERS.K_PROTEINS * (Endosperm.PARAMETERS.PROTEINS_MAX - proteins) * (proteins - Endosperm.PARAMETERS.PROTEINS_MIN) * \
-        #     parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax))
-        return proteins - Endosperm.PARAMETERS.PROTEINS_MAX * (starch/Endosperm.PARAMETERS.STARCH_MAX)
+        return max(0., min(proteins, Endosperm.PARAMETERS.K_PROTEINS * (Endosperm.PARAMETERS.PROTEINS_MAX - proteins) * (proteins - Endosperm.PARAMETERS.PROTEINS_MIN) * \
+            parameters.SECOND_TO_HOUR_RATE_CONVERSION * T_effect_Vmax))
+        # return proteins - Endosperm.PARAMETERS.PROTEINS_MAX * (starch/Endosperm.PARAMETERS.STARCH_MAX)
 
 
     # COMPARTMENTS
@@ -1000,8 +1000,8 @@ class Roots(Organ):
         # sigma_max = 2e-5 #2
         # K = 7.5
         # N = 13
-        sigma_max = 1e-4
-        K =5.4
+        sigma_max = 5e-6
+        K =6
         N = 9
         # conc_starch_endosperm = starch_endosperm / mstruct_endosperm
         # SIGMA_SUCROSE = max(1e-7, sigma_max * ((1 + (te - max(0, conc_starch_endosperm)) / (te - tm)) * ((max(0, conc_starch_endosperm) - tb) / (te - tb)) ** ((te - tb) / (te - tm))))
@@ -1038,10 +1038,10 @@ class Roots(Organ):
         #: Gradient of sucrose between the roots and the phloem (µmol` C g-1 mstruct)
         diff_amino_acids = conc_amino_acids_phloem - conc_amino_acids_roots
         #: Conductance depending on mstruct (g2 µmol`-1 s-1)
-        sigma_max = 5e-7
-        K = 5.4
+        sigma_max = 1e-7
+        K = 5
         N = 9
-        SIGMA_AA = max(1e-7, ((sigma_max * K ** N) / (max(0, nb_leaves ** N) + K ** N)))
+        SIGMA_AA = 1e-8#max(1e-10, ((sigma_max * K ** N) / (max(0, nb_leaves ** N) + K ** N)))
         conductance = SIGMA_AA * Roots.PARAMETERS.BETA * self.mstruct ** (2 / 3) * T_effect_conductivity
 
         return driving_amino_acids_compartment * diff_amino_acids * conductance * parameters.SECOND_TO_HOUR_RATE_CONVERSION

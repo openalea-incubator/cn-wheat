@@ -875,7 +875,7 @@ class Simulation(object):
 
                 # Endosperm
                 empty_endosperm = True
-                if axis.endosperm is not None and (axis.endosperm.starch > 0 or axis.endosperm.proteins > 0):
+                if axis.endosperm is not None and ((axis.endosperm.starch / axis.endosperm.PARAMETERS.STARCH_MAX) > 0.01 or (axis.endosperm.proteins / axis.endosperm.PARAMETERS.PROTEINS_MAX) > 0.01):
                     empty_endosperm = False
                     axis.endosperm.moistening = y[self.initial_conditions_mapping[axis.endosperm]['moistening']]
                     if axis.endosperm.moistening < 1:

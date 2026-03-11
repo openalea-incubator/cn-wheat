@@ -114,9 +114,9 @@ class EndospermParameters(object):
         self.STARCH_MIN = 0             #: Minimal starch content of the endosperm (µmol C)
         self.STARCH_MAX = 1305          #: Maximal starch content of the endosperm (µmol C)
 
-        self.K_PROTEINS = 9.E-8         #: Starch hydrolysis constant (µmol-1 s-1 at 20°C)
+        self.K_PROTEINS = 8.E-8         #: Starch hydrolysis constant (µmol-1 s-1 at 20°C)
         self.PROTEINS_MIN = 0           #: Maximal starch content of the endosperm (µmol C)
-        self.PROTEINS_MAX = 56          #: Minimal starch content of the endosperm (µmol C)
+        self.PROTEINS_MAX = 60          #: Minimal starch content of the endosperm (µmol C)
 
 
 #: The instance of class :class:`cnwheat.parameters.SeedParameters` for current process
