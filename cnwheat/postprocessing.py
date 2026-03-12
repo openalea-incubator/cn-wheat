@@ -306,7 +306,7 @@ class Endosperm:
 
         :param float starch:  Endosperm starch content (µmol` C)
         :param float proteins: Endosperm protein content (µmol` N)
-        :param float mstruct: strcural mass (g)
+        :param float mstruct: structural mass (g)
 
         :return: Endosperm total dry mass (g)
         :rtype: float
@@ -362,7 +362,7 @@ class HiddenZone:
         :param float fructan: Amount of fructan (µmol` C)
         :param float amino_acids: Amount of amino acids (µmol` N)
         :param float proteins: Amount of proteins (µmol` N)
-        :param float mstruct: strcural mass (g)
+        :param float mstruct: structural mass (g)
 
         :return: Dry mass (g)
         :rtype: float
@@ -404,7 +404,7 @@ class HiddenZone:
         :param float fructan: Amount of fructan (µmol` C)
         :param float amino_acids: Amount of amino acids (µmol` N)
         :param float proteins: Amount of proteins (µmol` N)
-        :param float mstruct: strcural mass (g)
+        :param float mstruct: structural mass (g)
 
         :return: Dry mass (g)
         :rtype: float
@@ -546,7 +546,7 @@ class Element:
         :param float nitrates: Amount of nitrates (µmol` N)
         :param float amino_acids: Amount of sucrose (µmol` N)
         :param float proteins: Amount of sucrose (µmol` N)
-        :param float mstruct: strcural mass (g)
+        :param float mstruct: structural mass (g)
 
         :return: Dry mass (g)
         :rtype: float
@@ -607,7 +607,7 @@ class Element:
         :param float fructan: Amount of fructan (µmol` C)
         :param float amino_acids: Amount of amino acids (µmol` N)
         :param float proteins: Amount of proteins (µmol` N)
-        :param float mstruct: strcural mass (g)
+        :param float mstruct: structural mass (g)
 
         :return: Dry mass (g)
         :rtype: float
@@ -1393,7 +1393,6 @@ def generate_graphs(axes_df=None, hiddenzones_df=None, organs_df=None, elements_
 
     # 2) Roots, grains, endosperm and phloem
     if organs_df is not None:
-        # 'R_growth': u'Growth respiration of roots (µmol C h$^{-1}$)',
         graph_variables_organs = {'Conc_Sucrose': u'[Sucrose] (µmol g$^{-1}$ mstruct)', 'Dry_Mass': 'Dry mass (g)', 'Conc_Nitrates': u'[Nitrates] (µmol g$^{-1}$ mstruct)',
                                   'Conc_Amino_Acids': u'[Amino Acids] (µmol g$^{-1}$ mstruct)', 'Proteins_N_Mass': 'N Proteins (g)', 'Starch_g': 'Endosperm starch (g)',
                                   'Uptake_Nitrates': u'Nitrates uptake (µmol h$^{-1}$)',

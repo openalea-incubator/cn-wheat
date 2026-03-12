@@ -1,4 +1,5 @@
 # -*- coding: latin-1 -*-
+
 import pandas as pd
 
 """
@@ -110,13 +111,14 @@ class EndospermParameters(object):
     Internal parameters of seed endosperm.
     """
     def __init__(self):
+        self.MOISTENING_RATE = 3.86E-6  #: Rate of seed moistening in usual agronomical conditions (s). todo: make this rate dependant on soil humidity/water potential
         self.K_STARCH = 3.E-9           #: Starch hydrolysis constant (µmol-1 s-1 at 20°C)
         self.STARCH_MIN = 0             #: Minimal starch content of the endosperm (µmol C)
         self.STARCH_MAX = 1305          #: Maximal starch content of the endosperm (µmol C)
 
-        self.K_PROTEINS = 8.E-8         #: Starch hydrolysis constant (µmol-1 s-1 at 20°C)
-        self.PROTEINS_MIN = 0           #: Maximal starch content of the endosperm (µmol C)
-        self.PROTEINS_MAX = 60          #: Minimal starch content of the endosperm (µmol C)
+        self.K_PROTEINS = 8.E-8         #: Protein hydrolysis constant (µmol-1 s-1 at 20°C)
+        self.PROTEINS_MIN = 0           #: Maximal protein content of the endosperm (µmol C)
+        self.PROTEINS_MAX = 60          #: Minimal protein content of the endosperm (µmol C)
 
 
 #: The instance of class :class:`cnwheat.parameters.SeedParameters` for current process
@@ -249,7 +251,10 @@ class RootsParameters(object):
     def __init__(self):
 
         self.ALPHA = 1                       #: Proportion of structural mass containing substrate
-        self.SIGMA_SUCROSE = 1e-7            #: Conductivity of the roots-phloem pathway (g2 :math:`\mu` mol-1 m-2 s-1) ; used to compute the sucrose loaded to the phloem
+        self.SIGMA_SUCROSE_MIN = 1e-7        #: Minimal conductivity of the roots-phloem pathway (g2 :math:`\mu` mol-1 m-2 s-1) ; used after the total number of leaves has been emitted by the SAM
+        self.SIGMA_SUCROSE_MAX = 5e-6        #: Conductivity of the roots-phloem pathway (g2 :math:`\mu` mol-1 m-2 s-1) ; used before the total number of leaves has been emitted by the SAM
+        self.SIGMA_SUCROSE_K = 6             #: Used to calculate the conductivity of the root-phloem pathway according to the number of leaves emitted by the SAM (leaf)
+        self.SIGMA_SUCROSE_N = 9             #: Used to calculate the conductivity of the root-phloem pathway according to the number of leaves emitted by the SAM (dimensionless)
         self.BETA = 1                        #: Kind of volumetric mass density at power -2/3 ((g m-3)**(-2/3))
 
         # Regulation function by C in roots of nitrate uptake

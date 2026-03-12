@@ -891,7 +891,7 @@ class Simulation(object):
 
                         # flows
                         axis.endosperm.D_starch = axis.endosperm.calculate_D_starch(axis.endosperm.starch, T_effect_Vmax)
-                        axis.endosperm.D_proteins = axis.endosperm.calculate_D_proteins(axis.endosperm.proteins, T_effect_Vmax, axis.endosperm.starch, axis.endosperm.D_starch)
+                        axis.endosperm.D_proteins = axis.endosperm.calculate_D_proteins(axis.endosperm.proteins, T_effect_Vmax)
 
                         # compartments derivatives
                         axis.endosperm.R_residual = self.respiration_model.RespirationModel.R_endosperm(axis.endosperm.starch, axis.endosperm.mstruct, soil.Tsoil)
@@ -995,7 +995,7 @@ class Simulation(object):
                             element.S_Proteins = element.calculate_S_proteins(element.amino_acids, element.T_effect_Vmax)
                             element.D_Proteins = element.calculate_D_Proteins(element.proteins, element.cytokinins, element.T_effect_Vmax)
                             element.cytokinins_import = element.calculate_cytokinins_import(axis.roots.Export_cytokinins, element.Transpiration, axis.Total_Transpiration, phytomer.index, organ==phytomer.lamina)
-                            element.D_cytokinins = element.calculate_D_cytokinins(element.cytokinins, element.T_effect_Vmax, phytomer.index, organ==phytomer.lamina)
+                            element.D_cytokinins = element.calculate_D_cytokinins(element.cytokinins, element.T_effect_Vmax)
 
                             # compartments derivatives
                             starch_derivative = element.calculate_starch_derivative(element.S_Starch, element.D_Starch)
@@ -1010,7 +1010,7 @@ class Simulation(object):
                             amino_acids_derivative = element.calculate_amino_acids_derivative(element.Amino_Acids_import, element.S_Amino_Acids, element.S_Proteins, element.D_Proteins,
                                                                                               element.Loading_Amino_Acids)
                             proteins_derivative = element.calculate_proteins_derivative(element.S_Proteins, element.D_Proteins)
-                            cytokinins_derivative = element.calculate_cytokinins_derivative(element.cytokinins_import, element.D_cytokinins, phytomer.index, element.cytokinins, empty_endosperm, organ==phytomer.lamina)
+                            cytokinins_derivative = element.calculate_cytokinins_derivative(element.cytokinins_import, element.D_cytokinins, phytomer.index, element.cytokinins)
 
                             y_derivatives[self.initial_conditions_mapping[element]['starch']] = starch_derivative
                             y_derivatives[self.initial_conditions_mapping[element]['sucrose']] = sucrose_derivative
@@ -1090,7 +1090,6 @@ class Simulation(object):
                 # flows
                 axis.roots.Unloading_Sucrose = axis.roots.calculate_Unloading_Sucrose(axis.roots.sucrose, axis.phloem.sucrose, axis.mstruct, axis.T_effect_conductivity, axis.nb_leaves)
 
-                #axis.roots.Unloading_Amino_Acids = axis.roots.calculate_Unloading_Amino_Acids(axis.roots.Unloading_Sucrose, axis.phloem.sucrose, axis.phloem.amino_acids)
                 axis.roots.Unloading_Amino_Acids = axis.roots.calculate_Unloading_Amino_Acids(axis.roots.amino_acids, axis.phloem.amino_acids,  axis.phloem.sucrose, axis.roots.Unloading_Sucrose, axis.mstruct, axis.T_effect_conductivity, axis.nb_leaves)
                 axis.roots.S_Amino_Acids = axis.roots.calculate_S_amino_acids(axis.roots.nitrates, axis.roots.sucrose, soil.T_effect_Vmax)
                 axis.roots.R_Nnit_red, axis.roots.S_Amino_Acids = self.respiration_model.RespirationModel.R_Nnit_red(axis.roots.S_Amino_Acids, axis.roots.sucrose,
