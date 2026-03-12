@@ -1,4 +1,5 @@
 # -*- coding: latin-1 -*-
+
 import pandas as pd
 
 """
@@ -94,13 +95,34 @@ class AxisInitCompartments(object):
     Initial values for compartments of axis.
     """
     def __init__(self):
+        self.SAM_temperature = 20           #: initial temperature of shoot apical meristem (°C)
         self.C_exudated = 0                 #: initial value of C exudated by the roots (:math:`\mu` mol C)
         self.sum_respi_shoot = 0            #: initial value of C respired by the shoot (exept leaf and internode growth respiration) (:math:`\mu` mol C)
         self.sum_respi_roots = 1E-3         #: initial value of C respired by the roots (exept root growth respiration) (:math:`\mu` mol C)
+        self.nb_leaves = 11
 
 
 #: The instance of class :class:`cnwheat.parameters.HiddenZoneInitCompartments` for current process
 AXIS_INIT_COMPARTMENTS = AxisInitCompartments()
+
+
+class EndospermParameters(object):
+    """
+    Internal parameters of seed endosperm.
+    """
+    def __init__(self):
+        self.MOISTENING_RATE = 3.86E-6  #: Rate of seed moistening in usual agronomical conditions (s). todo: make this rate dependant on soil humidity/water potential
+        self.K_STARCH = 3.E-9           #: Starch hydrolysis constant (µmol-1 s-1 at 20°C)
+        self.STARCH_MIN = 0             #: Minimal starch content of the endosperm (µmol C)
+        self.STARCH_MAX = 1305          #: Maximal starch content of the endosperm (µmol C)
+
+        self.K_PROTEINS = 8.E-8         #: Protein hydrolysis constant (µmol-1 s-1 at 20°C)
+        self.PROTEINS_MIN = 0           #: Maximal protein content of the endosperm (µmol C)
+        self.PROTEINS_MAX = 60          #: Minimal protein content of the endosperm (µmol C)
+
+
+#: The instance of class :class:`cnwheat.parameters.SeedParameters` for current process
+ENDOSPERM_PARAMETERS = EndospermParameters()
 
 
 class PhytomerParameters(object):
@@ -229,16 +251,19 @@ class RootsParameters(object):
     def __init__(self):
 
         self.ALPHA = 1                       #: Proportion of structural mass containing substrate
-        self.SIGMA_SUCROSE = 1e-7            #: Conductivity of the roots-phloem pathway (g2 :math:`\mu` mol-1 m-2 s-1) ; used to compute the sucrose loaded to the phloem
+        self.SIGMA_SUCROSE_MIN = 1e-7        #: Minimal conductivity of the roots-phloem pathway (g2 :math:`\mu` mol-1 m-2 s-1) ; used after the total number of leaves has been emitted by the SAM
+        self.SIGMA_SUCROSE_MAX = 5e-6        #: Conductivity of the roots-phloem pathway (g2 :math:`\mu` mol-1 m-2 s-1) ; used before the total number of leaves has been emitted by the SAM
+        self.SIGMA_SUCROSE_K = 6             #: Used to calculate the conductivity of the root-phloem pathway according to the number of leaves emitted by the SAM (leaf)
+        self.SIGMA_SUCROSE_N = 9             #: Used to calculate the conductivity of the root-phloem pathway according to the number of leaves emitted by the SAM (dimensionless)
         self.BETA = 1                        #: Kind of volumetric mass density at power -2/3 ((g m-3)**(-2/3))
 
         # Regulation function by C in roots of nitrate uptake
-        self.K_C = 7000                      #: Affinity coefficient for the regulation function by root C (:math:`\mu` mol C sucrose g-1 MS)
+        self.K_C = 4000                      #: Affinity coefficient for the regulation function by root C (:math:`\mu` mol C sucrose g-1 MS)
         self.RELATIVE_VMAX_N_UPTAKE = 1
 
         # Nitrate uptake
         self.NET_INFLUX_UPTAKE_RATIO = 0.6   #: ratio (net uptake : nitrate influx)
-        self.MIN_INFLUX_FOR_UPTAKE = 3.02E-03  #: Minimum influx rate below wich no net absorption happens (:math:`\mu` mol C sucrose g-1 mstruct s-1)
+        self.MIN_INFLUX_FOR_UPTAKE = 3.02E-03  #: Minimum influx rate below which no net absorption happens (:math:`\mu` mol C sucrose g-1 mstruct s-1)
         self.A_VMAX_HATS = -0.00004          #: Parameter for estimating the maximal rate of nitrates uptake at saturating soil N concentration;HATS (:math:`\mu` mol g-1 s-1)
         self.B_VMAX_HATS = 0.0549            #: Parameter for estimating the maximal rate of nitrates uptake at saturating soil N concentration;HATS (g :math:`\mu` mol-1)
         self.A_K_HATS = -85.324              #: Parameter for estimating the affinity coefficient of nitrates uptake at saturating soil N concentration;HATS (:math:`\mu` mol m-3)
@@ -256,7 +281,7 @@ class RootsParameters(object):
         self.K_AMINO_ACIDS_EXPORT = 0.045   #: Relative rate of amino acids export from roots (s-1)
 
         # Exudation
-        self.C_EXUDATION = 0.20               #: Proportion of C exudated from C sucrose unloaded to roots (Keith et al., 1986)
+        self.C_EXUDATION = 0.20               #: Proportion of C exudated from roots over C sucrose unloaded (Keith et al., 1986)
         self.N_EXUDATION_MAX = 0.2            #: Parameter used to limit the rate of N exudation (dimensionless)
 
         # Cytokinins
@@ -268,6 +293,7 @@ class RootsParameters(object):
         self.N_NIT_CYTOKININS = 1             #: A parameter for cytokinins synthesis (dimensionless)
         self.N_AMINO_ACIDS_CYTOKININS = 1
         self.K_CYTOKININS_EXPORT = 1.67E-3    #: Relative rate of cytokinins export from roots (s-1)
+        self.ROOT_INIT_CONC_CYTOKININS = 200  #: Root concentration in cytokinins in the seed
 
 
 #: The instance of class :class:`cnwheat.parameters.RootsParameters` for current process
@@ -335,6 +361,7 @@ class PhotosyntheticOrganParameters(object):
 
         # cytokinins
         self.DELTA_D_CYTOKININS = 1.5e-05    #: Relative rate of cytokinins degradation (s-1)
+        self.ELEMENT_INIT_CONC_CYTOKININS = 200  #: Element concentration in cytokinins in the seed
 
 
 #: The instance of class :class:`cnwheat.parameters.PhotosyntheticOrganParameters` for current process

@@ -50,7 +50,8 @@ class DataWarning(UserWarning):
 warnings.simplefilter('always', DataWarning)
 
 
-def plot_cnwheat_ouputs(outputs, x_name, y_name, x_label='', y_label='', x_lim=None, title=None, filters={}, plot_filepath=None, colors=[], linestyles=[], explicit_label=True, kwargs={}):
+def plot_cnwheat_ouputs(outputs, x_name, y_name, x_label='', y_label='', x_lim=None, title=None, meteo_data=None, filters={}, plot_filepath=None,
+                        colors=[], linestyles=[], explicit_label=True, kwargs={}):
     """Plot `outputs`, with x=`x_name` and y=`y_name`.
 
     The general algorithm is:
@@ -61,12 +62,13 @@ def plot_cnwheat_ouputs(outputs, x_name, y_name, x_label='', y_label='', x_lim=N
         * save or display the plot.
 
     :param pandas.DataFrame outputs: The outputs of CN-Wheat.
-    :param str x_name: x axis of the plot.
-    :param str y_name: y axis of the plot.
+    :param str x_name: x-axis of the plot.
+    :param str y_name: y-axis of the plot.
     :param str x_label: The x label of the plot. Default is ''.
     :param str or unicode y_label: The y label of the plot. Default is ''.
     :param float x_lim: the x-axis limit.
     :param str title: the title of the plot. If None (default), create a title which is the concatenation of `y_name` and each scales which cardinality is one.
+    :param pandas.DataFrame meteo_data: the meteo dataframe having the mapping between t (hours) and calendar dates
     :param dict filters: A dictionary whose keys are the columns of `outputs` for which we want to apply a specific filter.
           These columns can be one or more element of :const:`OUTPUTS_INDEXES`.
           The value associated to each key is a criteria that the rows of `outputs`
@@ -79,11 +81,11 @@ def plot_cnwheat_ouputs(outputs, x_name, y_name, x_label='', y_label='', x_lim=N
                               - False: makes the line label from concatenation of scales containing several distinct elements.
     :param dict kwargs: key arguments to be passed to matplolib
 
-    :Examples:
+    Examples::
 
-    >>> import pandas as pd
-    >>> cnwheat_output_df = pd.read_csv('cnwheat_output.csv') # in this example, 'cnwheat_output.csv' must contain at least the columns 't' and 'Conc_Sucrose'.
-    >>> plot(cnwheat_output_df, x_name = 't', y_name = 'Conc_Sucrose', x_label='Time (Hour)', y_label=u'[Sucrose] (µmol g$^{-1}$ mstruct)', title='{} = f({})'.format('Conc_Sucrose', 't'), filters={'plant': 1, 'axis': 'MS', 'organ': 'Lamina', 'element': 1})
+            import pandas as pd
+            cnwheat_output_df = pd.read_csv('cnwheat_output.csv') # in this example, 'cnwheat_output.csv' must contain at least the columns 't' and 'Conc_Sucrose'.
+            plot(cnwheat_output_df, x_name = 't', y_name = 'Conc_Sucrose', x_label='Time (Hour)', y_label=u'[Sucrose] (µmol g$^{-1}$ mstruct)', title='{} = f({})'.format('Conc_Sucrose', 't'), filters={'plant': 1, 'axis': 'MS', 'organ': 'Lamina', 'element': 1})
 
     """
 
@@ -148,7 +150,7 @@ def plot_cnwheat_ouputs(outputs, x_name, y_name, x_label='', y_label='', x_lim=N
             # concatenate the keys of the group name
             line_label_list.extend(['{}: {}'.format(group_keys_upper[group_keys_mapping[output_group_name]], outputs_group_name) for output_group_name in outputs_group_name])
         else:
-            # construct a label with only the essential keys of the group name ; the essential keys are those for which cardinality is non zero
+            # construct a label with only the essential keys of the group name ; the essential keys are those for which cardinality is non-zero
             for label_group in labels_groups:
                 label_group_index = group_keys_mapping[label_group]
                 line_label_list.append('{}: {}'.format(group_keys_upper[label_group_index], outputs_group_name[label_group_index]))
@@ -180,6 +182,15 @@ def plot_cnwheat_ouputs(outputs, x_name, y_name, x_label='', y_label='', x_lim=N
         ax.set_xlim(left=0, right=x_lim)
     else:
         ax.set_xlim(left=0)
+
+    if meteo_data is not None:
+        meteo_data['Date'] = pd.to_datetime(meteo_data['Date'], format='%d/%m/%Y')
+        ax2 = ax.twiny()
+        ax2.set_xticks(ax.get_xticks())
+        ax2.set_xticklabels(meteo_data.loc[ax.get_xticks()]['Date'].dt.strftime('%d/%m'))
+        ax2.xaxis.set_ticks_position('bottom')  # set the position of the second x-axis to bottom
+        ax2.xaxis.set_label_position('bottom')  # set the position of the second x-axis to bottom
+        ax2.spines['bottom'].set_position(('outward', 35))
 
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
@@ -226,7 +237,7 @@ def setup_logging(config_filepath='logging.json', level=logging.INFO,
 
     cnwheat_model_logger = logging.getLogger('cnwheat.model')
     cnwheat_model_logger.disabled = not log_model  # set to False to log messages from cnwheat.model
-    logging.getLogger('cnwheat.compartments').disabled = not log_compartments  # set to False to log the compartments
+    logging.getLogger('cnwheat.compartments').disabled = not log_compartments  # set to False in order to log the compartments
     logging.getLogger('cnwheat.derivatives').disabled = not log_derivatives  # set to False to log the derivatives
 
 
@@ -284,7 +295,8 @@ def compare_actual_to_desired(data_dirpath, actual_data_df, desired_data_filenam
         np.testing.assert_allclose(actual_data_df.values, desired_data_df.values, relative_tolerance, absolute_tolerance)
 
 
-class ProgressBarError(Exception): pass
+class ProgressBarError(Exception):
+    pass
 
 
 class ProgressBar(object):
@@ -305,7 +317,7 @@ class ProgressBar(object):
         self.uncomplete_character = uncomplete_character  #: the character to represent the uncompleted part of the progress bar
 
     def set_t_max(self, t_max):
-        """"Set :attr:`t_max` and update other attributes accordingly.
+        """Set :attr:`t_max` and update other attributes accordingly.
         """
         if t_max <= 0:
             raise ProgressBarError('t_max <= 0')
