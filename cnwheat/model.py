@@ -1006,11 +1006,12 @@ class Roots(Organ):
         :return: Amino acids Unloading (µmol` N g-1 mstruct)
         :rtype: float
         """
-        if amino_acids_phloem <= 0 or sucrose_phloem <= 0 or Unloading_Sucrose <= 0:
-            Unloading_Amino_Acids = 0
-        else:
-            Unloading_Amino_Acids = Unloading_Sucrose * (amino_acids_phloem / sucrose_phloem)
-        return Unloading_Amino_Acids
+        #: todo: test to reimplement the option below where the unloading of AA is proportional to that of sucrose
+        # if amino_acids_phloem <= 0 or sucrose_phloem <= 0 or Unloading_Sucrose <= 0:
+        #     Unloading_Amino_Acids = 0
+        # else:
+        #     Unloading_Amino_Acids = Unloading_Sucrose * (amino_acids_phloem / sucrose_phloem)
+        # return Unloading_Amino_Acids
 
         conc_amino_acids_roots = amino_acids_roots / (self.mstruct * self.__class__.PARAMETERS.ALPHA)
         conc_amino_acids_phloem = amino_acids_phloem / (mstruct_axis * parameters.AXIS_PARAMETERS.ALPHA)
@@ -1019,11 +1020,7 @@ class Roots(Organ):
         #: Gradient of sucrose between the roots and the phloem (µmol` C g-1 mstruct)
         diff_amino_acids = conc_amino_acids_phloem - conc_amino_acids_roots
         #: Conductance depending on mstruct (g2 µmol`-1 s-1)
-        sigma_max = 1e-7
-        K = 5
-        N = 9
-        SIGMA_AA = 1e-8#max(1e-10, ((sigma_max * K ** N) / (max(0, nb_leaves ** N) + K ** N)))
-        conductance = SIGMA_AA * Roots.PARAMETERS.BETA * self.mstruct ** (2 / 3) * T_effect_conductivity
+        conductance = Roots.PARAMETERS.SIGMA_AMINO_ACIDS * Roots.PARAMETERS.BETA * self.mstruct ** (2 / 3) * T_effect_conductivity
 
         return driving_amino_acids_compartment * diff_amino_acids * conductance * parameters.SECOND_TO_HOUR_RATE_CONVERSION
 
@@ -1729,11 +1726,11 @@ class PhotosyntheticOrganElement(object):
         return diff_amino_acids * conductance * parameters.SECOND_TO_HOUR_RATE_CONVERSION
 
     @staticmethod
-    def calculate_cytokinins_import(roots_exporteD_cytokinins, element_transpiration, Total_Transpiration, phyto_id, is_lamina):
+    def calculate_cytokinins_import(roots_exported_cytokinins, element_transpiration, Total_Transpiration):
         """Import of cytokinins (AU).
         Cytokinin exported by roots are distributed according to the contribution of the element to culm transpiration.
 
-        :param float roots_exporteD_cytokinins: Exported cytokinins from roots (AU)
+        :param float roots_exported_cytokinins: Exported cytokinins from roots (AU)
         :param float element_transpiration: Element transpiration (mmol H2O s-1)
         :param float Total_Transpiration: Culm transpiration (mmol H2O s-1)
 
@@ -1741,7 +1738,7 @@ class PhotosyntheticOrganElement(object):
         :rtype: float
         """
         if Total_Transpiration > 0:
-            cytokinins_import = roots_exporteD_cytokinins * (element_transpiration / Total_Transpiration)
+            cytokinins_import = roots_exported_cytokinins * (element_transpiration / Total_Transpiration)
         else:
             cytokinins_import = 0
 

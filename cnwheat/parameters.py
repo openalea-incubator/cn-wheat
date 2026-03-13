@@ -252,9 +252,10 @@ class RootsParameters(object):
 
         self.ALPHA = 1                       #: Proportion of structural mass containing substrate
         self.SIGMA_SUCROSE_MIN = 1e-7        #: Minimal conductivity of the roots-phloem pathway (g2 :math:`\mu` mol-1 m-2 s-1) ; used after the total number of leaves has been emitted by the SAM
-        self.SIGMA_SUCROSE_MAX = 5e-6        #: Conductivity of the roots-phloem pathway (g2 :math:`\mu` mol-1 m-2 s-1) ; used before the total number of leaves has been emitted by the SAM
+        self.SIGMA_SUCROSE_MAX = 3e-6        #: Conductivity of the roots-phloem pathway (g2 :math:`\mu` mol-1 m-2 s-1) ; used before the total number of leaves has been emitted by the SAM
         self.SIGMA_SUCROSE_K = 6             #: Used to calculate the conductivity of the root-phloem pathway according to the number of leaves emitted by the SAM (leaf)
         self.SIGMA_SUCROSE_N = 9             #: Used to calculate the conductivity of the root-phloem pathway according to the number of leaves emitted by the SAM (dimensionless)
+        self.SIGMA_AMINO_ACIDS = 1e-8        #: Conductivity of the roots-phloem pathway for amino acids (g2 :math:`\mu` mol-1 m-2 s-1)
         self.BETA = 1                        #: Kind of volumetric mass density at power -2/3 ((g m-3)**(-2/3))
 
         # Regulation function by C in roots of nitrate uptake
