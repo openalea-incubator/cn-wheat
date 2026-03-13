@@ -197,9 +197,9 @@ def from_dataframes(axes_inputs=None, organs_inputs=None, hiddenzones_inputs=Non
     if convert_dataframes_to_population and convert_dataframe_to_soils_dict:
         return population, soils
     elif convert_dataframes_to_population:
-        return population
+        return population, None
     else:
-        return soils
+        return None, soils
 
 
 def to_dataframes(population=None, soils=None):
