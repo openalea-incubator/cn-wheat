@@ -474,8 +474,8 @@ class Simulation(object):
 
         # create new population and soils
         self.population.plants.extend(population.plants)
-        if not self.external_soil_model:
-            self.soils.update(soils)
+        # if not self.external_soil_model:
+        self.soils.update(soils)
 
         # check the consistency of population and soils
         if len(self.population.plants) != 0:  # population must contain at least 1 plant
@@ -859,12 +859,12 @@ class Simulation(object):
 
         y_derivatives = np.zeros_like(y)
         # TODO: TEMP !!!!
+        soil = self.soils[(1, 'MS')]
+        soil.T_effect_Vmax = soil.calculate_temperature_effect_on_Vmax(soil.Tsoil)
         if not self.external_soil_model:
             soil_contributors = []
-            soil = self.soils[(1, 'MS')]
             soil.nitrates = y[self.initial_conditions_mapping[soil]['nitrates']]
             soil.Conc_Nitrates_Soil = soil.calculate_Conc_Nitrates(soil.nitrates)
-            soil.T_effect_Vmax = soil.calculate_temperature_effect_on_Vmax(soil.Tsoil)
             soil.T_effect_conductivity = soil.calculate_temperature_effect_on_conductivity(soil.Tsoil)
 
         for plant in self.population.plants:
@@ -927,9 +927,12 @@ class Simulation(object):
                 axis.roots.regul_transpiration = axis.roots.calculate_regul_transpiration(axis.Total_Transpiration)
 
                 # compute the flows from/to the roots to/from photosynthetic organs
-                axis.roots.Uptake_Nitrates, axis.roots.HATS_LATS = axis.roots.calculate_Uptake_Nitrates(soil.Conc_Nitrates_Soil, axis.roots.nitrates, axis.roots.sucrose,
-                                                                                                        soil.T_effect_Vmax)
-                soil_contributors.append((axis.roots.Uptake_Nitrates, plant.index))  #: TODO TEMP!!!
+                if not self.external_soil_model:
+                    axis.roots.Uptake_Nitrates, axis.roots.HATS_LATS = axis.roots.calculate_Uptake_Nitrates(soil.Conc_Nitrates_Soil, axis.roots.nitrates, axis.roots.sucrose,
+                                                                                                            soil.T_effect_Vmax)
+                    soil_contributors.append((axis.roots.Uptake_Nitrates, plant.index))  #: TODO TEMP!!!
+                else:
+                    assert axis.roots is not None
                 axis.roots.R_Nnit_upt = self.respiration_model.RespirationModel.R_Nnit_upt(axis.roots.Uptake_Nitrates, axis.roots.sucrose)
                 axis.roots.Export_Nitrates = axis.roots.calculate_Export_Nitrates(axis.roots.nitrates, axis.roots.regul_transpiration)
                 axis.roots.Export_Amino_Acids = axis.roots.calculate_Export_Amino_Acids(axis.roots.amino_acids, axis.roots.regul_transpiration)
